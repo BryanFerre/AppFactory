@@ -3,7 +3,8 @@ import axios from 'axios';
 import { motion } from 'framer-motion';
 import {
   Activity, TrendingUp, Package, Zap, Cpu, HardDrive, Wifi,
-  Clock, CheckCircle2, AlertTriangle, ArrowUpRight, Sparkles
+  Clock, CheckCircle2, AlertTriangle, ArrowUpRight, Sparkles,
+  DollarSign, Coins, Users
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -169,34 +170,34 @@ export default function Dashboard() {
           </div>
         </motion.div>
 
-        {/* Today's Earnings */}
-        <motion.div variants={item} className="glass-card glass-card-hover p-6" data-testid="today-earnings-widget">
+        {/* Today's USD Earnings */}
+        <motion.div variants={item} className="glass-card glass-card-hover p-6" data-testid="today-usd-widget">
           <div className="flex items-center gap-2 mb-4">
-            <div className="w-8 h-8 rounded-lg icon-bg-cyan flex items-center justify-center">
-              <TrendingUp className="w-4 h-4 text-black" />
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center">
+              <DollarSign className="w-4 h-4 text-white" />
             </div>
-            <h2 className="text-lg font-semibold text-white font-['Outfit']">Today</h2>
+            <h2 className="text-lg font-semibold text-white font-['Outfit']">Today's Revenue</h2>
           </div>
-          <p className="text-3xl font-bold text-white">{earnings?.today_opt.toFixed(2)} <span className="text-lg text-cyan-400">OPT</span></p>
-          <p className="text-slate-400">${earnings?.today_usd.toFixed(2)} USD</p>
+          <p className="text-3xl font-bold text-emerald-400">${earnings?.today_usd?.toFixed(2)}</p>
+          <p className="text-slate-400 text-sm">from app subscriptions</p>
         </motion.div>
 
-        {/* Monthly Earnings */}
-        <motion.div variants={item} className="glass-card glass-card-hover p-6" data-testid="month-earnings-widget">
+        {/* Today's OPT Rewards */}
+        <motion.div variants={item} className="glass-card glass-card-hover p-6" data-testid="today-opt-widget">
           <div className="flex items-center gap-2 mb-4">
-            <div className="w-8 h-8 rounded-lg icon-bg-purple flex items-center justify-center">
-              <TrendingUp className="w-4 h-4 text-white" />
+            <div className="w-8 h-8 rounded-lg icon-bg-cyan flex items-center justify-center">
+              <Coins className="w-4 h-4 text-black" />
             </div>
-            <h2 className="text-lg font-semibold text-white font-['Outfit']">This Month</h2>
+            <h2 className="text-lg font-semibold text-white font-['Outfit']">OPT Rewards</h2>
           </div>
-          <p className="text-3xl font-bold text-white">{earnings?.month_opt.toFixed(2)} <span className="text-lg text-purple-400">OPT</span></p>
-          <p className="text-slate-400">${earnings?.month_usd.toFixed(2)} USD</p>
+          <p className="text-3xl font-bold text-cyan-400">{earnings?.today_opt_rewards?.toFixed(2)} <span className="text-lg">OPT</span></p>
+          <p className="text-slate-400 text-sm">from referrals & signups</p>
         </motion.div>
 
         {/* Earnings Chart - Spans 2 cols */}
         <motion.div variants={item} className="md:col-span-2 glass-card glass-card-hover p-6" data-testid="earnings-chart-widget">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-white font-['Outfit']">Earnings Trend</h2>
+            <h2 className="text-lg font-semibold text-white font-['Outfit']">Revenue Trend (USD)</h2>
             <NavLink to="/earnings" className="text-sm text-cyan-400 hover:text-cyan-300 flex items-center gap-1">
               View Details <ArrowUpRight className="w-4 h-4" />
             </NavLink>
@@ -205,9 +206,9 @@ export default function Dashboard() {
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={earnings?.daily_history || []}>
                 <defs>
-                  <linearGradient id="colorOpt" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#06B6D4" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="#06B6D4" stopOpacity={0}/>
+                  <linearGradient id="colorUsd" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#10B981" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="#10B981" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
                 <XAxis 
@@ -221,6 +222,7 @@ export default function Dashboard() {
                   axisLine={false} 
                   tickLine={false}
                   tick={{ fill: '#64748B', fontSize: 10 }}
+                  tickFormatter={(value) => `$${value}`}
                 />
                 <Tooltip 
                   contentStyle={{ 
@@ -229,35 +231,37 @@ export default function Dashboard() {
                     borderRadius: '8px'
                   }}
                   labelStyle={{ color: '#94A3B8' }}
-                  formatter={(value) => [`${value} OPT`, 'Earnings']}
+                  formatter={(value) => [`$${value}`, 'Revenue']}
                 />
                 <Area 
                   type="monotone" 
-                  dataKey="opt" 
-                  stroke="#06B6D4" 
+                  dataKey="usd" 
+                  stroke="#10B981" 
                   strokeWidth={2}
                   fillOpacity={1} 
-                  fill="url(#colorOpt)" 
+                  fill="url(#colorUsd)" 
                 />
               </AreaChart>
             </ResponsiveContainer>
           </div>
         </motion.div>
 
-        {/* Capacity Widget */}
-        <motion.div variants={item} className="glass-card glass-card-hover p-6" data-testid="capacity-widget">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-white font-['Outfit']">Capacity</h2>
-            <span className="text-sm text-slate-400">{capacity?.used_capacity}/{capacity?.total_capacity} GB</span>
-          </div>
-          <Progress value={(capacity?.used_capacity / capacity?.total_capacity) * 100} className="h-3 mb-4" />
-          <div className="space-y-2">
-            {capacity?.app_usage.slice(0, 3).map((app, i) => (
-              <div key={i} className="flex items-center justify-between text-sm">
-                <span className="text-slate-400">{app.name}</span>
-                <span className="text-slate-300">{app.capacity} GB</span>
-              </div>
-            ))}
+        {/* Monthly Summary */}
+        <motion.div variants={item} className="glass-card glass-card-hover p-6" data-testid="month-summary-widget">
+          <h2 className="text-lg font-semibold text-white font-['Outfit'] mb-4">This Month</h2>
+          <div className="space-y-3">
+            <div className="flex justify-between items-center">
+              <span className="text-slate-400">Revenue</span>
+              <span className="text-emerald-400 font-semibold">${earnings?.month_usd?.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-slate-400">OPT Rewards</span>
+              <span className="text-cyan-400 font-semibold">{earnings?.month_opt_rewards?.toFixed(2)} OPT</span>
+            </div>
+            <div className="flex justify-between items-center pt-2 border-t border-white/5">
+              <span className="text-slate-400">Total OPT Earned</span>
+              <span className="text-purple-400 font-semibold">{earnings?.total_opt_rewards?.toFixed(2)} OPT</span>
+            </div>
           </div>
         </motion.div>
 
@@ -313,12 +317,18 @@ export default function Dashboard() {
                   </div>
                   <div>
                     <p className="font-medium text-white">{app.name}</p>
-                    <p className="text-xs text-slate-400">{app.subscribers_served.toLocaleString()} users</p>
+                    <p className="text-xs text-slate-400">{app.subscribers_served?.toLocaleString()} subscribers</p>
                   </div>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-slate-400">Revenue</span>
-                  <span className="text-sm font-semibold text-cyan-400">{app.revenue_opt.toFixed(1)} OPT</span>
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-slate-400">Revenue</span>
+                    <span className="font-semibold text-emerald-400">${app.revenue_usd?.toFixed(2)}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-slate-400">Signups driven</span>
+                    <span className="font-semibold text-cyan-400">{app.signups_driven} (+{app.opt_rewards_earned} OPT)</span>
+                  </div>
                 </div>
               </div>
             ))}
@@ -352,35 +362,40 @@ export default function Dashboard() {
           </div>
         </motion.div>
 
-        {/* Trending Apps - Spans 2 cols */}
-        <motion.div variants={item} className="md:col-span-2 glass-card glass-card-hover p-6" data-testid="trending-apps-widget">
+        {/* Promotion Overview */}
+        <motion.div variants={item} className="md:col-span-2 glass-card glass-card-hover p-6" data-testid="promotion-widget">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-white font-['Outfit']">Trending Apps</h2>
-            <NavLink to="/app-factory" className="text-sm text-cyan-400 hover:text-cyan-300 flex items-center gap-1">
-              View All <ArrowUpRight className="w-4 h-4" />
+            <h2 className="text-lg font-semibold text-white font-['Outfit']">Grow Your OPT Rewards</h2>
+            <NavLink to="/promotion" className="text-sm text-cyan-400 hover:text-cyan-300 flex items-center gap-1">
+              Promotion Tools <ArrowUpRight className="w-4 h-4" />
             </NavLink>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {availableApps.map((app) => (
-              <div key={app.id} className="bg-white/5 rounded-xl p-4 border border-white/5">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-lg icon-bg-purple flex items-center justify-center">
-                    {getAppIcon(app.icon)}
-                  </div>
-                  <div>
-                    <p className="font-medium text-white">{app.name}</p>
-                    <Badge variant="outline" className="text-xs border-purple-500/30 text-purple-400">
-                      {app.revenue_share}% share
-                    </Badge>
-                  </div>
-                </div>
-                <p className="text-sm text-slate-400 mb-3 line-clamp-2">{app.description}</p>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-slate-500">Est. {app.estimated_monthly_opt} OPT/mo</span>
-                  <Button size="sm" variant="ghost" className="text-cyan-400 hover:text-cyan-300 h-7 px-2">
-                    Install
-                  </Button>
-                </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="bg-white/5 rounded-xl p-4 border border-cyan-500/20">
+              <Users className="w-6 h-6 text-cyan-400 mb-2" />
+              <p className="text-sm text-slate-400">Refer Node Operators</p>
+              <p className="text-lg font-semibold text-white">Earn 50 OPT per signup</p>
+            </div>
+            <div className="bg-white/5 rounded-xl p-4 border border-purple-500/20">
+              <TrendingUp className="w-6 h-6 text-purple-400 mb-2" />
+              <p className="text-sm text-slate-400">Drive App Signups</p>
+              <p className="text-lg font-semibold text-white">Earn 2 OPT per user</p>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Capacity Widget */}
+        <motion.div variants={item} className="glass-card glass-card-hover p-6" data-testid="capacity-widget">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-white font-['Outfit']">Capacity</h2>
+            <span className="text-sm text-slate-400">{capacity?.used_capacity}/{capacity?.total_capacity} GB</span>
+          </div>
+          <Progress value={(capacity?.used_capacity / capacity?.total_capacity) * 100} className="h-3 mb-4" />
+          <div className="space-y-2">
+            {capacity?.app_usage.slice(0, 3).map((app, i) => (
+              <div key={i} className="flex items-center justify-between text-sm">
+                <span className="text-slate-400">{app.name}</span>
+                <span className="text-slate-300">{app.capacity} GB</span>
               </div>
             ))}
           </div>
