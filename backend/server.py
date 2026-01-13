@@ -291,9 +291,10 @@ def hash_password(password: str) -> str:
 def verify_password(password: str, hashed: str) -> bool:
     return bcrypt.checkpw(password.encode('utf-8'), hashed.encode('utf-8'))
 
-def create_token(user_id: str) -> str:
+def create_token(user_id: str, is_admin: bool = False) -> str:
     payload = {
         "sub": user_id,
+        "is_admin": is_admin,
         "exp": datetime.now(timezone.utc) + timedelta(hours=JWT_EXPIRATION_HOURS)
     }
     return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
@@ -310,6 +311,62 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
         raise HTTPException(status_code=401, detail="Token expired")
     except jwt.InvalidTokenError:
         raise HTTPException(status_code=401, detail="Invalid token")
+
+async def get_current_admin(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    """Verify admin authentication and return admin user"""
+    try:
+        token = credentials.credentials
+        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        admin_id = payload.get("sub")
+        is_admin = payload.get("is_admin", False)
+        
+        if not admin_id or not is_admin:
+            raise HTTPException(status_code=401, detail="Admin access required")
+        
+        admin = await db.admins.find_one({"id": admin_id}, {"_id": 0, "hashed_password": 0})
+        if not admin:
+            raise HTTPException(status_code=401, detail="Admin not found")
+        if not admin.get("is_active", True):
+            raise HTTPException(status_code=401, detail="Admin account suspended")
+        
+        return admin
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token expired")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+def check_admin_permission(admin: dict, required_permission: str) -> bool:
+    """Check if admin has required permission"""
+    permissions = ROLE_PERMISSIONS.get(admin.get("role"), [])
+    if "*" in permissions:
+        return True
+    
+    # Check exact match or wildcard
+    for perm in permissions:
+        if perm == required_permission:
+            return True
+        if perm.endswith(":*"):
+            prefix = perm[:-2]
+            if required_permission.startswith(prefix + ":"):
+                return True
+    return False
+
+async def log_admin_action(admin: dict, action: str, target_type: str, target_id: str, details: dict, request: Request = None):
+    """Log admin action for audit trail"""
+    log_entry = {
+        "id": str(uuid.uuid4()),
+        "admin_id": admin["id"],
+        "admin_email": admin["email"],
+        "admin_role": admin["role"],
+        "action": action,
+        "target_type": target_type,
+        "target_id": target_id,
+        "details": details,
+        "ip_address": request.client.host if request else None,
+        "timestamp": datetime.now(timezone.utc).isoformat()
+    }
+    await db.admin_audit_logs.insert_one(log_entry)
+    return log_entry
 
 # ==================== AUTH ENDPOINTS ====================
 
