@@ -116,7 +116,7 @@ Design and implement the NAPP Node Operator Dashboard for a decentralized blockc
 
 ### P1 (High Priority)
 - [x] ~~Two-factor authentication (2FA)~~ ✅ COMPLETED (TOTP with backup codes)
-- [ ] Email notifications for referral signups
+- [x] ~~Email notifications for referral signups~~ ✅ COMPLETED (Resend API)
 - [ ] Export functionality (CSV/PDF reports)
 - [ ] Real-time signup notifications
 - [ ] App Factory filtering/sorting features
