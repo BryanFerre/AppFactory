@@ -208,6 +208,81 @@ class FeaturedListingRequest(BaseModel):
     plan: str  # "30_days" or "60_days"
     origin_url: str
 
+# ==================== ADMIN MODELS ====================
+
+class AdminRole:
+    SUPER_ADMIN = "super_admin"
+    SUPPORT = "support"
+    FINANCE = "finance"
+    COMPLIANCE = "compliance"
+    APP_REVIEW = "app_review"
+
+ADMIN_ROLES = [AdminRole.SUPER_ADMIN, AdminRole.SUPPORT, AdminRole.FINANCE, AdminRole.COMPLIANCE, AdminRole.APP_REVIEW]
+
+ROLE_PERMISSIONS = {
+    AdminRole.SUPER_ADMIN: ["*"],  # All permissions
+    AdminRole.SUPPORT: ["users:read", "users:update", "tickets:*", "nodes:read"],
+    AdminRole.FINANCE: ["billing:*", "payouts:*", "revenue:*", "users:read"],
+    AdminRole.COMPLIANCE: ["users:read", "apps:read", "audit:*", "nodes:read"],
+    AdminRole.APP_REVIEW: ["apps:*", "users:read"]
+}
+
+class AdminCreate(BaseModel):
+    email: EmailStr
+    password: str
+    name: str
+    role: str
+
+class AdminLogin(BaseModel):
+    email: EmailStr
+    password: str
+
+class AdminResponse(BaseModel):
+    id: str
+    email: str
+    name: str
+    role: str
+    permissions: List[str]
+    is_active: bool
+    last_login: Optional[str]
+    created_at: str
+
+class AdminActionLog(BaseModel):
+    admin_id: str
+    admin_email: str
+    action: str
+    target_type: str  # user, node, app, billing, etc.
+    target_id: str
+    details: dict
+    ip_address: Optional[str]
+    timestamp: str
+
+class AppReviewAction(BaseModel):
+    action: str  # approve, reject, request_changes
+    reason: Optional[str] = None
+    compliance_notes: Optional[str] = None
+
+class UserSuspendAction(BaseModel):
+    reason: str
+
+class NodeAction(BaseModel):
+    action: str  # flag, suspend, reinstate, adjust_capacity
+    reason: Optional[str] = None
+    new_capacity: Optional[float] = None
+
+class SupportTicketCreate(BaseModel):
+    user_id: str
+    subject: str
+    description: str
+    priority: str  # low, medium, high, critical
+    category: str  # billing, technical, account, app, other
+
+class SupportTicketUpdate(BaseModel):
+    status: Optional[str] = None  # open, in_progress, resolved, closed
+    assigned_to: Optional[str] = None
+    internal_notes: Optional[str] = None
+    resolution: Optional[str] = None
+
 # ==================== HELPER FUNCTIONS ====================
 
 def hash_password(password: str) -> str:
