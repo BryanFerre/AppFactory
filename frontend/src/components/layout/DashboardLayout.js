@@ -5,7 +5,7 @@ import axios from 'axios';
 import {
   LayoutDashboard, Factory, Package, TrendingUp, Megaphone,
   Activity, HardDrive, Wallet, FileText, HelpCircle, Settings,
-  Bell, ChevronDown, LogOut, Menu, X
+  Bell, ChevronDown, LogOut, Menu, X, Code
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
