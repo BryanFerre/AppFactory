@@ -962,6 +962,344 @@ async def get_notifications(user=Depends(get_current_user)):
         {"id": "4", "type": "success", "message": "Weekly payout processed: 125.5 OPT", "time": "3 days ago", "read": True}
     ]
 
+# ==================== APP DEVELOPER ENDPOINTS ====================
+
+FEATURED_PLANS = {
+    "30_days": {"price": 29.00, "days": 30},
+    "60_days": {"price": 59.00, "days": 60}
+}
+
+@api_router.post("/developer/submit")
+async def submit_app(submission: AppSubmissionCreate, user=Depends(get_current_user)):
+    """Submit a new app for approval"""
+    if not submission.terms_accepted:
+        raise HTTPException(status_code=400, detail="You must accept the terms of service")
+    
+    now = datetime.now(timezone.utc).isoformat()
+    submission_id = str(uuid.uuid4())
+    
+    submission_doc = {
+        "id": submission_id,
+        "user_id": user["id"],
+        "app_name": submission.app_name,
+        "description": submission.description,
+        "category": submission.category,
+        "resources_required": submission.resources_required,
+        "monthly_subscription_fee": submission.monthly_subscription_fee,
+        "revenue_sharing": submission.revenue_sharing,
+        "nodes_available": submission.nodes_available,
+        "github_url": submission.github_url,
+        "documentation_url": submission.documentation_url,
+        "contact_email": submission.contact_email,
+        "icon_url": None,
+        "code_file_url": None,
+        "status": "pending",
+        "featured": False,
+        "featured_until": None,
+        "created_at": now,
+        "updated_at": now
+    }
+    
+    await db.app_submissions.insert_one(submission_doc)
+    
+    return {
+        "message": "App submitted successfully",
+        "submission_id": submission_id,
+        "status": "pending"
+    }
+
+@api_router.post("/developer/upload-icon/{submission_id}")
+async def upload_app_icon(submission_id: str, user=Depends(get_current_user)):
+    """Upload SVG icon for app submission (returns upload URL placeholder)"""
+    submission = await db.app_submissions.find_one({
+        "id": submission_id,
+        "user_id": user["id"]
+    })
+    
+    if not submission:
+        raise HTTPException(status_code=404, detail="Submission not found")
+    
+    # In production, this would return a pre-signed URL for direct upload
+    # For now, we'll simulate storing the icon
+    icon_url = f"/uploads/icons/{submission_id}.svg"
+    
+    await db.app_submissions.update_one(
+        {"id": submission_id},
+        {"$set": {"icon_url": icon_url, "updated_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    
+    return {"message": "Icon uploaded successfully", "icon_url": icon_url}
+
+@api_router.post("/developer/upload-code/{submission_id}")
+async def upload_app_code(submission_id: str, user=Depends(get_current_user)):
+    """Upload code file for app submission"""
+    submission = await db.app_submissions.find_one({
+        "id": submission_id,
+        "user_id": user["id"]
+    })
+    
+    if not submission:
+        raise HTTPException(status_code=404, detail="Submission not found")
+    
+    # In production, this would return a pre-signed URL for direct upload
+    code_url = f"/uploads/code/{submission_id}.zip"
+    
+    await db.app_submissions.update_one(
+        {"id": submission_id},
+        {"$set": {"code_file_url": code_url, "updated_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    
+    return {"message": "Code uploaded successfully", "code_url": code_url}
+
+@api_router.get("/developer/submissions", response_model=List[AppSubmissionResponse])
+async def get_my_submissions(user=Depends(get_current_user)):
+    """Get all app submissions by the current user"""
+    submissions = await db.app_submissions.find(
+        {"user_id": user["id"]},
+        {"_id": 0}
+    ).sort("created_at", -1).to_list(100)
+    
+    return [AppSubmissionResponse(**s) for s in submissions]
+
+@api_router.get("/developer/submission/{submission_id}", response_model=AppSubmissionResponse)
+async def get_submission(submission_id: str, user=Depends(get_current_user)):
+    """Get a specific submission"""
+    submission = await db.app_submissions.find_one(
+        {"id": submission_id, "user_id": user["id"]},
+        {"_id": 0}
+    )
+    
+    if not submission:
+        raise HTTPException(status_code=404, detail="Submission not found")
+    
+    return AppSubmissionResponse(**submission)
+
+# ==================== FEATURED LISTING PAYMENTS ====================
+
+@api_router.post("/developer/featured/checkout")
+async def create_featured_checkout(request: FeaturedListingRequest, http_request, user=Depends(get_current_user)):
+    """Create a Stripe checkout session for featured listing"""
+    from emergentintegrations.payments.stripe.checkout import StripeCheckout, CheckoutSessionRequest
+    
+    # Validate submission exists and belongs to user
+    submission = await db.app_submissions.find_one({
+        "id": request.submission_id,
+        "user_id": user["id"]
+    })
+    
+    if not submission:
+        raise HTTPException(status_code=404, detail="Submission not found")
+    
+    # Validate plan
+    if request.plan not in FEATURED_PLANS:
+        raise HTTPException(status_code=400, detail="Invalid plan. Choose '30_days' or '60_days'")
+    
+    plan = FEATURED_PLANS[request.plan]
+    
+    # Initialize Stripe
+    stripe_api_key = os.environ.get('STRIPE_API_KEY')
+    host_url = str(http_request.base_url).rstrip('/')
+    webhook_url = f"{host_url}api/webhook/stripe"
+    
+    stripe_checkout = StripeCheckout(api_key=stripe_api_key, webhook_url=webhook_url)
+    
+    # Build URLs using frontend origin
+    success_url = f"{request.origin_url}/app-developer?session_id={{CHECKOUT_SESSION_ID}}&success=true"
+    cancel_url = f"{request.origin_url}/app-developer?canceled=true"
+    
+    # Create checkout session
+    checkout_request = CheckoutSessionRequest(
+        amount=plan["price"],
+        currency="usd",
+        success_url=success_url,
+        cancel_url=cancel_url,
+        metadata={
+            "type": "featured_listing",
+            "user_id": user["id"],
+            "submission_id": request.submission_id,
+            "plan": request.plan,
+            "days": str(plan["days"])
+        }
+    )
+    
+    session = await stripe_checkout.create_checkout_session(checkout_request)
+    
+    # Create payment transaction record
+    transaction_doc = {
+        "id": str(uuid.uuid4()),
+        "session_id": session.session_id,
+        "user_id": user["id"],
+        "submission_id": request.submission_id,
+        "amount": plan["price"],
+        "currency": "usd",
+        "plan": request.plan,
+        "payment_status": "pending",
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.payment_transactions.insert_one(transaction_doc)
+    
+    return {
+        "checkout_url": session.url,
+        "session_id": session.session_id
+    }
+
+@api_router.get("/developer/featured/status/{session_id}")
+async def check_featured_payment_status(session_id: str, user=Depends(get_current_user), http_request=None):
+    """Check the status of a featured listing payment"""
+    from emergentintegrations.payments.stripe.checkout import StripeCheckout
+    
+    # Find the transaction
+    transaction = await db.payment_transactions.find_one({
+        "session_id": session_id,
+        "user_id": user["id"]
+    })
+    
+    if not transaction:
+        raise HTTPException(status_code=404, detail="Transaction not found")
+    
+    # If already processed, return cached status
+    if transaction.get("payment_status") == "paid":
+        return {
+            "status": "complete",
+            "payment_status": "paid",
+            "message": "Payment successful! Your app is now featured."
+        }
+    
+    # Check with Stripe
+    stripe_api_key = os.environ.get('STRIPE_API_KEY')
+    stripe_checkout = StripeCheckout(api_key=stripe_api_key, webhook_url="")
+    
+    try:
+        checkout_status = await stripe_checkout.get_checkout_status(session_id)
+        
+        if checkout_status.payment_status == "paid":
+            # Update transaction
+            await db.payment_transactions.update_one(
+                {"session_id": session_id},
+                {"$set": {
+                    "payment_status": "paid",
+                    "updated_at": datetime.now(timezone.utc).isoformat()
+                }}
+            )
+            
+            # Update submission to featured
+            days = int(checkout_status.metadata.get("days", 30))
+            featured_until = (datetime.now(timezone.utc) + timedelta(days=days)).isoformat()
+            
+            await db.app_submissions.update_one(
+                {"id": transaction["submission_id"]},
+                {"$set": {
+                    "featured": True,
+                    "featured_until": featured_until,
+                    "updated_at": datetime.now(timezone.utc).isoformat()
+                }}
+            )
+            
+            return {
+                "status": "complete",
+                "payment_status": "paid",
+                "message": f"Payment successful! Your app is featured for {days} days."
+            }
+        elif checkout_status.status == "expired":
+            await db.payment_transactions.update_one(
+                {"session_id": session_id},
+                {"$set": {"payment_status": "expired"}}
+            )
+            return {
+                "status": "expired",
+                "payment_status": "expired",
+                "message": "Payment session expired. Please try again."
+            }
+        else:
+            return {
+                "status": checkout_status.status,
+                "payment_status": checkout_status.payment_status,
+                "message": "Payment is being processed..."
+            }
+    except Exception as e:
+        logger.error(f"Error checking payment status: {e}")
+        return {
+            "status": "error",
+            "payment_status": "unknown",
+            "message": "Unable to verify payment status"
+        }
+
+@api_router.post("/webhook/stripe")
+async def stripe_webhook(request):
+    """Handle Stripe webhooks"""
+    from emergentintegrations.payments.stripe.checkout import StripeCheckout
+    
+    stripe_api_key = os.environ.get('STRIPE_API_KEY')
+    stripe_checkout = StripeCheckout(api_key=stripe_api_key, webhook_url="")
+    
+    try:
+        body = await request.body()
+        signature = request.headers.get("Stripe-Signature")
+        
+        webhook_response = await stripe_checkout.handle_webhook(body, signature)
+        
+        if webhook_response.payment_status == "paid":
+            # Update transaction and submission
+            session_id = webhook_response.session_id
+            
+            transaction = await db.payment_transactions.find_one({"session_id": session_id})
+            if transaction and transaction.get("payment_status") != "paid":
+                await db.payment_transactions.update_one(
+                    {"session_id": session_id},
+                    {"$set": {
+                        "payment_status": "paid",
+                        "updated_at": datetime.now(timezone.utc).isoformat()
+                    }}
+                )
+                
+                days = int(webhook_response.metadata.get("days", 30))
+                featured_until = (datetime.now(timezone.utc) + timedelta(days=days)).isoformat()
+                
+                await db.app_submissions.update_one(
+                    {"id": transaction["submission_id"]},
+                    {"$set": {
+                        "featured": True,
+                        "featured_until": featured_until,
+                        "updated_at": datetime.now(timezone.utc).isoformat()
+                    }}
+                )
+        
+        return {"received": True}
+    except Exception as e:
+        logger.error(f"Webhook error: {e}")
+        return {"received": True}
+
+# ==================== FEATURED APPS FOR APP FACTORY ====================
+
+@api_router.get("/apps/featured")
+async def get_featured_apps():
+    """Get currently featured apps for display in App Factory"""
+    now = datetime.now(timezone.utc).isoformat()
+    
+    featured = await db.app_submissions.find({
+        "featured": True,
+        "featured_until": {"$gt": now},
+        "status": "approved"
+    }, {"_id": 0}).to_list(10)
+    
+    # Transform to display format
+    result = []
+    for app in featured:
+        result.append({
+            "id": app["id"],
+            "name": app["app_name"],
+            "description": app["description"],
+            "category": app["category"],
+            "subscription_price": app["monthly_subscription_fee"],
+            "revenue_share": app["revenue_sharing"],
+            "capacity_required": app["resources_required"],
+            "icon_url": app.get("icon_url"),
+            "is_featured": True,
+            "featured_until": app["featured_until"]
+        })
+    
+    return result
+
 # ==================== ROOT & HEALTH ====================
 
 @api_router.get("/")
