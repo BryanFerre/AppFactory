@@ -1,0 +1,140 @@
+{
+  "brand_identity": {
+    "name": "NAPP Node Operator Dashboard",
+    "aesthetic": "Sovereign Cyber-Glass",
+    "emotional_tone": "Empowering, Wealth-Generating, High-Tech, Reliable",
+    "core_values": ["Sovereignty", "Revenue", "Simplicity", "Future-Proof"]
+  },
+  "typography": {
+    "headings": {
+      "family": "Outfit, sans-serif",
+      "weights": ["500", "600", "700"],
+      "usage": "Page titles, widget headers, major metrics"
+    },
+    "body": {
+      "family": "Manrope, sans-serif",
+      "weights": ["400", "500"],
+      "usage": "General text, labels, descriptions"
+    },
+    "mono": {
+      "family": "JetBrains Mono, monospace",
+      "weights": ["400"],
+      "usage": "Wallet addresses, transaction hashes, server logs, API keys"
+    }
+  },
+  "colors": {
+    "mode": "dark",
+    "palette": {
+      "background": {
+        "default": "#05050A",
+        "paper": "#0F111A",
+        "glass": "rgba(15, 17, 26, 0.6)"
+      },
+      "primary": {
+        "main": "#06B6D4",
+        "light": "#22D3EE",
+        "dark": "#0891B2",
+        "glow": "0 0 20px rgba(6, 182, 212, 0.5)"
+      },
+      "secondary": {
+        "main": "#D946EF",
+        "light": "#E879F9",
+        "dark": "#C026D3"
+      },
+      "accent": {
+        "red": "#EF4444",
+        "green": "#10B981",
+        "purple": "#8B5CF6"
+      },
+      "text": {
+        "primary": "#F8FAFC",
+        "secondary": "#94A3B8",
+        "muted": "#64748B"
+      },
+      "border": {
+        "subtle": "rgba(255, 255, 255, 0.08)",
+        "highlight": "rgba(6, 182, 212, 0.3)"
+      }
+    },
+    "gradients": {
+      "primary": "linear-gradient(135deg, #06B6D4 0%, #3B82F6 100%)",
+      "secondary": "linear-gradient(135deg, #D946EF 0%, #8B5CF6 100%)",
+      "glass": "linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%)",
+      "card_hover": "linear-gradient(180deg, rgba(6, 182, 212, 0.1) 0%, rgba(6, 182, 212, 0.02) 100%)"
+    }
+  },
+  "layout": {
+    "structure": "Sidebar Navigation + Top Bar + Bento Grid Dashboard",
+    "grid_system": "Tailwind Grid (12 columns)",
+    "spacing": {
+      "container_padding": "p-6 md:p-8 lg:p-10",
+      "widget_gap": "gap-6",
+      "internal_padding": "p-6"
+    },
+    "sidebar": {
+      "width": "w-64",
+      "behavior": "Fixed left, collapsible on mobile",
+      "style": "Glassmorphism with border-r border-white/5"
+    }
+  },
+  "components": {
+    "cards": {
+      "style": "Glassmorphism",
+      "classes": "bg-background/40 backdrop-blur-xl border border-white/10 rounded-2xl shadow-xl",
+      "hover": "hover:border-primary/30 hover:bg-background/50 transition-all duration-300"
+    },
+    "buttons": {
+      "primary": "bg-primary text-black font-bold rounded-full px-6 py-2 hover:shadow-[0_0_20px_rgba(6,182,212,0.4)] transition-all",
+      "secondary": "bg-white/5 text-white border border-white/10 rounded-full px-6 py-2 hover:bg-white/10 transition-all",
+      "ghost": "text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg px-4 py-2"
+    },
+    "inputs": {
+      "style": "bg-black/20 border border-white/10 rounded-xl focus:border-primary/50 focus:ring-1 focus:ring-primary/50 text-white placeholder:text-muted-foreground"
+    },
+    "charts": {
+      "library": "Recharts",
+      "style": "Minimalist, no grid lines (or very subtle), gradient fills for areas, neon strokes for lines"
+    }
+  },
+  "visual_enhancers": {
+    "glassmorphism": "Heavy use of backdrop-blur-xl and bg-opacity-10",
+    "glows": "Radial gradients behind key widgets to create depth",
+    "borders": "1px solid borders with very low opacity (5-10%)",
+    "icons": "Phosphor Icons (Duotone or Fill) or Lucide React",
+    "animations": "Framer Motion for entrance (staggered fade-up) and hover states (scale 1.02)"
+  },
+  "image_urls": {
+    "user_avatar": "https://images.unsplash.com/photo-1767175620484-1ed37931a0d1?crop=entropy&cs=srgb&fm=jpg&q=85",
+    "node_health_bg": "https://images.unsplash.com/photo-1753006063416-08b7f9fcfc7f?crop=entropy&cs=srgb&fm=jpg&q=85",
+    "app_icons": [
+      "https://images.unsplash.com/photo-1764601842139-635f318905c6?crop=entropy&cs=srgb&fm=jpg&q=85",
+      "https://images.unsplash.com/photo-1666693038485-b3a060067809?crop=entropy&cs=srgb&fm=jpg&q=85",
+      "https://images.unsplash.com/photo-1694365899936-850bc6c2b0f6?crop=entropy&cs=srgb&fm=jpg&q=85"
+    ],
+    "promo_bg": "https://images.unsplash.com/photo-1664526936810-ec0856d31b92?crop=entropy&cs=srgb&fm=jpg&q=85"
+  },
+  "instructions_to_main_agent": [
+    "1. SETUP: Ensure 'lucide-react', 'recharts', 'framer-motion', 'clsx', 'tailwind-merge' are installed.",
+    "2. THEME: Override the CSS variables in 'index.css' with the provided Dark Mode palette. Force dark mode by default.",
+    "3. LAYOUT: Create a 'DashboardLayout' component that includes the Sidebar and TopBar. Use 'Outlet' for page content.",
+    "4. WIDGETS: Build modular widgets (NodeHealth, Earnings, InstalledApps). Use the 'Bento Grid' strategy.",
+    "5. GLASS: Apply the glassmorphism classes to all cards and sidebar. Ensure text contrast is high (APCA compliant).",
+    "6. CHARTS: Implement the Earnings chart using Recharts with the specified gradients.",
+    "7. NAVIGATION: Implement the Sidebar with the requested links (Dashboard, App Factory, etc.). Active state should have a 'glow' effect.",
+    "8. DATA-TESTID: Add 'data-testid' to all interactive elements (buttons, links, inputs)."
+  ],
+  "UNIVERSAL_GUIDELINES_FOR_MAIN_AGENT": [
+    "Dark colors look good when used independently without gradients. DO NOT use dark colors as gradients.",
+    "Don't make generic centered layouts, simplistic gradients, and uniform styling.",
+    "Create depth through layered design elements with z-index hierarchy.",
+    "Use glass-morphism effects with backdrop filters (12-24px blur).",
+    "You MUST NOT apply universal transition. Eg: 'transition: all'. This results in breaking transforms.",
+    "You MUST NOT center align the app container.",
+    "Always use modern button styles like pill-shaped, or sharp button with interaction animations.",
+    "NEVER use AI assistant Emoji characters like 🤖🧠 etc.",
+    "Every interaction needs micro-animations - hover states, transitions.",
+    "Use 2-3x more spacing than feels comfortable.",
+    "Subtle grain textures, noise overlays, custom cursors, selection states, and loading animations.",
+    "Use 'sonner' for toasts."
+  ]
+}
