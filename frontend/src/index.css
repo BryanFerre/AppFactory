@@ -104,6 +104,19 @@
   background: #2A2F45;
 }
 
+/* Thin scrollbar for horizontal scroll */
+.scrollbar-thin::-webkit-scrollbar {
+  height: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
 /* Glass Card */
 .glass-card {
   background: rgba(15, 17, 26, 0.6);
