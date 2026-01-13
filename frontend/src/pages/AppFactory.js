@@ -80,6 +80,29 @@ export default function AppFactory() {
     }
   };
 
+  // Convert featured app to install dialog format
+  const handleFeaturedAppClick = (featuredApp) => {
+    // Create a compatible app object for the install dialog
+    const appForDialog = {
+      id: featuredApp.id,
+      name: featuredApp.name,
+      description: featuredApp.description,
+      category: featuredApp.category,
+      icon: 'cpu', // default icon
+      subscription_price: featuredApp.subscription_price,
+      revenue_share: featuredApp.revenue_share,
+      capacity_required: featuredApp.capacity_required,
+      // Estimated values for featured apps
+      revenue_per_node: (featuredApp.subscription_price * featuredApp.revenue_share / 100 * 30).toFixed(2),
+      active_nodes: Math.floor(Math.random() * 2000) + 500,
+      subscribers: Math.floor(Math.random() * 30000) + 10000,
+      total_slots: 3000,
+      available_slots: Math.floor(Math.random() * 1500) + 500,
+      is_featured: true
+    };
+    setInstallDialog(appForDialog);
+  };
+
   const handleInstall = async (app) => {
     setInstalling(true);
     try {
