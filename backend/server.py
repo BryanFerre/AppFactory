@@ -18,6 +18,8 @@ import pyotp
 import qrcode
 import io
 import base64
+import asyncio
+import resend
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -36,6 +38,11 @@ TOTP_ISSUER = "NAPP Dashboard"
 # API Keys
 COINMARKETCAP_API_KEY = os.environ.get('COINMARKETCAP_API_KEY', '')
 EMERGENT_LLM_KEY = os.environ.get('EMERGENT_LLM_KEY', '')
+
+# Email Configuration
+RESEND_API_KEY = os.environ.get('RESEND_API_KEY', '')
+SENDER_EMAIL = os.environ.get('SENDER_EMAIL', 'onboarding@resend.dev')
+resend.api_key = RESEND_API_KEY
 
 app = FastAPI(title="NAPP Node Operator Dashboard API")
 api_router = APIRouter(prefix="/api")
