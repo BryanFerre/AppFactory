@@ -1640,56 +1640,327 @@ async def install_app(app_id: str, user=Depends(get_current_user)):
     
     return {"message": f"{app_data['name']} installed successfully", "app_id": new_app["id"]}
 
-# ==================== PROMOTION ENDPOINTS ====================
+# ==================== PROMOTION & REFERRAL ENDPOINTS ====================
 
+@api_router.get("/referral/code")
+async def get_referral_code(user=Depends(get_current_user)):
+    """Get user's unique referral code and links"""
+    referral_code = user.get("referral_code")
+    if not referral_code:
+        # Generate for existing users who don't have one
+        referral_code = generate_referral_code(user["id"])
+        await db.users.update_one(
+            {"id": user["id"]},
+            {"$set": {"referral_code": referral_code}}
+        )
+    
+    base_url = os.environ.get("FRONTEND_URL", "https://napp.io")
+    
+    return {
+        "referral_code": referral_code,
+        "referral_link": f"{base_url}/signup?ref={referral_code}",
+        "operator_referral_link": f"{base_url}/join?ref={referral_code}"
+    }
+
+@api_router.post("/referral/click")
+async def track_referral_click(click_data: ReferralClick):
+    """Track a click on a referral link (public endpoint)"""
+    now = datetime.now(timezone.utc).isoformat()
+    
+    # Find referrer by code
+    referrer = await db.users.find_one({"referral_code": click_data.referral_code}, {"_id": 0})
+    if not referrer:
+        raise HTTPException(status_code=404, detail="Invalid referral code")
+    
+    # Log the click
+    click_record = {
+        "id": str(uuid.uuid4()),
+        "referral_code": click_data.referral_code,
+        "referrer_id": referrer["id"],
+        "source": click_data.source or "direct",
+        "app_id": click_data.app_id,
+        "click_type": "app" if click_data.app_id else "operator",
+        "created_at": now
+    }
+    await db.referral_clicks.insert_one(click_record)
+    
+    # Update click stats
+    click_field = "app_clicks" if click_data.app_id else "operator_clicks"
+    await db.referral_stats.update_one(
+        {"user_id": referrer["id"]},
+        {"$inc": {click_field: 1}},
+        upsert=True
+    )
+    
+    # If app-specific, update app referral stats
+    if click_data.app_id:
+        await db.app_referral_stats.update_one(
+            {"user_id": referrer["id"], "app_id": click_data.app_id},
+            {"$inc": {"clicks": 1}, "$set": {"updated_at": now}},
+            upsert=True
+        )
+    
+    return {"message": "Click tracked", "referrer_id": referrer["id"][:8]}
+
+@api_router.post("/referral/app-signup")
+async def track_app_signup(app_id: str, referral_code: str):
+    """Track an app user signup via referral (called when user signs up for an app)"""
+    # Find referrer
+    referrer = await db.users.find_one({"referral_code": referral_code}, {"_id": 0})
+    if not referrer:
+        raise HTTPException(status_code=404, detail="Invalid referral code")
+    
+    # Verify the referrer hosts this app
+    hosted_app = await db.installed_apps.find_one({"user_id": referrer["id"], "id": app_id}, {"_id": 0})
+    if not hosted_app:
+        raise HTTPException(status_code=400, detail="Referrer does not host this app")
+    
+    now = datetime.now(timezone.utc).isoformat()
+    opt_reward = 2.0  # OPT reward for app user signups
+    
+    # Create referral conversion record
+    conversion_record = {
+        "id": str(uuid.uuid4()),
+        "referrer_id": referrer["id"],
+        "referral_code": referral_code,
+        "referral_type": "app_user",
+        "app_id": app_id,
+        "app_name": hosted_app["name"],
+        "opt_reward": opt_reward,
+        "status": "pending",
+        "created_at": now
+    }
+    await db.referral_conversions.insert_one(conversion_record)
+    
+    # Update referrer's stats
+    await db.referral_stats.update_one(
+        {"user_id": referrer["id"]},
+        {
+            "$inc": {
+                "app_signups": 1,
+                "app_pending_opt": opt_reward,
+                "total_pending_opt": opt_reward
+            }
+        },
+        upsert=True
+    )
+    
+    # Update app-specific stats
+    await db.app_referral_stats.update_one(
+        {"user_id": referrer["id"], "app_id": app_id},
+        {
+            "$inc": {"signups": 1, "opt_earned": opt_reward},
+            "$set": {"app_name": hosted_app["name"], "updated_at": now}
+        },
+        upsert=True
+    )
+    
+    return {"message": "App signup referral tracked", "opt_reward": opt_reward}
+
+@api_router.get("/referral/stats", response_model=ReferralStatsResponse)
+async def get_referral_stats(user=Depends(get_current_user)):
+    """Get user's referral statistics"""
+    # Get or create referral stats
+    stats = await db.referral_stats.find_one({"user_id": user["id"]}, {"_id": 0})
+    if not stats:
+        stats = {
+            "user_id": user["id"],
+            "operator_clicks": 0,
+            "operator_signups": 0,
+            "operator_opt_earned": 0.0,
+            "operator_pending_opt": 0.0,
+            "app_clicks": 0,
+            "app_signups": 0,
+            "app_opt_earned": 0.0,
+            "app_pending_opt": 0.0,
+            "total_opt_earned": 0.0,
+            "total_pending_opt": 0.0
+        }
+        await db.referral_stats.insert_one({**stats, "created_at": datetime.now(timezone.utc).isoformat()})
+    
+    # Get referral code
+    referral_code = user.get("referral_code") or generate_referral_code(user["id"])
+    base_url = os.environ.get("FRONTEND_URL", "https://napp.io")
+    
+    # Get per-app referral stats
+    app_stats = await db.app_referral_stats.find({"user_id": user["id"]}, {"_id": 0}).to_list(100)
+    
+    # Get installed apps to ensure we have links for all
+    installed_apps = await db.installed_apps.find({"user_id": user["id"]}, {"_id": 0, "id": 1, "name": 1}).to_list(100)
+    app_stats_map = {s["app_id"]: s for s in app_stats}
+    
+    app_referral_stats = []
+    for app in installed_apps:
+        existing = app_stats_map.get(app["id"], {})
+        app_referral_stats.append({
+            "app_id": app["id"],
+            "app_name": app["name"],
+            "referral_link": f"{base_url}/app/{app['id'][:8]}?ref={referral_code}",
+            "clicks": existing.get("clicks", 0),
+            "signups": existing.get("signups", 0),
+            "opt_earned": existing.get("opt_earned", 0.0)
+        })
+    
+    # Get recent referral activity
+    recent = await db.referral_conversions.find(
+        {"referrer_id": user["id"]},
+        {"_id": 0}
+    ).sort("created_at", -1).limit(10).to_list(10)
+    
+    recent_referrals = []
+    for r in recent:
+        time_diff = datetime.now(timezone.utc) - datetime.fromisoformat(r["created_at"].replace("Z", "+00:00"))
+        if time_diff.days > 0:
+            time_str = f"{time_diff.days} day{'s' if time_diff.days > 1 else ''} ago"
+        elif time_diff.seconds > 3600:
+            hours = time_diff.seconds // 3600
+            time_str = f"{hours} hour{'s' if hours > 1 else ''} ago"
+        else:
+            mins = time_diff.seconds // 60
+            time_str = f"{mins} minute{'s' if mins > 1 else ''} ago"
+        
+        recent_referrals.append({
+            "type": r["referral_type"],
+            "app_name": r.get("app_name"),
+            "opt_reward": r["opt_reward"],
+            "status": r["status"],
+            "time": time_str
+        })
+    
+    return ReferralStatsResponse(
+        referral_code=referral_code,
+        operator_referral_link=f"{base_url}/join?ref={referral_code}",
+        operator_clicks=stats.get("operator_clicks", 0),
+        operator_signups=stats.get("operator_signups", 0),
+        operator_opt_earned=stats.get("operator_opt_earned", 0.0),
+        operator_pending_opt=stats.get("operator_pending_opt", 0.0),
+        app_clicks=stats.get("app_clicks", 0),
+        app_signups=stats.get("app_signups", 0),
+        app_opt_earned=stats.get("app_opt_earned", 0.0),
+        app_pending_opt=stats.get("app_pending_opt", 0.0),
+        total_opt_earned=stats.get("total_opt_earned", 0.0),
+        total_pending_opt=stats.get("total_pending_opt", 0.0),
+        app_referral_stats=app_referral_stats,
+        recent_referrals=recent_referrals
+    )
+
+@api_router.post("/referral/confirm/{conversion_id}")
+async def confirm_referral(conversion_id: str, user=Depends(get_current_user)):
+    """Admin endpoint to confirm a pending referral and move OPT from pending to earned"""
+    # This would typically be called by an admin or automated system
+    conversion = await db.referral_conversions.find_one({"id": conversion_id}, {"_id": 0})
+    if not conversion:
+        raise HTTPException(status_code=404, detail="Conversion not found")
+    
+    if conversion["status"] != "pending":
+        raise HTTPException(status_code=400, detail="Conversion already processed")
+    
+    opt_reward = conversion["opt_reward"]
+    referral_type = conversion["referral_type"]
+    
+    # Update conversion status
+    await db.referral_conversions.update_one(
+        {"id": conversion_id},
+        {"$set": {"status": "confirmed", "confirmed_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    
+    # Move from pending to earned
+    pending_field = "operator_pending_opt" if referral_type == "operator" else "app_pending_opt"
+    earned_field = "operator_opt_earned" if referral_type == "operator" else "app_opt_earned"
+    
+    await db.referral_stats.update_one(
+        {"user_id": conversion["referrer_id"]},
+        {
+            "$inc": {
+                pending_field: -opt_reward,
+                earned_field: opt_reward,
+                "total_pending_opt": -opt_reward,
+                "total_opt_earned": opt_reward
+            }
+        }
+    )
+    
+    return {"message": "Referral confirmed", "opt_earned": opt_reward}
+
+# Legacy promotion stats endpoint (for backward compatibility)
 @api_router.get("/promotion/stats", response_model=PromotionStats)
 async def get_promotion_stats(user=Depends(get_current_user)):
-    # Get referral data
-    referral_data = await db.referrals.find_one({"user_id": user["id"]}, {"_id": 0})
-    
-    if not referral_data:
-        # Initialize referral data for new users
-        referral_data = {
-            "user_id": user["id"],
-            "operator_invites_sent": 12,
-            "operator_signups": 3,
-            "operator_opt_earned": 150.0,
-            "app_link_clicks": 2847,
-            "app_signups_driven": 156,
-            "app_opt_earned": 312.0,
-            "total_opt_earned": 462.0
+    """Get promotion stats (uses new referral system)"""
+    # Get referral stats
+    stats = await db.referral_stats.find_one({"user_id": user["id"]}, {"_id": 0})
+    if not stats:
+        stats = {
+            "operator_clicks": 0,
+            "operator_signups": 0,
+            "operator_opt_earned": 0.0,
+            "app_clicks": 0,
+            "app_signups": 0,
+            "app_opt_earned": 0.0
         }
-        await db.referrals.insert_one(referral_data)
     
-    # Get installed apps for share links
-    apps = await db.installed_apps.find({"user_id": user["id"]}, {"_id": 0, "name": 1, "id": 1}).to_list(100)
+    # Get referral code
+    referral_code = user.get("referral_code") or generate_referral_code(user["id"])
+    base_url = os.environ.get("FRONTEND_URL", "https://napp.io")
+    
+    # Get per-app stats
+    app_stats = await db.app_referral_stats.find({"user_id": user["id"]}, {"_id": 0}).to_list(100)
+    installed_apps = await db.installed_apps.find({"user_id": user["id"]}, {"_id": 0, "id": 1, "name": 1}).to_list(100)
+    app_stats_map = {s["app_id"]: s for s in app_stats}
     
     app_share_links = []
-    for app in apps:
+    for app in installed_apps:
+        existing = app_stats_map.get(app["id"], {})
         app_share_links.append({
             "app_name": app["name"],
             "app_id": app["id"],
-            "url": f"https://napp.io/app/{app['id'][:8]}?ref={user['id'][:8]}",
-            "signups": random.randint(10, 80),
-            "opt_earned": round(random.uniform(5, 50), 2)
+            "url": f"{base_url}/app/{app['id'][:8]}?ref={referral_code}",
+            "signups": existing.get("signups", 0),
+            "opt_earned": existing.get("opt_earned", 0.0)
         })
     
-    recent_activity = [
-        {"type": "app_signup", "app": "DataVault Pro", "user": "john_d***", "opt_reward": 2.0, "time": "2 hours ago"},
-        {"type": "operator_signup", "user": "sarah_m***", "opt_reward": 50.0, "time": "1 day ago"},
-        {"type": "app_signup", "app": "StreamRelay", "user": "mike_t***", "opt_reward": 2.0, "time": "2 days ago"},
-        {"type": "app_signup", "app": "ChainBridge", "user": "lisa_k***", "opt_reward": 2.0, "time": "3 days ago"}
-    ]
+    # Get recent activity from real conversions
+    recent = await db.referral_conversions.find(
+        {"referrer_id": user["id"]},
+        {"_id": 0}
+    ).sort("created_at", -1).limit(5).to_list(5)
+    
+    recent_activity = []
+    for r in recent:
+        time_diff = datetime.now(timezone.utc) - datetime.fromisoformat(r["created_at"].replace("Z", "+00:00"))
+        if time_diff.days > 0:
+            time_str = f"{time_diff.days} day{'s' if time_diff.days > 1 else ''} ago"
+        elif time_diff.seconds > 3600:
+            hours = time_diff.seconds // 3600
+            time_str = f"{hours} hour{'s' if hours > 1 else ''} ago"
+        else:
+            mins = max(1, time_diff.seconds // 60)
+            time_str = f"{mins} minute{'s' if mins > 1 else ''} ago"
+        
+        if r["referral_type"] == "operator":
+            recent_activity.append({
+                "type": "operator_signup",
+                "user": "new_op***",
+                "opt_reward": r["opt_reward"],
+                "time": time_str
+            })
+        else:
+            recent_activity.append({
+                "type": "app_signup",
+                "app": r.get("app_name", "Unknown App"),
+                "user": "user***",
+                "opt_reward": r["opt_reward"],
+                "time": time_str
+            })
     
     return PromotionStats(
-        app_link_clicks=referral_data.get("app_link_clicks", 0),
-        app_signups_driven=referral_data.get("app_signups_driven", 0),
-        app_opt_rewards=referral_data.get("app_opt_earned", 0),
-        operator_invites_sent=referral_data.get("operator_invites_sent", 0),
-        operator_signups=referral_data.get("operator_signups", 0),
-        operator_opt_rewards=referral_data.get("operator_opt_earned", 0),
+        app_link_clicks=stats.get("app_clicks", 0),
+        app_signups_driven=stats.get("app_signups", 0),
+        app_opt_rewards=stats.get("app_opt_earned", 0.0) + stats.get("app_pending_opt", 0.0),
+        operator_invites_sent=stats.get("operator_clicks", 0),
+        operator_signups=stats.get("operator_signups", 0),
+        operator_opt_rewards=stats.get("operator_opt_earned", 0.0) + stats.get("operator_pending_opt", 0.0),
         app_share_links=app_share_links,
-        operator_referral_link=f"https://napp.io/join?ref={user['id'][:8]}",
+        operator_referral_link=f"{base_url}/join?ref={referral_code}",
         recent_activity=recent_activity
     )
 
