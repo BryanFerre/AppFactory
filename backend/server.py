@@ -284,6 +284,48 @@ class SupportTicketUpdate(BaseModel):
     internal_notes: Optional[str] = None
     resolution: Optional[str] = None
 
+# ==================== REFERRAL SYSTEM MODELS ====================
+
+class ReferralCodeResponse(BaseModel):
+    referral_code: str
+    referral_link: str
+    operator_referral_link: str
+    
+class ReferralClick(BaseModel):
+    referral_code: str
+    source: Optional[str] = None  # e.g., "twitter", "facebook", "direct"
+    app_id: Optional[str] = None  # For app-specific referrals
+
+class ReferralStatsResponse(BaseModel):
+    # User's referral codes
+    referral_code: str
+    operator_referral_link: str
+    # Operator referral stats (inviting new node operators)
+    operator_clicks: int
+    operator_signups: int
+    operator_opt_earned: float
+    operator_pending_opt: float
+    # App user referral stats (driving signups to hosted apps)
+    app_clicks: int
+    app_signups: int
+    app_opt_earned: float
+    app_pending_opt: float
+    # Totals
+    total_opt_earned: float
+    total_pending_opt: float
+    # Per-app breakdown
+    app_referral_stats: List[dict]
+    # Recent activity
+    recent_referrals: List[dict]
+
+class AppReferralLink(BaseModel):
+    app_id: str
+    app_name: str
+    referral_link: str
+    clicks: int
+    signups: int
+    opt_earned: float
+
 # ==================== HELPER FUNCTIONS ====================
 
 def hash_password(password: str) -> str:
