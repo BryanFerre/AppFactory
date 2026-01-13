@@ -134,15 +134,16 @@ Design and implement the NAPP Node Operator Dashboard for a decentralized blockc
 - **Integrations**: Emergent LLM (GPT-5.2), CoinMarketCap API
 
 ## Next Tasks
-1. Email notifications for referral events and 2FA setup
-2. Real export functionality (CSV/PDF reports)
-3. Production blockchain integration
+1. Real export functionality (CSV/PDF report downloads)
+2. Production blockchain integration
+3. Verify Resend domain for email delivery in production
 
 ## Test Reports
 - `/app/test_reports/iteration_3.json` - Admin App Submissions (15/15 tests passed)
 - `/app/test_reports/iteration_4.json` - All Admin Modules (24/24 backend + 100% frontend tests passed)
 - `/app/test_reports/iteration_5.json` - Real Referral System (13/13 backend + 100% frontend tests passed)
 - `/app/test_reports/iteration_6.json` - 2FA Authentication (12/12 backend + 100% frontend tests passed)
+- `/app/test_reports/iteration_7.json` - Email Notifications (14/14 backend tests passed)
 
 ## Known Limitations (MOCK DATA)
 - Revenue data is mock-generated (not from real transactions)
