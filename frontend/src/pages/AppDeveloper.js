@@ -38,7 +38,7 @@ import { toast } from 'sonner';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
-const categories = ['Storage', 'Media', 'DeFi', 'NFT', 'Communication', 'AI', 'Infrastructure', 'Gaming'];
+const categories = ['Productivity', 'Communication', 'Wellness'];
 
 const container = {
   hidden: { opacity: 0 },
