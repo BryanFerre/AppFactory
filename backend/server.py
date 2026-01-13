@@ -1007,6 +1007,50 @@ async def regenerate_backup_codes(verify_data: TwoFactorVerifyRequest, user=Depe
         {"id": user["id"]},
         {"$set": {"backup_codes": backup_codes}}
     )
+
+# ==================== TEST EMAIL ENDPOINT ====================
+
+class TestEmailRequest(BaseModel):
+    template: str  # "welcome", "referral_signup", "2fa_enabled", "2fa_disabled"
+    to_email: EmailStr
+
+@api_router.post("/test/send-email")
+async def test_send_email(request: TestEmailRequest, user=Depends(get_current_user)):
+    """Test endpoint to send sample emails (for testing email templates)"""
+    
+    # Sample data for each template
+    base_url = os.environ.get("FRONTEND_URL", "https://napp.io")
+    sample_data = {
+        "welcome": {
+            "name": user.get("name", "Test User"),
+            "referral_code": user.get("referral_code", "TESTCODE"),
+            "dashboard_url": base_url
+        },
+        "referral_signup": {
+            "opt_reward": 50,
+            "referral_type": "operator",
+            "total_referrals": 5,
+            "dashboard_url": base_url
+        },
+        "2fa_enabled": {
+            "enabled_at": datetime.now(timezone.utc).strftime('%B %d, %Y at %H:%M UTC'),
+            "dashboard_url": base_url
+        },
+        "2fa_disabled": {
+            "disabled_at": datetime.now(timezone.utc).strftime('%B %d, %Y at %H:%M UTC'),
+            "dashboard_url": base_url
+        }
+    }
+    
+    if request.template not in sample_data:
+        raise HTTPException(status_code=400, detail=f"Invalid template. Options: {list(sample_data.keys())}")
+    
+    success = await send_notification_email(request.template, request.to_email, sample_data[request.template])
+    
+    if success:
+        return {"message": f"Test email sent to {request.to_email}", "template": request.template}
+    else:
+        raise HTTPException(status_code=500, detail="Failed to send email. Check if Resend API key is configured and email domain is verified.")
     
     return {"backup_codes": backup_codes}
 
