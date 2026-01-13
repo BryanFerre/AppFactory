@@ -115,7 +115,7 @@ Design and implement the NAPP Node Operator Dashboard for a decentralized blockc
 - [ ] Stripe account setup (business name required for checkout)
 
 ### P1 (High Priority)
-- [ ] Two-factor authentication (2FA)
+- [x] ~~Two-factor authentication (2FA)~~ ✅ COMPLETED (TOTP with backup codes)
 - [ ] Email notifications for referral signups
 - [ ] Export functionality (CSV/PDF reports)
 - [ ] Real-time signup notifications
