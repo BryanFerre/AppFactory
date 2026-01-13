@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { Mail, Lock, User, ArrowRight, Check } from 'lucide-react';
-import { ReactComponent as AppFactoryLogo } from '@/assets/AppFactory.svg';
+import { ReactComponent as AppCloudLogo } from '@/assets/AppCloud.svg';
 
 export default function Register() {
   const { register } = useAuth();
@@ -42,7 +42,7 @@ export default function Register() {
         <div className="w-full max-w-md">
           {/* Mobile Logo */}
           <div className="lg:hidden flex items-center justify-center mb-10">
-            <AppFactoryLogo className="h-10 w-auto" />
+            <AppCloudLogo className="h-10 w-auto" />
           </div>
 
           <div className="glass-card p-8">
@@ -139,7 +139,7 @@ export default function Register() {
         
         <div className="relative z-10 flex flex-col justify-center px-16">
           <div className="mb-8">
-            <AppFactoryLogo className="h-12 w-auto" />
+            <AppCloudLogo className="h-12 w-auto" />
           </div>
           
           <h2 className="text-4xl font-bold text-white font-['Outfit'] mb-4">

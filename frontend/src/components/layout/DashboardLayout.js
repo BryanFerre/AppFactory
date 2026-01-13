@@ -16,7 +16,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
-import { ReactComponent as AppFactoryLogo } from '@/assets/AppFactory.svg';
+import { ReactComponent as AppCloudLogo } from '@/assets/AppCloud.svg';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -109,7 +109,7 @@ export default function DashboardLayout() {
         <div className="flex flex-col h-full p-4">
           {/* Logo */}
           <div className="flex items-center gap-3 px-3 py-4 mb-6">
-            <AppFactoryLogo className="h-7 w-auto" />
+            <AppCloudLogo className="h-7 w-auto" />
             <button 
               className="lg:hidden ml-auto text-slate-400 hover:text-white"
               onClick={() => setSidebarOpen(false)}
