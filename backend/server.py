@@ -805,6 +805,14 @@ async def register(user_data: UserCreate):
     # Initialize node for user
     await initialize_user_node(user_id)
     
+    # Send welcome email
+    base_url = os.environ.get("FRONTEND_URL", "https://napp.io")
+    await send_notification_email("welcome", user_data.email, {
+        "name": user_data.name,
+        "referral_code": referral_code,
+        "dashboard_url": base_url
+    })
+    
     token = create_token(user_id)
     return TokenResponse(
         access_token=token,
