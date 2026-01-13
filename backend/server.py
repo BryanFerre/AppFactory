@@ -1077,7 +1077,7 @@ async def get_submission(submission_id: str, user=Depends(get_current_user)):
 # ==================== FEATURED LISTING PAYMENTS ====================
 
 @api_router.post("/developer/featured/checkout")
-async def create_featured_checkout(request: FeaturedListingRequest, http_request, user=Depends(get_current_user)):
+async def create_featured_checkout(request: FeaturedListingRequest, http_request: Request, user=Depends(get_current_user)):
     """Create a Stripe checkout session for featured listing"""
     from emergentintegrations.payments.stripe.checkout import StripeCheckout, CheckoutSessionRequest
     
