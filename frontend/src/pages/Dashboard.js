@@ -1,0 +1,391 @@
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { motion } from 'framer-motion';
+import {
+  Activity, TrendingUp, Package, Zap, Cpu, HardDrive, Wifi,
+  Clock, CheckCircle2, AlertTriangle, ArrowUpRight, Sparkles
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
+import { Badge } from '@/components/ui/badge';
+import {
+  AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer
+} from 'recharts';
+import { NavLink } from 'react-router-dom';
+
+const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+
+const container = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.1 }
+  }
+};
+
+const item = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
+};
+
+export default function Dashboard() {
+  const [nodeStats, setNodeStats] = useState(null);
+  const [earnings, setEarnings] = useState(null);
+  const [installedApps, setInstalledApps] = useState([]);
+  const [availableApps, setAvailableApps] = useState([]);
+  const [capacity, setCapacity] = useState(null);
+  const [recommendations, setRecommendations] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
+
+  const fetchDashboardData = async () => {
+    try {
+      const [nodeRes, earningsRes, installedRes, availableRes, capacityRes, recsRes] = await Promise.all([
+        axios.get(`${API}/node/stats`),
+        axios.get(`${API}/earnings`),
+        axios.get(`${API}/apps/installed`),
+        axios.get(`${API}/apps/available?trending=true`),
+        axios.get(`${API}/capacity`),
+        axios.get(`${API}/ai/recommendations`)
+      ]);
+      
+      setNodeStats(nodeRes.data);
+      setEarnings(earningsRes.data);
+      setInstalledApps(installedRes.data);
+      setAvailableApps(availableRes.data.slice(0, 3));
+      setCapacity(capacityRes.data);
+      setRecommendations(recsRes.data);
+    } catch (error) {
+      console.error('Failed to fetch dashboard data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const verifyNode = async () => {
+    try {
+      await axios.post(`${API}/node/verify`);
+      fetchDashboardData();
+    } catch (error) {
+      console.error('Failed to verify node');
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="w-8 h-8 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  const getAppIcon = (iconName) => {
+    const icons = {
+      database: <HardDrive className="w-5 h-5" />,
+      video: <Activity className="w-5 h-5" />,
+      link: <Wifi className="w-5 h-5" />,
+      image: <Package className="w-5 h-5" />,
+      shield: <CheckCircle2 className="w-5 h-5" />,
+      cpu: <Cpu className="w-5 h-5" />,
+      globe: <Activity className="w-5 h-5" />,
+      gamepad: <Zap className="w-5 h-5" />
+    };
+    return icons[iconName] || <Package className="w-5 h-5" />;
+  };
+
+  return (
+    <motion.div
+      variants={container}
+      initial="hidden"
+      animate="show"
+      className="space-y-6"
+    >
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl lg:text-3xl font-bold text-white font-['Outfit']">Dashboard</h1>
+          <p className="text-slate-400">Your node is earning for you</p>
+        </div>
+        <Button 
+          onClick={verifyNode}
+          className="bg-cyan-500 hover:bg-cyan-400 text-black font-semibold rounded-full"
+          data-testid="verify-node-btn"
+        >
+          <CheckCircle2 className="w-4 h-4 mr-2" />
+          Daily Verification
+        </Button>
+      </div>
+
+      {/* Bento Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        
+        {/* Node Health Widget - Spans 2 cols */}
+        <motion.div variants={item} className="md:col-span-2 glass-card glass-card-hover p-6" data-testid="node-health-widget">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-white font-['Outfit']">Node Health</h2>
+            <Badge className={`${nodeStats?.status === 'healthy' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'}`}>
+              {nodeStats?.status}
+            </Badge>
+          </div>
+          
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div>
+              <p className="text-xs text-slate-400 mb-1">Uptime</p>
+              <p className="text-xl font-bold text-white">{nodeStats?.uptime_percent}%</p>
+            </div>
+            <div>
+              <p className="text-xs text-slate-400 mb-1">CPU</p>
+              <div className="flex items-center gap-2">
+                <Progress value={nodeStats?.cpu_usage} className="h-2 flex-1" />
+                <span className="text-sm text-slate-300">{nodeStats?.cpu_usage}%</span>
+              </div>
+            </div>
+            <div>
+              <p className="text-xs text-slate-400 mb-1">Memory</p>
+              <div className="flex items-center gap-2">
+                <Progress value={nodeStats?.memory_usage} className="h-2 flex-1" />
+                <span className="text-sm text-slate-300">{nodeStats?.memory_usage}%</span>
+              </div>
+            </div>
+            <div>
+              <p className="text-xs text-slate-400 mb-1">Latency</p>
+              <p className="text-xl font-bold text-cyan-400">{nodeStats?.latency_ms}ms</p>
+            </div>
+          </div>
+          
+          <div className="mt-4 pt-4 border-t border-white/5 flex items-center gap-4">
+            <div className="flex items-center gap-2 text-sm">
+              <Clock className="w-4 h-4 text-slate-400" />
+              <span className="text-slate-400">Last heartbeat:</span>
+              <span className="text-slate-300">{new Date(nodeStats?.last_heartbeat).toLocaleTimeString()}</span>
+            </div>
+            <div className="ml-auto flex items-center gap-2">
+              <span className="text-sm text-slate-400">Reliability:</span>
+              <span className="text-sm font-semibold text-emerald-400">{nodeStats?.reliability_score}%</span>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Today's Earnings */}
+        <motion.div variants={item} className="glass-card glass-card-hover p-6" data-testid="today-earnings-widget">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-8 h-8 rounded-lg icon-bg-cyan flex items-center justify-center">
+              <TrendingUp className="w-4 h-4 text-black" />
+            </div>
+            <h2 className="text-lg font-semibold text-white font-['Outfit']">Today</h2>
+          </div>
+          <p className="text-3xl font-bold text-white">{earnings?.today_opt.toFixed(2)} <span className="text-lg text-cyan-400">OPT</span></p>
+          <p className="text-slate-400">${earnings?.today_usd.toFixed(2)} USD</p>
+        </motion.div>
+
+        {/* Monthly Earnings */}
+        <motion.div variants={item} className="glass-card glass-card-hover p-6" data-testid="month-earnings-widget">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-8 h-8 rounded-lg icon-bg-purple flex items-center justify-center">
+              <TrendingUp className="w-4 h-4 text-white" />
+            </div>
+            <h2 className="text-lg font-semibold text-white font-['Outfit']">This Month</h2>
+          </div>
+          <p className="text-3xl font-bold text-white">{earnings?.month_opt.toFixed(2)} <span className="text-lg text-purple-400">OPT</span></p>
+          <p className="text-slate-400">${earnings?.month_usd.toFixed(2)} USD</p>
+        </motion.div>
+
+        {/* Earnings Chart - Spans 2 cols */}
+        <motion.div variants={item} className="md:col-span-2 glass-card glass-card-hover p-6" data-testid="earnings-chart-widget">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-white font-['Outfit']">Earnings Trend</h2>
+            <NavLink to="/earnings" className="text-sm text-cyan-400 hover:text-cyan-300 flex items-center gap-1">
+              View Details <ArrowUpRight className="w-4 h-4" />
+            </NavLink>
+          </div>
+          <div className="h-48">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={earnings?.daily_history || []}>
+                <defs>
+                  <linearGradient id="colorOpt" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#06B6D4" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="#06B6D4" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <XAxis 
+                  dataKey="date" 
+                  axisLine={false} 
+                  tickLine={false}
+                  tick={{ fill: '#64748B', fontSize: 10 }}
+                  tickFormatter={(value) => new Date(value).getDate()}
+                />
+                <YAxis 
+                  axisLine={false} 
+                  tickLine={false}
+                  tick={{ fill: '#64748B', fontSize: 10 }}
+                />
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: '#0F111A', 
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    borderRadius: '8px'
+                  }}
+                  labelStyle={{ color: '#94A3B8' }}
+                  formatter={(value) => [`${value} OPT`, 'Earnings']}
+                />
+                <Area 
+                  type="monotone" 
+                  dataKey="opt" 
+                  stroke="#06B6D4" 
+                  strokeWidth={2}
+                  fillOpacity={1} 
+                  fill="url(#colorOpt)" 
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </motion.div>
+
+        {/* Capacity Widget */}
+        <motion.div variants={item} className="glass-card glass-card-hover p-6" data-testid="capacity-widget">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-white font-['Outfit']">Capacity</h2>
+            <span className="text-sm text-slate-400">{capacity?.used_capacity}/{capacity?.total_capacity} GB</span>
+          </div>
+          <Progress value={(capacity?.used_capacity / capacity?.total_capacity) * 100} className="h-3 mb-4" />
+          <div className="space-y-2">
+            {capacity?.app_usage.slice(0, 3).map((app, i) => (
+              <div key={i} className="flex items-center justify-between text-sm">
+                <span className="text-slate-400">{app.name}</span>
+                <span className="text-slate-300">{app.capacity} GB</span>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Network Score */}
+        <motion.div variants={item} className="glass-card glass-card-hover p-6" data-testid="network-score-widget">
+          <h2 className="text-lg font-semibold text-white font-['Outfit'] mb-4">Network Score</h2>
+          <div className="flex items-center gap-4">
+            <div className="relative w-20 h-20">
+              <svg className="w-20 h-20 transform -rotate-90">
+                <circle cx="40" cy="40" r="32" stroke="#1E2235" strokeWidth="8" fill="none" />
+                <circle 
+                  cx="40" cy="40" r="32" 
+                  stroke="url(#scoreGradient)" 
+                  strokeWidth="8" 
+                  fill="none"
+                  strokeLinecap="round"
+                  strokeDasharray={`${(nodeStats?.reputation_score / 1000) * 201} 201`}
+                />
+                <defs>
+                  <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#06B6D4" />
+                    <stop offset="100%" stopColor="#8B5CF6" />
+                  </linearGradient>
+                </defs>
+              </svg>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="text-xl font-bold text-white">{nodeStats?.reputation_score}</span>
+              </div>
+            </div>
+            <div>
+              <p className="text-sm text-slate-400">Reputation</p>
+              <p className="text-xs text-slate-500">Top 15% of operators</p>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Installed Apps - Spans 2 cols */}
+        <motion.div variants={item} className="md:col-span-2 glass-card glass-card-hover p-6" data-testid="installed-apps-widget">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-white font-['Outfit']">Installed Apps</h2>
+            <NavLink to="/installed-apps" className="text-sm text-cyan-400 hover:text-cyan-300 flex items-center gap-1">
+              Manage <ArrowUpRight className="w-4 h-4" />
+            </NavLink>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {installedApps.map((app) => (
+              <div key={app.id} className="bg-white/5 rounded-xl p-4 border border-white/5">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className={`w-10 h-10 rounded-lg ${
+                    app.health === 'healthy' ? 'icon-bg-cyan' : 'icon-bg-magenta'
+                  } flex items-center justify-center`}>
+                    {getAppIcon(app.icon)}
+                  </div>
+                  <div>
+                    <p className="font-medium text-white">{app.name}</p>
+                    <p className="text-xs text-slate-400">{app.subscribers_served.toLocaleString()} users</p>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-slate-400">Revenue</span>
+                  <span className="text-sm font-semibold text-cyan-400">{app.revenue_opt.toFixed(1)} OPT</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* AI Recommendations - Spans 2 cols */}
+        <motion.div variants={item} className="md:col-span-2 glass-card glass-card-hover p-6" data-testid="ai-recommendations-widget">
+          <div className="flex items-center gap-2 mb-4">
+            <Sparkles className="w-5 h-5 text-purple-400" />
+            <h2 className="text-lg font-semibold text-white font-['Outfit']">AI Recommendations</h2>
+          </div>
+          <div className="space-y-3">
+            {recommendations.map((rec, i) => (
+              <div key={i} className="flex items-start gap-4 bg-white/5 rounded-xl p-4 border border-white/5">
+                <div className={`w-2 h-2 rounded-full mt-2 ${
+                  rec.priority === 'high' ? 'bg-cyan-400' : 
+                  rec.priority === 'medium' ? 'bg-purple-400' : 'bg-slate-400'
+                }`} />
+                <div className="flex-1">
+                  <p className="font-medium text-white">{rec.title}</p>
+                  <p className="text-sm text-slate-400 mt-1">{rec.description}</p>
+                </div>
+                {rec.action && (
+                  <Button size="sm" variant="ghost" className="text-cyan-400 hover:text-cyan-300">
+                    {rec.action}
+                  </Button>
+                )}
+              </div>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Trending Apps - Spans 2 cols */}
+        <motion.div variants={item} className="md:col-span-2 glass-card glass-card-hover p-6" data-testid="trending-apps-widget">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-white font-['Outfit']">Trending Apps</h2>
+            <NavLink to="/app-factory" className="text-sm text-cyan-400 hover:text-cyan-300 flex items-center gap-1">
+              View All <ArrowUpRight className="w-4 h-4" />
+            </NavLink>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {availableApps.map((app) => (
+              <div key={app.id} className="bg-white/5 rounded-xl p-4 border border-white/5">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-10 h-10 rounded-lg icon-bg-purple flex items-center justify-center">
+                    {getAppIcon(app.icon)}
+                  </div>
+                  <div>
+                    <p className="font-medium text-white">{app.name}</p>
+                    <Badge variant="outline" className="text-xs border-purple-500/30 text-purple-400">
+                      {app.revenue_share}% share
+                    </Badge>
+                  </div>
+                </div>
+                <p className="text-sm text-slate-400 mb-3 line-clamp-2">{app.description}</p>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-slate-500">Est. {app.estimated_monthly_opt} OPT/mo</span>
+                  <Button size="sm" variant="ghost" className="text-cyan-400 hover:text-cyan-300 h-7 px-2">
+                    Install
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+      </div>
+    </motion.div>
+  );
+}
