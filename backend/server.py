@@ -45,7 +45,7 @@ RESEND_API_KEY = os.environ.get('RESEND_API_KEY', '')
 SENDER_EMAIL = os.environ.get('SENDER_EMAIL', 'onboarding@resend.dev')
 resend.api_key = RESEND_API_KEY
 
-app = FastAPI(title="NAPP Node Operator Dashboard API")
+app = FastAPI(title="AppCloud Node Operator Dashboard API")
 api_router = APIRouter(prefix="/api")
 security = HTTPBearer()
 
@@ -497,7 +497,7 @@ def get_email_template(template_type: str, data: dict) -> tuple:
                     <p style="margin-top: 24px;">Keep sharing your referral link to earn more OPT rewards!</p>
                     
                     <div class="footer">
-                        <p>You're receiving this because you have a NAPP node operator account.</p>
+                        <p>You're receiving this because you have an AppCloud node operator account.</p>
                         <p>© 2025 AppCloud - Optio Blockchain Cloud</p>
                     </div>
                 </div>
@@ -518,7 +518,7 @@ def get_email_template(template_type: str, data: dict) -> tuple:
                 <div class="card">
                     <div class="logo">AppCloud</div>
                     <h1>2FA Successfully Enabled 🔐</h1>
-                    <p>Two-factor authentication has been enabled on your NAPP account.</p>
+                    <p>Two-factor authentication has been enabled on your AppCloud account.</p>
                     
                     <div class="stat-box" style="background: rgba(16,185,129,0.1); border-color: rgba(16,185,129,0.3);">
                         <div class="stat-value" style="color: #10b981;">✓ Secured</div>
@@ -562,7 +562,7 @@ def get_email_template(template_type: str, data: dict) -> tuple:
                 <div class="card">
                     <div class="logo">AppCloud</div>
                     <h1>2FA Has Been Disabled ⚠️</h1>
-                    <p>Two-factor authentication has been disabled on your NAPP account.</p>
+                    <p>Two-factor authentication has been disabled on your AppCloud account.</p>
                     
                     <div class="stat-box" style="background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.3);">
                         <div class="stat-value" style="color: #ef4444;">⚠ Less Secure</div>
@@ -596,7 +596,7 @@ def get_email_template(template_type: str, data: dict) -> tuple:
             <div class="container">
                 <div class="card">
                     <div class="logo">AppCloud</div>
-                    <h1>Welcome to NAPP! 🚀</h1>
+                    <h1>Welcome to AppCloud! 🚀</h1>
                     <p>Hi <span class="highlight">{data.get('name', 'Node Operator')}</span>,</p>
                     <p>Your node operator account has been created successfully. You're now part of the Optio Blockchain Cloud network!</p>
                     
@@ -617,7 +617,7 @@ def get_email_template(template_type: str, data: dict) -> tuple:
                     <p style="margin-top: 24px;">Your unique referral code: <strong>{data.get('referral_code', 'N/A')}</strong></p>
                     
                     <div class="footer">
-                        <p>You're receiving this because you created a NAPP account.</p>
+                        <p>You're receiving this because you created an AppCloud account.</p>
                         <p>© 2025 AppCloud - Optio Blockchain Cloud</p>
                     </div>
                 </div>
@@ -627,7 +627,7 @@ def get_email_template(template_type: str, data: dict) -> tuple:
         """
         return subject, html
     
-    return "NAPP Notification", "<p>You have a notification from NAPP.</p>"
+    return "AppCloud Notification", "<p>You have a notification from AppCloud.</p>"
 
 async def send_notification_email(template_type: str, to_email: str, data: dict) -> bool:
     """Send a notification email using a template"""
@@ -2557,7 +2557,7 @@ async def get_ai_recommendations(user=Depends(get_current_user)):
         - Uptime: {node.get('uptime_percent', 0) if node else 0}%
         """
         
-        system_prompt = """You are a creative social media marketing expert for NAPP, a decentralized app hosting platform. 
+        system_prompt = """You are a creative social media marketing expert for AppCloud, a decentralized app hosting platform. 
         
 Your job is to generate engaging, creative promotional content that node operators can use to invite friends and grow their network.
 
@@ -2641,8 +2641,8 @@ Return ONLY a valid JSON array, no other text."""
             "action": "Copy Post",
             "priority": "high",
             "app_name": app_name,
-            "post_content": f"🚀 I'm hosting {app_name} on NAPP and earning passive income every day! The future of decentralized apps is here. Want to join? Check it out 👇 #Web3 #DecentralizedApps #PassiveIncome #NAPP",
-            "hashtags": ["Web3", "DecentralizedApps", "PassiveIncome", "NAPP"],
+            "post_content": f"🚀 I'm hosting {app_name} on AppCloud and earning passive income every day! The future of decentralized apps is here. Want to join? Check it out 👇 #Web3 #DecentralizedApps #PassiveIncome #AppCloud",
+            "hashtags": ["Web3", "DecentralizedApps", "PassiveIncome", "AppCloud"],
             "social_platforms": ["twitter", "facebook"]
         },
         {
@@ -2652,7 +2652,7 @@ Return ONLY a valid JSON array, no other text."""
             "action": "Copy Post",
             "priority": "high",
             "app_name": None,
-            "post_content": f"💰 Looking for passive income? I've been earning crypto just by running a node on NAPP! Super easy setup, great community. Join with my code {referral_code} and we both earn bonus OPT! #Crypto #PassiveIncome #Web3",
+            "post_content": f"💰 Looking for passive income? I've been earning crypto just by running a node on AppCloud! Super easy setup, great community. Join with my code {referral_code} and we both earn bonus OPT! #Crypto #PassiveIncome #Web3",
             "hashtags": ["Crypto", "PassiveIncome", "Web3", "NodeOperator"],
             "social_platforms": ["twitter", "linkedin"]
         },
@@ -2663,7 +2663,7 @@ Return ONLY a valid JSON array, no other text."""
             "action": "Copy Post",
             "priority": "medium",
             "app_name": None,
-            "post_content": "I've been exploring decentralized infrastructure and recently started hosting apps on NAPP. The concept is simple: instead of Big Tech profiting from cloud services, node operators like me earn directly. It's an interesting model for the future of web infrastructure. Happy to share more if you're curious about Web3 opportunities. 🌐",
+            "post_content": "I've been exploring decentralized infrastructure and recently started hosting apps on AppCloud. The concept is simple: instead of Big Tech profiting from cloud services, node operators like me earn directly. It's an interesting model for the future of web infrastructure. Happy to share more if you're curious about Web3 opportunities. 🌐",
             "hashtags": ["Web3", "DecentralizedInfrastructure", "FutureOfWork"],
             "social_platforms": ["linkedin"]
         },
@@ -4011,7 +4011,7 @@ app.include_router(admin_router)
 
 @api_router.get("/")
 async def root():
-    return {"message": "NAPP Node Operator Dashboard API", "version": "1.0.0"}
+    return {"message": "AppCloud Node Operator Dashboard API", "version": "1.0.0"}
 
 @api_router.get("/health")
 async def health_check():
