@@ -121,13 +121,17 @@ class AvailableApp(BaseModel):
     description: str
     icon: str
     category: str
-    revenue_share: float
-    estimated_monthly_opt: float
+    subscription_price: float  # Monthly subscription price users pay
+    revenue_share: float  # Percentage of subscription revenue to node operator
+    revenue_per_node: float  # Current average revenue per node hosting
+    active_nodes: int  # Number of nodes currently hosting this app
+    total_slots: int  # Total available hosting slots
+    available_slots: int  # Remaining slots available
+    subscribers: int  # Total active subscribers
     estimated_monthly_usd: float
     capacity_required: float
     is_trending: bool
     is_new: bool
-    installs: int
 
 class PromotionStats(BaseModel):
     # App promotion stats
