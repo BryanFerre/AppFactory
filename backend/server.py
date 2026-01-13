@@ -372,20 +372,23 @@ async def verify_node(user=Depends(get_current_user)):
 
 @api_router.get("/earnings", response_model=EarningsData)
 async def get_earnings(user=Depends(get_current_user)):
-    opt_price = await get_opt_price()
-    
-    # Get installed apps earnings
+    # Get installed apps USD earnings
     apps = await db.installed_apps.find({"user_id": user["id"]}, {"_id": 0}).to_list(100)
     earnings_by_app = []
-    total_today = 0
+    total_today_usd = 0
+    total_today_opt_rewards = 0
     
     for app in apps:
-        daily_earnings = app["revenue_opt"] / 30
-        total_today += daily_earnings
+        daily_usd = app.get("revenue_usd", 0) / 30
+        daily_opt_rewards = app.get("opt_rewards_earned", 0) / 30
+        total_today_usd += daily_usd
+        total_today_opt_rewards += daily_opt_rewards
         earnings_by_app.append({
             "app_name": app["name"],
-            "opt": round(daily_earnings, 2),
-            "usd": round(daily_earnings * opt_price, 2)
+            "usd": round(daily_usd, 2),
+            "subscribers": app.get("subscribers_served", 0),
+            "signups_driven": app.get("signups_driven", 0),
+            "opt_rewards": round(daily_opt_rewards, 2)
         })
     
     # Get history
@@ -394,21 +397,32 @@ async def get_earnings(user=Depends(get_current_user)):
         {"_id": 0}
     ).sort("date", -1).to_list(30)
     
-    week_opt = sum(h["opt"] for h in history[:7])
-    month_opt = sum(h["opt"] for h in history[:30])
+    week_usd = sum(h.get("usd", 0) for h in history[:7])
+    month_usd = sum(h.get("usd", 0) for h in history[:30])
+    week_opt = sum(h.get("opt_rewards", 0) for h in history[:7])
+    month_opt = sum(h.get("opt_rewards", 0) for h in history[:30])
+    
+    # Get total OPT rewards from referrals
+    referral_data = await db.referrals.find_one({"user_id": user["id"]}, {"_id": 0})
+    total_opt_rewards = referral_data.get("total_opt_earned", 0) if referral_data else 0
     
     daily_history = [
-        {"date": h["date"], "opt": h["opt"], "usd": round(h["opt"] * opt_price, 2)}
+        {
+            "date": h["date"], 
+            "usd": h.get("usd", 0), 
+            "opt_rewards": h.get("opt_rewards", 0)
+        }
         for h in reversed(history[:30])
     ]
     
     return EarningsData(
-        today_opt=round(total_today, 2),
-        today_usd=round(total_today * opt_price, 2),
-        week_opt=round(week_opt, 2),
-        week_usd=round(week_opt * opt_price, 2),
-        month_opt=round(month_opt, 2),
-        month_usd=round(month_opt * opt_price, 2),
+        today_usd=round(total_today_usd, 2),
+        week_usd=round(week_usd, 2),
+        month_usd=round(month_usd, 2),
+        today_opt_rewards=round(total_today_opt_rewards, 2),
+        week_opt_rewards=round(week_opt, 2),
+        month_opt_rewards=round(month_opt, 2),
+        total_opt_rewards=round(total_opt_rewards, 2),
         earnings_by_app=earnings_by_app,
         daily_history=daily_history
     )
