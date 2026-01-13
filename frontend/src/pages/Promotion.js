@@ -3,7 +3,8 @@ import axios from 'axios';
 import { motion } from 'framer-motion';
 import {
   Megaphone, Link2, Copy, ExternalLink, MousePointer,
-  Users, TrendingUp, Share2, Coins, Package, UserPlus
+  Users, TrendingUp, Share2, Coins, Package, UserPlus,
+  CheckCircle2, Twitter, Facebook, Linkedin
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,10 +16,13 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 export default function Promotion() {
   const [stats, setStats] = useState(null);
+  const [referralCode, setReferralCode] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [copied, setCopied] = useState(null);
 
   useEffect(() => {
     fetchStats();
+    fetchReferralCode();
   }, []);
 
   const fetchStats = async () => {
@@ -32,9 +36,30 @@ export default function Promotion() {
     }
   };
 
-  const copyLink = (link) => {
+  const fetchReferralCode = async () => {
+    try {
+      const response = await axios.get(`${API}/referral/code`);
+      setReferralCode(response.data);
+    } catch (error) {
+      console.error('Failed to fetch referral code');
+    }
+  };
+
+  const copyLink = (link, type = 'link') => {
     navigator.clipboard.writeText(link);
+    setCopied(type);
     toast.success('Link copied to clipboard!');
+    setTimeout(() => setCopied(null), 2000);
+  };
+
+  const shareOnSocial = (platform, link) => {
+    const text = "Join me on NAPP and start earning as a node operator! 🚀";
+    const urls = {
+      twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(link)}`,
+      facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(link)}`,
+      linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(link)}`
+    };
+    window.open(urls[platform], '_blank', 'width=600,height=400');
   };
 
   if (loading) {
