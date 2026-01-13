@@ -20,11 +20,26 @@ import Settings from "@/pages/Settings";
 import Wallet from "@/pages/Wallet";
 import AppDeveloper from "@/pages/AppDeveloper";
 
+// Admin Pages
+import AdminLogin from "@/pages/admin/AdminLogin";
+import AdminDashboard from "@/pages/admin/AdminDashboard";
+import AdminUsers from "@/pages/admin/AdminUsers";
+import AdminNodes from "@/pages/admin/AdminNodes";
+import AdminAppSubmissions from "@/pages/admin/AdminAppSubmissions";
+import AdminBilling from "@/pages/admin/AdminBilling";
+import AdminSupport from "@/pages/admin/AdminSupport";
+import AdminRevenue from "@/pages/admin/AdminRevenue";
+import AdminReports from "@/pages/admin/AdminReports";
+import AdminAuditLogs from "@/pages/admin/AdminAuditLogs";
+import AdminSettings from "@/pages/admin/AdminSettings";
+
 // Layout
 import DashboardLayout from "@/components/layout/DashboardLayout";
+import AdminLayout from "@/components/layout/AdminLayout";
 
 // Auth Context
 import { AuthProvider, useAuth } from "@/context/AuthContext";
+import { AdminAuthProvider } from "@/context/AdminAuthContext";
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
