@@ -102,7 +102,7 @@ export default function DashboardLayout() {
       {/* Sidebar */}
       <aside className={`
         fixed lg:sticky top-0 left-0 z-50 h-screen w-64
-        glass-card border-r border-white/5
+        bg-[rgba(15,17,26,0.95)] backdrop-blur-xl border-r border-white/5
         transform transition-transform duration-300 ease-out
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
