@@ -113,7 +113,7 @@ export default function AppFactory() {
     app.description.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const categories = ['all', 'Storage', 'Media', 'DeFi', 'NFT', 'Communication', 'AI', 'Infrastructure', 'Gaming'];
+  const categories = ['all', 'Productivity', 'Communication', 'Wellness'];
 
   return (
     <div className="space-y-6">
