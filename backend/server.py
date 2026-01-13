@@ -2717,7 +2717,7 @@ admin_router = APIRouter(prefix="/api/admin")
 
 @admin_router.post("/auth/login")
 async def admin_login(login_data: AdminLogin):
-    """Admin login endpoint"""
+    """Admin login endpoint with 2FA support"""
     admin = await db.admins.find_one({"email": login_data.email})
     
     if not admin or not verify_password(login_data.password, admin["hashed_password"]):
@@ -2725,6 +2725,32 @@ async def admin_login(login_data: AdminLogin):
     
     if not admin.get("is_active", True):
         raise HTTPException(status_code=401, detail="Account suspended")
+    
+    two_fa_enabled = admin.get("two_factor_enabled", False)
+    
+    # Check if 2FA is enabled
+    if two_fa_enabled:
+        if not login_data.totp_code:
+            return {
+                "requires_2fa": True,
+                "message": "Two-factor authentication code required",
+                "access_token": None,
+                "admin": None
+            }
+        
+        # Verify TOTP code
+        totp_secret = admin.get("totp_secret")
+        if not totp_secret or not verify_totp(totp_secret, login_data.totp_code):
+            # Check backup codes
+            backup_codes = admin.get("backup_codes", [])
+            if login_data.totp_code in backup_codes:
+                backup_codes.remove(login_data.totp_code)
+                await db.admins.update_one(
+                    {"id": admin["id"]},
+                    {"$set": {"backup_codes": backup_codes}}
+                )
+            else:
+                raise HTTPException(status_code=401, detail="Invalid 2FA code")
     
     # Update last login
     await db.admins.update_one(
@@ -2737,12 +2763,14 @@ async def admin_login(login_data: AdminLogin):
     return {
         "access_token": token,
         "token_type": "bearer",
+        "requires_2fa": False,
         "admin": {
             "id": admin["id"],
             "email": admin["email"],
             "name": admin["name"],
             "role": admin["role"],
-            "permissions": ROLE_PERMISSIONS.get(admin["role"], [])
+            "permissions": ROLE_PERMISSIONS.get(admin["role"], []),
+            "two_factor_enabled": two_fa_enabled
         }
     }
 
@@ -2757,7 +2785,97 @@ async def get_admin_profile(admin=Depends(get_current_admin)):
         "permissions": ROLE_PERMISSIONS.get(admin["role"], []),
         "is_active": admin.get("is_active", True),
         "last_login": admin.get("last_login"),
-        "created_at": admin["created_at"]
+        "created_at": admin["created_at"],
+        "two_factor_enabled": admin.get("two_factor_enabled", False)
+    }
+
+# ==================== 2FA ENDPOINTS (ADMIN) ====================
+
+@admin_router.post("/auth/2fa/setup")
+async def admin_setup_2fa(admin=Depends(get_current_admin)):
+    """Initialize 2FA setup for admin"""
+    if admin.get("two_factor_enabled"):
+        raise HTTPException(status_code=400, detail="2FA is already enabled")
+    
+    secret = generate_totp_secret()
+    uri = get_totp_uri(secret, admin["email"])
+    qr_code = generate_qr_code(uri)
+    
+    await db.admins.update_one(
+        {"id": admin["id"]},
+        {"$set": {"pending_totp_secret": secret}}
+    )
+    
+    return {
+        "secret": secret,
+        "qr_code": qr_code,
+        "provisioning_uri": uri
+    }
+
+@admin_router.post("/auth/2fa/verify")
+async def admin_verify_2fa_setup(verify_data: TwoFactorVerifyRequest, admin=Depends(get_current_admin)):
+    """Verify 2FA setup for admin"""
+    pending_secret = admin.get("pending_totp_secret")
+    if not pending_secret:
+        raise HTTPException(status_code=400, detail="No pending 2FA setup found")
+    
+    if not verify_totp(pending_secret, verify_data.code):
+        raise HTTPException(status_code=400, detail="Invalid verification code")
+    
+    backup_codes = generate_backup_codes()
+    
+    await db.admins.update_one(
+        {"id": admin["id"]},
+        {
+            "$set": {
+                "totp_secret": pending_secret,
+                "two_factor_enabled": True,
+                "backup_codes": backup_codes,
+                "two_factor_enabled_at": datetime.now(timezone.utc).isoformat()
+            },
+            "$unset": {"pending_totp_secret": ""}
+        }
+    )
+    
+    # Log 2FA setup
+    await log_admin_action(admin["id"], admin["email"], "2FA_ENABLED", "admin", admin["id"], {}, None)
+    
+    return {
+        "message": "Two-factor authentication enabled successfully",
+        "backup_codes": backup_codes
+    }
+
+@admin_router.post("/auth/2fa/disable")
+async def admin_disable_2fa(verify_data: TwoFactorVerifyRequest, admin=Depends(get_current_admin)):
+    """Disable 2FA for admin"""
+    if not admin.get("two_factor_enabled"):
+        raise HTTPException(status_code=400, detail="2FA is not enabled")
+    
+    totp_secret = admin.get("totp_secret")
+    if not verify_totp(totp_secret, verify_data.code):
+        backup_codes = admin.get("backup_codes", [])
+        if verify_data.code not in backup_codes:
+            raise HTTPException(status_code=400, detail="Invalid verification code")
+    
+    await db.admins.update_one(
+        {"id": admin["id"]},
+        {
+            "$set": {"two_factor_enabled": False},
+            "$unset": {"totp_secret": "", "backup_codes": "", "pending_totp_secret": ""}
+        }
+    )
+    
+    await log_admin_action(admin["id"], admin["email"], "2FA_DISABLED", "admin", admin["id"], {}, None)
+    
+    return {"message": "Two-factor authentication disabled successfully"}
+
+@admin_router.get("/auth/2fa/status")
+async def admin_get_2fa_status(admin=Depends(get_current_admin)):
+    """Get admin 2FA status"""
+    return {
+        "two_factor_enabled": admin.get("two_factor_enabled", False),
+        "enabled_at": admin.get("two_factor_enabled_at"),
+        "backup_codes_remaining": len(admin.get("backup_codes", []))
     }
 
 @admin_router.post("/auth/create")
