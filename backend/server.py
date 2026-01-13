@@ -914,6 +914,7 @@ async def verify_2fa_setup(verify_data: TwoFactorVerifyRequest, user=Depends(get
     
     # Generate backup codes
     backup_codes = generate_backup_codes()
+    enabled_at = datetime.now(timezone.utc).isoformat()
     
     # Enable 2FA
     await db.users.update_one(
@@ -923,11 +924,18 @@ async def verify_2fa_setup(verify_data: TwoFactorVerifyRequest, user=Depends(get
                 "totp_secret": pending_secret,
                 "two_factor_enabled": True,
                 "backup_codes": backup_codes,
-                "two_factor_enabled_at": datetime.now(timezone.utc).isoformat()
+                "two_factor_enabled_at": enabled_at
             },
             "$unset": {"pending_totp_secret": ""}
         }
     )
+    
+    # Send email notification
+    base_url = os.environ.get("FRONTEND_URL", "https://napp.io")
+    await send_notification_email("2fa_enabled", user["email"], {
+        "enabled_at": datetime.now(timezone.utc).strftime('%B %d, %Y at %H:%M UTC'),
+        "dashboard_url": base_url
+    })
     
     return {
         "message": "Two-factor authentication enabled successfully",
@@ -955,6 +963,13 @@ async def disable_2fa(verify_data: TwoFactorVerifyRequest, user=Depends(get_curr
             "$unset": {"totp_secret": "", "backup_codes": "", "pending_totp_secret": ""}
         }
     )
+    
+    # Send email notification
+    base_url = os.environ.get("FRONTEND_URL", "https://napp.io")
+    await send_notification_email("2fa_disabled", user["email"], {
+        "disabled_at": datetime.now(timezone.utc).strftime('%B %d, %Y at %H:%M UTC'),
+        "dashboard_url": base_url
+    })
     
     return {"message": "Two-factor authentication disabled successfully"}
 
