@@ -82,19 +82,23 @@ Design and implement the NAPP Node Operator Dashboard for a decentralized blockc
 ### Integrations
 - [x] CoinMarketCap API key configured
 - [x] OpenAI GPT-5.2 for AI recommendations (Emergent LLM Key)
+- [x] Stripe for featured listings payment (test keys configured)
 
 ## Prioritized Backlog
 
 ### P0 (Critical for Production)
+- [ ] **Admin Dashboard** for app approval (approve/reject submitted apps)
 - [ ] Real blockchain wallet connection (MetaMask/WalletConnect)
 - [ ] Actual referral link tracking system
 - [ ] Production node orchestration backend
+- [ ] Stripe account setup (business name required for checkout)
 
 ### P1 (High Priority)
 - [ ] Two-factor authentication (2FA)
 - [ ] Email notifications for referral signups
 - [ ] Export functionality (CSV/PDF reports)
 - [ ] Real-time signup notifications
+- [ ] App Factory filtering/sorting features
 
 ### P2 (Nice to Have)
 - [ ] Dark/Light theme toggle
