@@ -1144,7 +1144,7 @@ async def create_featured_checkout(request: FeaturedListingRequest, http_request
     }
 
 @api_router.get("/developer/featured/status/{session_id}")
-async def check_featured_payment_status(session_id: str, user=Depends(get_current_user), http_request=None):
+async def check_featured_payment_status(session_id: str, user=Depends(get_current_user)):
     """Check the status of a featured listing payment"""
     from emergentintegrations.payments.stripe.checkout import StripeCheckout
     
