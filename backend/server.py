@@ -472,7 +472,6 @@ async def get_current_opt_price():
 
 @api_router.get("/apps/installed", response_model=List[InstalledApp])
 async def get_installed_apps(user=Depends(get_current_user)):
-    opt_price = await get_opt_price()
     apps = await db.installed_apps.find({"user_id": user["id"]}, {"_id": 0}).to_list(100)
     
     result = []
@@ -482,9 +481,10 @@ async def get_installed_apps(user=Depends(get_current_user)):
             name=app["name"],
             icon=app["icon"],
             status=app["status"],
-            subscribers_served=app["subscribers_served"],
-            revenue_opt=app["revenue_opt"],
-            revenue_usd=round(app["revenue_opt"] * opt_price, 2),
+            subscribers_served=app.get("subscribers_served", 0),
+            revenue_usd=app.get("revenue_usd", 0),
+            signups_driven=app.get("signups_driven", 0),
+            opt_rewards_earned=app.get("opt_rewards_earned", 0),
             health=app["health"],
             installed_at=app["installed_at"]
         ))
