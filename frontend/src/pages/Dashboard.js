@@ -4,7 +4,8 @@ import { motion } from 'framer-motion';
 import {
   Activity, TrendingUp, Package, Zap, Cpu, HardDrive, Wifi,
   Clock, CheckCircle2, AlertTriangle, ArrowUpRight, Sparkles,
-  DollarSign, Coins, Users
+  DollarSign, Coins, Users, Copy, Twitter, Linkedin, Facebook,
+  Share2, MessageSquare, RefreshCw
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -13,6 +14,7 @@ import {
   AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer
 } from 'recharts';
 import { NavLink } from 'react-router-dom';
+import { toast } from 'sonner';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -29,6 +31,18 @@ const item = {
   show: { opacity: 1, y: 0 }
 };
 
+const platformIcons = {
+  twitter: Twitter,
+  linkedin: Linkedin,
+  facebook: Facebook
+};
+
+const platformColors = {
+  twitter: 'text-sky-400 bg-sky-400/10 border-sky-400/30',
+  linkedin: 'text-blue-500 bg-blue-500/10 border-blue-500/30',
+  facebook: 'text-blue-600 bg-blue-600/10 border-blue-600/30'
+};
+
 export default function Dashboard() {
   const [nodeStats, setNodeStats] = useState(null);
   const [earnings, setEarnings] = useState(null);
@@ -37,6 +51,8 @@ export default function Dashboard() {
   const [capacity, setCapacity] = useState(null);
   const [recommendations, setRecommendations] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [recsLoading, setRecsLoading] = useState(false);
+  const [copiedId, setCopiedId] = useState(null);
 
   useEffect(() => {
     fetchDashboardData();
