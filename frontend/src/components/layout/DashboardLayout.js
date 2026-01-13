@@ -33,6 +33,10 @@ const navItems = [
   { path: '/support', icon: HelpCircle, label: 'Support' },
 ];
 
+const bottomNavItems = [
+  { path: '/app-developer', icon: Code, label: 'App Developer' },
+];
+
 export default function DashboardLayout() {
   const { user, logout } = useAuth();
   const location = useLocation();
