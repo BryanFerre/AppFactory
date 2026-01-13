@@ -41,6 +41,7 @@ const item = {
 
 export default function AppFactory() {
   const [apps, setApps] = useState([]);
+  const [featuredApps, setFeaturedApps] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [category, setCategory] = useState('all');
@@ -50,7 +51,17 @@ export default function AppFactory() {
 
   useEffect(() => {
     fetchApps();
+    fetchFeaturedApps();
   }, [category, filter]);
+
+  const fetchFeaturedApps = async () => {
+    try {
+      const response = await axios.get(`${API}/apps/featured`);
+      setFeaturedApps(response.data);
+    } catch (error) {
+      console.error('Failed to fetch featured apps');
+    }
+  };
 
   const fetchApps = async () => {
     try {
