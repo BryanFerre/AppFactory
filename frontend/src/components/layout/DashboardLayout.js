@@ -139,13 +139,7 @@ export default function DashboardLayout() {
         <div className="flex flex-col h-full p-4">
           {/* Logo */}
           <div className="flex items-center gap-3 px-3 py-4 mb-6">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#4865af] to-[#6b8dd6] flex items-center justify-center">
-              <AppFactoryIcon className="w-7 h-7" />
-            </div>
-            <div>
-              <h1 className="text-lg font-bold text-white font-['Outfit']">App Factory</h1>
-              <p className="text-xs text-slate-400">Node Dashboard</p>
-            </div>
+            <AppFactoryLogo />
             <button 
               className="lg:hidden ml-auto text-slate-400 hover:text-white"
               onClick={() => setSidebarOpen(false)}
