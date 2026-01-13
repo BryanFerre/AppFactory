@@ -34,7 +34,7 @@ db = client[os.environ['DB_NAME']]
 JWT_SECRET = os.environ.get('JWT_SECRET', 'default-secret-key')
 JWT_ALGORITHM = "HS256"
 JWT_EXPIRATION_HOURS = 24
-TOTP_ISSUER = "NAPP Dashboard"
+TOTP_ISSUER = "AppCloud Dashboard"
 
 # API Keys
 COINMARKETCAP_API_KEY = os.environ.get('COINMARKETCAP_API_KEY', '')
@@ -478,7 +478,7 @@ def get_email_template(template_type: str, data: dict) -> tuple:
         <body>
             <div class="container">
                 <div class="card">
-                    <div class="logo">NAPP Dashboard</div>
+                    <div class="logo">AppCloud</div>
                     <h1>New Referral Signup! 🎉</h1>
                     <p>Great news! Someone just signed up using your referral link.</p>
                     
@@ -498,7 +498,7 @@ def get_email_template(template_type: str, data: dict) -> tuple:
                     
                     <div class="footer">
                         <p>You're receiving this because you have a NAPP node operator account.</p>
-                        <p>© 2025 NAPP - Optio Blockchain Cloud</p>
+                        <p>© 2025 AppCloud - Optio Blockchain Cloud</p>
                     </div>
                 </div>
             </div>
@@ -516,7 +516,7 @@ def get_email_template(template_type: str, data: dict) -> tuple:
         <body>
             <div class="container">
                 <div class="card">
-                    <div class="logo">NAPP Dashboard</div>
+                    <div class="logo">AppCloud</div>
                     <h1>2FA Successfully Enabled 🔐</h1>
                     <p>Two-factor authentication has been enabled on your NAPP account.</p>
                     
@@ -542,7 +542,7 @@ def get_email_template(template_type: str, data: dict) -> tuple:
                     
                     <div class="footer">
                         <p>If you didn't enable 2FA, please secure your account immediately.</p>
-                        <p>© 2025 NAPP - Optio Blockchain Cloud</p>
+                        <p>© 2025 AppCloud - Optio Blockchain Cloud</p>
                     </div>
                 </div>
             </div>
@@ -560,7 +560,7 @@ def get_email_template(template_type: str, data: dict) -> tuple:
         <body>
             <div class="container">
                 <div class="card">
-                    <div class="logo">NAPP Dashboard</div>
+                    <div class="logo">AppCloud</div>
                     <h1>2FA Has Been Disabled ⚠️</h1>
                     <p>Two-factor authentication has been disabled on your NAPP account.</p>
                     
@@ -577,7 +577,7 @@ def get_email_template(template_type: str, data: dict) -> tuple:
                     
                     <div class="footer">
                         <p>If you didn't disable 2FA, please secure your account immediately and change your password.</p>
-                        <p>© 2025 NAPP - Optio Blockchain Cloud</p>
+                        <p>© 2025 AppCloud - Optio Blockchain Cloud</p>
                     </div>
                 </div>
             </div>
@@ -587,7 +587,7 @@ def get_email_template(template_type: str, data: dict) -> tuple:
         return subject, html
     
     elif template_type == "welcome":
-        subject = "🚀 Welcome to NAPP - Start Earning Today!"
+        subject = "🚀 Welcome to AppCloud - Start Earning Today!"
         html = f"""
         <!DOCTYPE html>
         <html>
@@ -595,7 +595,7 @@ def get_email_template(template_type: str, data: dict) -> tuple:
         <body>
             <div class="container">
                 <div class="card">
-                    <div class="logo">NAPP Dashboard</div>
+                    <div class="logo">AppCloud</div>
                     <h1>Welcome to NAPP! 🚀</h1>
                     <p>Hi <span class="highlight">{data.get('name', 'Node Operator')}</span>,</p>
                     <p>Your node operator account has been created successfully. You're now part of the Optio Blockchain Cloud network!</p>
@@ -618,7 +618,7 @@ def get_email_template(template_type: str, data: dict) -> tuple:
                     
                     <div class="footer">
                         <p>You're receiving this because you created a NAPP account.</p>
-                        <p>© 2025 NAPP - Optio Blockchain Cloud</p>
+                        <p>© 2025 AppCloud - Optio Blockchain Cloud</p>
                     </div>
                 </div>
             </div>
