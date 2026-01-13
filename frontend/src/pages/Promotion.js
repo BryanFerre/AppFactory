@@ -120,6 +120,72 @@ export default function Promotion() {
         </div>
       </motion.div>
 
+      {/* Your Referral Link */}
+      {referralCode && (
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-gradient-to-r from-cyan-500/10 to-purple-500/10 border border-cyan-500/30 rounded-xl p-6"
+        >
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <Link2 className="w-5 h-5 text-cyan-400" />
+                <h3 className="text-lg font-semibold text-white">Your Unique Referral Link</h3>
+                <Badge className="bg-cyan-500/20 text-cyan-400 border-cyan-500/30">
+                  Code: {referralCode.referral_code}
+                </Badge>
+              </div>
+              <p className="text-sm text-slate-400">Share this link to invite new node operators and earn 50 OPT per signup</p>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <div className="flex items-center gap-2 bg-black/40 px-4 py-2 rounded-lg border border-white/10">
+                <span className="text-sm text-slate-300 truncate max-w-[250px]">{referralCode.operator_referral_link}</span>
+              </div>
+              <Button
+                onClick={() => copyLink(referralCode.operator_referral_link, 'referral')}
+                className={`${copied === 'referral' ? 'bg-emerald-500' : 'bg-cyan-500 hover:bg-cyan-400'} text-black`}
+              >
+                {copied === 'referral' ? (
+                  <><CheckCircle2 className="w-4 h-4 mr-2" /> Copied!</>
+                ) : (
+                  <><Copy className="w-4 h-4 mr-2" /> Copy Link</>
+                )}
+              </Button>
+            </div>
+          </div>
+          
+          {/* Social Share */}
+          <div className="flex items-center gap-3 mt-4 pt-4 border-t border-white/10">
+            <span className="text-sm text-slate-400">Share on:</span>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => shareOnSocial('twitter', referralCode.operator_referral_link)}
+              className="border-white/10 hover:bg-cyan-500/20"
+            >
+              <Twitter className="w-4 h-4 mr-2" /> Twitter
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => shareOnSocial('facebook', referralCode.operator_referral_link)}
+              className="border-white/10 hover:bg-blue-500/20"
+            >
+              <Facebook className="w-4 h-4 mr-2" /> Facebook
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => shareOnSocial('linkedin', referralCode.operator_referral_link)}
+              className="border-white/10 hover:bg-blue-600/20"
+            >
+              <Linkedin className="w-4 h-4 mr-2" /> LinkedIn
+            </Button>
+          </div>
+        </motion.div>
+      )}
+
       {/* Stats Overview */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <motion.div 
