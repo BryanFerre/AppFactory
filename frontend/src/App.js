@@ -98,6 +98,21 @@ function AppRoutes() {
         <Route path="wallet" element={<Wallet />} />
         <Route path="app-developer" element={<AppDeveloper />} />
       </Route>
+
+      {/* Admin Routes */}
+      <Route path="/admin/login" element={<AdminLogin />} />
+      <Route path="/admin" element={<AdminLayout />}>
+        <Route index element={<AdminDashboard />} />
+        <Route path="users" element={<AdminUsers />} />
+        <Route path="nodes" element={<AdminNodes />} />
+        <Route path="apps" element={<AdminAppSubmissions />} />
+        <Route path="billing" element={<AdminBilling />} />
+        <Route path="support" element={<AdminSupport />} />
+        <Route path="revenue" element={<AdminRevenue />} />
+        <Route path="reports" element={<AdminReports />} />
+        <Route path="audit" element={<AdminAuditLogs />} />
+        <Route path="settings" element={<AdminSettings />} />
+      </Route>
     </Routes>
   );
 }
@@ -106,8 +121,10 @@ function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <AppRoutes />
-        <Toaster position="top-right" richColors />
+        <AdminAuthProvider>
+          <AppRoutes />
+          <Toaster position="top-right" richColors />
+        </AdminAuthProvider>
       </AuthProvider>
     </BrowserRouter>
   );
