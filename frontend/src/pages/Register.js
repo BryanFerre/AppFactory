@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { Zap, Mail, Lock, User, ArrowRight, Check } from 'lucide-react';
+import { Mail, Lock, User, ArrowRight, Check } from 'lucide-react';
+import { ReactComponent as AppFactoryLogo } from '@/assets/AppFactory.svg';
 
 export default function Register() {
   const { register } = useAuth();
@@ -40,13 +41,8 @@ export default function Register() {
       <div className="flex-1 flex items-center justify-center p-8">
         <div className="w-full max-w-md">
           {/* Mobile Logo */}
-          <div className="lg:hidden flex items-center justify-center gap-3 mb-10">
-            <div className="w-12 h-12 rounded-xl icon-bg-cyan flex items-center justify-center">
-              <Zap className="w-7 h-7 text-black" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-white font-['Outfit']">NAPP Node</h1>
-            </div>
+          <div className="lg:hidden flex items-center justify-center mb-10">
+            <AppFactoryLogo className="h-10 w-auto" />
           </div>
 
           <div className="glass-card p-8">
@@ -142,14 +138,8 @@ export default function Register() {
         <div className="absolute bottom-1/3 left-1/4 w-96 h-96 bg-cyan-500/30 rounded-full blur-[100px]" />
         
         <div className="relative z-10 flex flex-col justify-center px-16">
-          <div className="flex items-center gap-4 mb-8">
-            <div className="w-14 h-14 rounded-2xl icon-bg-purple flex items-center justify-center">
-              <Zap className="w-8 h-8 text-white" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold text-white font-['Outfit']">NAPP Node</h1>
-              <p className="text-slate-400">Operator Dashboard</p>
-            </div>
+          <div className="mb-8">
+            <AppFactoryLogo className="h-12 w-auto" />
           </div>
           
           <h2 className="text-4xl font-bold text-white font-['Outfit'] mb-4">
