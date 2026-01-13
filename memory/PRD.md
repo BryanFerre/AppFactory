@@ -52,6 +52,12 @@ Design and implement the NAPP Node Operator Dashboard for a decentralized blockc
   - Per-app share links with signup tracking
   - Recent activity feed
 - [x] All other pages (Earnings, Capacity, Payouts, Reports, etc.)
+- [x] Branding update with new AppFactory logo (January 13, 2025):
+  - Login page: Logo on branding panel
+  - Register page: Logo on branding panel
+  - Sidebar: Logo at top of navigation
+  - App Factory page: Normal text header (no logo)
+  - App Factory sidebar nav: Generic Factory icon
 
 ### Integrations
 - [x] CoinMarketCap API key configured
