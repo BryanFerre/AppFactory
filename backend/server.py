@@ -2517,72 +2517,282 @@ async def get_payouts(user=Depends(get_current_user)):
         ))
     return payouts
 
-# ==================== AI RECOMMENDATIONS ====================
+# ==================== AI RECOMMENDATIONS & PROMOTIONS ====================
 
-@api_router.get("/ai/recommendations", response_model=List[AIRecommendation])
+@api_router.get("/ai/recommendations")
 async def get_ai_recommendations(user=Depends(get_current_user)):
+    """Generate AI-powered recommendations including creative promotional content for hosted apps"""
     try:
         from emergentintegrations.llm.chat import LlmChat, UserMessage
         
         # Get user context
         node = await db.nodes.find_one({"user_id": user["id"]}, {"_id": 0})
         apps = await db.installed_apps.find({"user_id": user["id"]}, {"_id": 0}).to_list(100)
+        referral_code = user.get("referral_code", "")
+        
+        if not apps:
+            apps = []
+        
+        # Build app context for AI
+        app_details = []
+        for app in apps[:5]:  # Limit to 5 apps
+            app_details.append({
+                "name": app.get("name", "Unknown App"),
+                "description": app.get("description", "A hosted application"),
+                "category": app.get("category", "General"),
+                "price": app.get("monthly_price", 0)
+            })
         
         context = f"""
-        Node Status: {node['status']}
-        Uptime: {node['uptime_percent']}%
-        CPU Usage: {node['cpu_usage']}%
-        Memory Usage: {node['memory_usage']}%
-        Storage Usage: {node['storage_usage']}%
-        Capacity Used: {node['used_capacity']}/{node['total_capacity']}
-        Installed Apps: {', '.join(a['name'] for a in apps)}
+        User Info:
+        - Referral Code: {referral_code}
+        - Number of Hosted Apps: {len(apps)}
+        
+        Hosted Apps:
+        {json.dumps(app_details, indent=2)}
+        
+        Node Stats:
+        - Status: {node.get('status', 'unknown') if node else 'No node'}
+        - Uptime: {node.get('uptime_percent', 0) if node else 0}%
         """
         
+        system_prompt = """You are a creative social media marketing expert for NAPP, a decentralized app hosting platform. 
+        
+Your job is to generate engaging, creative promotional content that node operators can use to invite friends and grow their network.
+
+Generate exactly 4 recommendations in JSON array format. Each recommendation should have:
+- type: "social_post" for ready-to-post content, "promotion" for promotional tips, "earnings" for earning optimization
+- title: Short, catchy title
+- description: Brief explanation
+- priority: "high", "medium", or "low"
+- app_name: Name of the app (for app-specific posts) or null
+- post_content: A ready-to-use social media post (for social_post type). Make it engaging, include emojis, and make it shareable!
+- hashtags: Array of relevant hashtags without the # symbol
+- social_platforms: ["twitter", "linkedin", "facebook"] - which platforms this post works best for
+
+For social posts:
+- Be creative and engaging, not generic
+- Include a call-to-action
+- Use emojis appropriately
+- Make posts that people would actually want to share
+- Highlight unique value propositions
+- Create FOMO (fear of missing out) when appropriate
+
+Example good post: "🚀 Just discovered DataVault Pro - finally a privacy-first cloud storage that actually pays ME for hosting! Already earned $50 this month. Want to try it? Use my link 👇 #Web3 #PassiveIncome"
+
+Return ONLY a valid JSON array, no other text."""
+
         chat = LlmChat(
             api_key=EMERGENT_LLM_KEY,
-            session_id=f"recommendations-{user['id']}",
-            system_message="""You are an AI assistant for NAPP Node operators. Generate 3 actionable recommendations to help them maximize earnings and optimize their node. 
-            Return JSON array with objects containing: type (earnings/optimization/promotion/app), title, description, action (optional button text), priority (high/medium/low).
-            Keep responses concise and actionable."""
-        ).with_model("openai", "gpt-5.2")
+            session_id=f"promo-recommendations-{user['id']}-{datetime.now().strftime('%H%M')}",
+            system_message=system_prompt
+        ).with_model("openai", "gpt-4o")
         
-        user_msg = UserMessage(text=f"Based on this node data, give 3 recommendations:\n{context}")
+        user_msg = UserMessage(text=f"Generate 4 creative promotional recommendations and social media posts based on this data:\n{context}")
         response = await chat.send_message(user_msg)
         
-        # Parse response
-        import json
+        # Parse response - try to extract JSON from response
         try:
-            recommendations = json.loads(response)
-            return [AIRecommendation(**r) for r in recommendations[:3]]
-        except:
-            pass
+            # Clean response if needed
+            cleaned = response.strip()
+            if cleaned.startswith("```json"):
+                cleaned = cleaned[7:]
+            if cleaned.startswith("```"):
+                cleaned = cleaned[3:]
+            if cleaned.endswith("```"):
+                cleaned = cleaned[:-3]
+            cleaned = cleaned.strip()
+            
+            recommendations = json.loads(cleaned)
+            
+            # Validate and format recommendations
+            formatted_recs = []
+            for r in recommendations[:4]:
+                formatted_recs.append({
+                    "type": r.get("type", "promotion"),
+                    "title": r.get("title", "Promotional Tip"),
+                    "description": r.get("description", ""),
+                    "action": r.get("action", "Copy Post"),
+                    "priority": r.get("priority", "medium"),
+                    "app_name": r.get("app_name"),
+                    "post_content": r.get("post_content"),
+                    "hashtags": r.get("hashtags", []),
+                    "social_platforms": r.get("social_platforms", ["twitter"])
+                })
+            
+            return formatted_recs
+        except json.JSONDecodeError as e:
+            logger.error(f"Failed to parse AI response: {e}")
+            logger.error(f"Response was: {response[:500]}")
+            
     except Exception as e:
         logger.error(f"AI recommendations error: {e}")
     
-    # Fallback recommendations
+    # Enhanced fallback recommendations with ready-to-post content
+    apps_list = [a.get("name", "app") for a in apps[:3]] if apps else ["DataVault Pro"]
+    app_name = apps_list[0] if apps_list else "DataVault Pro"
+    
     return [
-        AIRecommendation(
-            type="app",
-            title="Install AI Inference Hub",
-            description="Based on your node capacity, AI Inference Hub could increase your monthly earnings by 40%.",
-            action="View App",
-            priority="high"
-        ),
-        AIRecommendation(
-            type="optimization",
-            title="Optimize Memory Usage",
-            description="Your memory usage is at 58%. Consider upgrading to handle more concurrent requests.",
-            action="View Upgrades",
-            priority="medium"
-        ),
-        AIRecommendation(
-            type="promotion",
-            title="Share Your Referral Link",
-            description="You have 156 referrals. Sharing on Twitter could double your referral bonus.",
-            action="Share Now",
-            priority="low"
-        )
+        {
+            "type": "social_post",
+            "title": f"Share {app_name} on Twitter",
+            "description": "Ready-to-post content to promote your hosted app and earn referral rewards.",
+            "action": "Copy Post",
+            "priority": "high",
+            "app_name": app_name,
+            "post_content": f"🚀 I'm hosting {app_name} on NAPP and earning passive income every day! The future of decentralized apps is here. Want to join? Check it out 👇 #Web3 #DecentralizedApps #PassiveIncome #NAPP",
+            "hashtags": ["Web3", "DecentralizedApps", "PassiveIncome", "NAPP"],
+            "social_platforms": ["twitter", "facebook"]
+        },
+        {
+            "type": "social_post",
+            "title": "Invite Node Operators",
+            "description": "Earn 50 OPT for each friend who becomes a node operator.",
+            "action": "Copy Post",
+            "priority": "high",
+            "app_name": None,
+            "post_content": f"💰 Looking for passive income? I've been earning crypto just by running a node on NAPP! Super easy setup, great community. Join with my code {referral_code} and we both earn bonus OPT! #Crypto #PassiveIncome #Web3",
+            "hashtags": ["Crypto", "PassiveIncome", "Web3", "NodeOperator"],
+            "social_platforms": ["twitter", "linkedin"]
+        },
+        {
+            "type": "promotion",
+            "title": "LinkedIn Professional Post",
+            "description": "A professional post for your LinkedIn network about decentralized hosting.",
+            "action": "Copy Post",
+            "priority": "medium",
+            "app_name": None,
+            "post_content": "I've been exploring decentralized infrastructure and recently started hosting apps on NAPP. The concept is simple: instead of Big Tech profiting from cloud services, node operators like me earn directly. It's an interesting model for the future of web infrastructure. Happy to share more if you're curious about Web3 opportunities. 🌐",
+            "hashtags": ["Web3", "DecentralizedInfrastructure", "FutureOfWork"],
+            "social_platforms": ["linkedin"]
+        },
+        {
+            "type": "earnings",
+            "title": "Maximize Your Earnings",
+            "description": "Host more popular apps to increase your daily earnings potential.",
+            "action": "Browse Apps",
+            "priority": "medium",
+            "app_name": None,
+            "post_content": None,
+            "hashtags": [],
+            "social_platforms": []
+        }
     ]
+
+@api_router.get("/ai/app-promotions/{app_id}")
+async def get_app_promotions(app_id: str, user=Depends(get_current_user)):
+    """Generate creative promotional content specifically for a hosted app"""
+    try:
+        from emergentintegrations.llm.chat import LlmChat, UserMessage
+        
+        # Get app details
+        app = await db.installed_apps.find_one({"user_id": user["id"], "id": app_id}, {"_id": 0})
+        if not app:
+            # Try to find in available apps
+            app = next((a for a in AVAILABLE_APPS if a["id"] == app_id), None)
+        
+        if not app:
+            raise HTTPException(status_code=404, detail="App not found")
+        
+        referral_code = user.get("referral_code", "NAPPUSER")
+        base_url = os.environ.get("FRONTEND_URL", "https://napp.io")
+        referral_link = f"{base_url}/app/{app_id[:8]}?ref={referral_code}"
+        
+        system_prompt = """You are a creative viral content creator specializing in tech and Web3 content. 
+        
+Generate engaging social media posts that will make people want to try this app. Be creative, witty, and authentic.
+
+Return a JSON object with:
+{
+  "social_posts": [
+    {"platform": "twitter", "content": "tweet content with emojis", "hashtags": ["tag1", "tag2"]},
+    {"platform": "linkedin", "content": "professional post", "hashtags": ["tag1"]},
+    {"platform": "facebook", "content": "engaging post for friends", "hashtags": []}
+  ],
+  "promotion_tips": ["tip 1", "tip 2", "tip 3"],
+  "target_audience": "description of ideal users"
+}
+
+Make the Twitter post punchy and viral-worthy (under 280 chars).
+Make the LinkedIn post professional but engaging.
+Make the Facebook post personal and shareable.
+
+Return ONLY valid JSON, no other text."""
+
+        chat = LlmChat(
+            api_key=EMERGENT_LLM_KEY,
+            session_id=f"app-promo-{app_id}-{datetime.now().strftime('%H%M')}",
+            system_message=system_prompt
+        ).with_model("openai", "gpt-4o")
+        
+        app_context = f"""
+App Name: {app.get('name', 'Unknown')}
+Description: {app.get('description', 'A great application')}
+Category: {app.get('category', 'General')}
+Key Features: {', '.join(app.get('features', ['Easy to use', 'Secure', 'Fast']))}
+Referral Link: {referral_link}
+"""
+        
+        user_msg = UserMessage(text=f"Create viral promotional content for this app:\n{app_context}")
+        response = await chat.send_message(user_msg)
+        
+        # Parse response
+        cleaned = response.strip()
+        if cleaned.startswith("```json"):
+            cleaned = cleaned[7:]
+        if cleaned.startswith("```"):
+            cleaned = cleaned[3:]
+        if cleaned.endswith("```"):
+            cleaned = cleaned[:-3]
+        
+        promo_data = json.loads(cleaned.strip())
+        
+        return {
+            "app_id": app_id,
+            "app_name": app.get("name", "Unknown App"),
+            "app_description": app.get("description", ""),
+            "social_posts": promo_data.get("social_posts", []),
+            "promotion_tips": promo_data.get("promotion_tips", []),
+            "target_audience": promo_data.get("target_audience", "Tech-savvy users"),
+            "referral_link": referral_link
+        }
+        
+    except json.JSONDecodeError:
+        logger.error(f"Failed to parse app promotion response")
+    except Exception as e:
+        logger.error(f"App promotions error: {e}")
+    
+    # Fallback response
+    app_name = app.get("name", "This App") if app else "This App"
+    return {
+        "app_id": app_id,
+        "app_name": app_name,
+        "app_description": app.get("description", "") if app else "",
+        "social_posts": [
+            {
+                "platform": "twitter",
+                "content": f"🔥 Just discovered {app_name}! It's changing how I think about decentralized apps. Check it out 👉",
+                "hashtags": ["Web3", "DApps", "Innovation"]
+            },
+            {
+                "platform": "linkedin",
+                "content": f"I've been exploring {app_name} as part of the growing decentralized app ecosystem. Interesting implications for data ownership and infrastructure. Worth checking out if you're following Web3 trends.",
+                "hashtags": ["Web3", "Innovation", "Technology"]
+            },
+            {
+                "platform": "facebook",
+                "content": f"Hey friends! 👋 I found this cool app called {app_name}. It's part of a new wave of decentralized apps where users actually benefit. Try it out!",
+                "hashtags": []
+            }
+        ],
+        "promotion_tips": [
+            "Share during peak hours (9-11 AM, 7-9 PM)",
+            "Tag friends who might be interested",
+            "Use your personal story to make it relatable"
+        ],
+        "target_audience": "Tech enthusiasts and privacy-conscious users",
+        "referral_link": f"{os.environ.get('FRONTEND_URL', 'https://napp.io')}/app/{app_id[:8]}?ref={user.get('referral_code', 'NAPPUSER')}"
+    }
 
 # ==================== NOTIFICATIONS ====================
 
