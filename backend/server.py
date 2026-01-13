@@ -1881,18 +1881,83 @@ async def stripe_webhook(request: Request):
 
 # ==================== FEATURED APPS FOR APP FACTORY ====================
 
+# Mock featured apps for demo (these would come from paid featured listings in production)
+MOCK_FEATURED_APPS = [
+    {
+        "id": "featured-1",
+        "name": "FocusTune",
+        "description": "One-tap background sounds for deep focus. Ambient noise, lo-fi beats, and nature sounds.",
+        "category": "Productivity",
+        "subscription_price": 4.99,
+        "revenue_share": 65,
+        "capacity_required": 5,
+        "icon_url": None,
+        "is_featured": True,
+        "featured_until": "2025-02-15T00:00:00Z"
+    },
+    {
+        "id": "featured-2",
+        "name": "ToneCheck",
+        "description": "Reviews message tone for clarity and politeness. Avoid misunderstandings before you hit send.",
+        "category": "Communication",
+        "subscription_price": 5.99,
+        "revenue_share": 68,
+        "capacity_required": 4,
+        "icon_url": None,
+        "is_featured": True,
+        "featured_until": "2025-02-20T00:00:00Z"
+    },
+    {
+        "id": "featured-3",
+        "name": "ReframeIt",
+        "description": "Helps rewrite negative thoughts. Cognitive reframing made simple and accessible.",
+        "category": "Wellness",
+        "subscription_price": 4.99,
+        "revenue_share": 70,
+        "capacity_required": 3,
+        "icon_url": None,
+        "is_featured": True,
+        "featured_until": "2025-02-18T00:00:00Z"
+    },
+    {
+        "id": "featured-4",
+        "name": "BlockDay",
+        "description": "Drag-and-drop time blocking for your day. Visual planning that actually sticks.",
+        "category": "Productivity",
+        "subscription_price": 5.99,
+        "revenue_share": 68,
+        "capacity_required": 3,
+        "icon_url": None,
+        "is_featured": True,
+        "featured_until": "2025-02-25T00:00:00Z"
+    },
+    {
+        "id": "featured-5",
+        "name": "BreatheEasy",
+        "description": "Guides breathing to reduce anxiety. Science-backed exercises for instant calm.",
+        "category": "Wellness",
+        "subscription_price": 3.99,
+        "revenue_share": 70,
+        "capacity_required": 2,
+        "icon_url": None,
+        "is_featured": True,
+        "featured_until": "2025-02-22T00:00:00Z"
+    }
+]
+
 @api_router.get("/apps/featured")
 async def get_featured_apps():
     """Get currently featured apps for display in App Factory"""
     now = datetime.now(timezone.utc).isoformat()
     
+    # First check for real featured apps from database
     featured = await db.app_submissions.find({
         "featured": True,
         "featured_until": {"$gt": now},
         "status": "approved"
     }, {"_id": 0}).to_list(10)
     
-    # Transform to display format
+    # Transform database results to display format
     result = []
     for app in featured:
         result.append({
@@ -1907,6 +1972,10 @@ async def get_featured_apps():
             "is_featured": True,
             "featured_until": app["featured_until"]
         })
+    
+    # If no real featured apps, return mock featured apps for demo
+    if not result:
+        return MOCK_FEATURED_APPS
     
     return result
 
