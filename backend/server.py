@@ -1098,6 +1098,9 @@ async def create_featured_checkout(request: FeaturedListingRequest, http_request
     
     # Initialize Stripe
     stripe_api_key = os.environ.get('STRIPE_API_KEY')
+    if not stripe_api_key:
+        raise HTTPException(status_code=500, detail="Payment service not configured")
+    
     host_url = str(http_request.base_url).rstrip('/')
     webhook_url = f"{host_url}api/webhook/stripe"
     
@@ -1107,41 +1110,51 @@ async def create_featured_checkout(request: FeaturedListingRequest, http_request
     success_url = f"{request.origin_url}/app-developer?session_id={{CHECKOUT_SESSION_ID}}&success=true"
     cancel_url = f"{request.origin_url}/app-developer?canceled=true"
     
-    # Create checkout session
-    checkout_request = CheckoutSessionRequest(
-        amount=plan["price"],
-        currency="usd",
-        success_url=success_url,
-        cancel_url=cancel_url,
-        metadata={
-            "type": "featured_listing",
+    try:
+        # Create checkout session
+        checkout_request = CheckoutSessionRequest(
+            amount=plan["price"],
+            currency="usd",
+            success_url=success_url,
+            cancel_url=cancel_url,
+            metadata={
+                "type": "featured_listing",
+                "user_id": user["id"],
+                "submission_id": request.submission_id,
+                "plan": request.plan,
+                "days": str(plan["days"])
+            }
+        )
+        
+        session = await stripe_checkout.create_checkout_session(checkout_request)
+        
+        # Create payment transaction record
+        transaction_doc = {
+            "id": str(uuid.uuid4()),
+            "session_id": session.session_id,
             "user_id": user["id"],
             "submission_id": request.submission_id,
+            "amount": plan["price"],
+            "currency": "usd",
             "plan": request.plan,
-            "days": str(plan["days"])
+            "payment_status": "pending",
+            "created_at": datetime.now(timezone.utc).isoformat()
         }
-    )
-    
-    session = await stripe_checkout.create_checkout_session(checkout_request)
-    
-    # Create payment transaction record
-    transaction_doc = {
-        "id": str(uuid.uuid4()),
-        "session_id": session.session_id,
-        "user_id": user["id"],
-        "submission_id": request.submission_id,
-        "amount": plan["price"],
-        "currency": "usd",
-        "plan": request.plan,
-        "payment_status": "pending",
-        "created_at": datetime.now(timezone.utc).isoformat()
-    }
-    await db.payment_transactions.insert_one(transaction_doc)
-    
-    return {
-        "checkout_url": session.url,
-        "session_id": session.session_id
-    }
+        await db.payment_transactions.insert_one(transaction_doc)
+        
+        return {
+            "checkout_url": session.url,
+            "session_id": session.session_id
+        }
+    except Exception as e:
+        logger.error(f"Stripe checkout error: {e}")
+        error_msg = str(e)
+        if "account or business name" in error_msg.lower():
+            raise HTTPException(
+                status_code=400, 
+                detail="Stripe account needs to be configured with a business name. Please visit your Stripe dashboard to complete setup."
+            )
+        raise HTTPException(status_code=500, detail=f"Payment service error: {error_msg}")
 
 @api_router.get("/developer/featured/status/{session_id}")
 async def check_featured_payment_status(session_id: str, user=Depends(get_current_user)):
