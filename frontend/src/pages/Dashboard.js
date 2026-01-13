@@ -82,6 +82,39 @@ export default function Dashboard() {
     }
   };
 
+  const refreshRecommendations = async () => {
+    setRecsLoading(true);
+    try {
+      const response = await axios.get(`${API}/ai/recommendations`);
+      setRecommendations(response.data);
+      toast.success('Fresh promotional content generated!');
+    } catch (error) {
+      toast.error('Failed to refresh recommendations');
+    } finally {
+      setRecsLoading(false);
+    }
+  };
+
+  const copyPost = (content, id) => {
+    navigator.clipboard.writeText(content);
+    setCopiedId(id);
+    toast.success('Post copied to clipboard!');
+    setTimeout(() => setCopiedId(null), 2000);
+  };
+
+  const shareOnPlatform = (platform, content, hashtags = []) => {
+    const hashtagString = hashtags.map(t => `#${t}`).join(' ');
+    const fullContent = `${content} ${hashtagString}`;
+    
+    const urls = {
+      twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(fullContent)}`,
+      linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent('https://napp.io')}&summary=${encodeURIComponent(content)}`,
+      facebook: `https://www.facebook.com/sharer/sharer.php?quote=${encodeURIComponent(fullContent)}`
+    };
+    
+    window.open(urls[platform], '_blank', 'width=600,height=400');
+  };
+
   const verifyNode = async () => {
     try {
       await axios.post(`${API}/node/verify`);
