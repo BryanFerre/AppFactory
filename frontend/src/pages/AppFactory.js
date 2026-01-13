@@ -198,7 +198,8 @@ export default function AppFactory() {
                   key={app.id}
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  className="flex-shrink-0 w-64 glass-card p-4 border border-amber-500/40 relative overflow-hidden hover:border-amber-500/60 transition-colors cursor-pointer"
+                  onClick={() => handleFeaturedAppClick(app)}
+                  className="flex-shrink-0 w-64 glass-card p-4 border border-amber-500/40 relative overflow-hidden hover:border-amber-500/60 hover:bg-amber-500/5 transition-all cursor-pointer group"
                   data-testid={`featured-app-${app.id}`}
                 >
                   {/* Featured Badge */}
@@ -208,7 +209,7 @@ export default function AppFactory() {
                   </div>
                   
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-amber-500/20 to-orange-500/20 flex items-center justify-center border border-amber-500/30">
+                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-amber-500/20 to-orange-500/20 flex items-center justify-center border border-amber-500/30 group-hover:scale-110 transition-transform">
                       <Package className="w-5 h-5 text-amber-400" />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -222,6 +223,14 @@ export default function AppFactory() {
                   <div className="flex items-center justify-between mt-3 pt-2 border-t border-amber-500/20">
                     <span className="text-emerald-400 font-semibold text-sm">${app.subscription_price}/mo</span>
                     <span className="text-slate-500 text-xs">{app.revenue_share}% share</span>
+                  </div>
+
+                  {/* Hover overlay hint */}
+                  <div className="absolute inset-0 flex items-center justify-center bg-amber-500/10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                    <span className="bg-amber-500 text-black text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1">
+                      <Download className="w-3 h-3" />
+                      View Details
+                    </span>
                   </div>
                 </motion.div>
               ))}
