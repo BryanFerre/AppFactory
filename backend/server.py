@@ -674,7 +674,6 @@ async def get_available_apps(
     new: Optional[bool] = None,
     user=Depends(get_current_user)
 ):
-    opt_price = await get_opt_price()
     apps = AVAILABLE_APPS.copy()
     
     # Get user's installed apps
@@ -699,13 +698,17 @@ async def get_available_apps(
             description=app["description"],
             icon=app["icon"],
             category=app["category"],
+            subscription_price=app["subscription_price"],
             revenue_share=app["revenue_share"],
-            estimated_monthly_opt=app["estimated_monthly_opt"],
-            estimated_monthly_usd=round(app["estimated_monthly_opt"] * opt_price, 2),
+            revenue_per_node=app["revenue_per_node"],
+            active_nodes=app["active_nodes"],
+            total_slots=app["total_slots"],
+            available_slots=app["available_slots"],
+            subscribers=app["subscribers"],
+            estimated_monthly_usd=app["estimated_monthly_usd"],
             capacity_required=app["capacity_required"],
             is_trending=app["is_trending"],
-            is_new=app["is_new"],
-            installs=app["installs"]
+            is_new=app["is_new"]
         ))
     
     return result
