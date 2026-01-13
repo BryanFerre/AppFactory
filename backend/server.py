@@ -282,7 +282,7 @@ async def initialize_user_node(user_id: str):
     }
     await db.nodes.insert_one(node_doc)
     
-    # Add some default installed apps
+    # Add some default installed apps with USD revenue
     apps = [
         {
             "id": str(uuid.uuid4()),
@@ -291,8 +291,9 @@ async def initialize_user_node(user_id: str):
             "icon": "database",
             "status": "running",
             "subscribers_served": 1247,
-            "revenue_opt": 145.6,
-            "revenue_usd": 0,
+            "revenue_usd": 487.50,  # USD from subscriptions
+            "signups_driven": 45,   # Users signed up via promotion
+            "opt_rewards_earned": 90.0,  # OPT rewards for signups
             "health": "healthy",
             "installed_at": now,
             "capacity_used": 15
@@ -304,8 +305,9 @@ async def initialize_user_node(user_id: str):
             "icon": "video",
             "status": "running",
             "subscribers_served": 856,
-            "revenue_opt": 98.3,
-            "revenue_usd": 0,
+            "revenue_usd": 342.40,
+            "signups_driven": 32,
+            "opt_rewards_earned": 64.0,
             "health": "healthy",
             "installed_at": now,
             "capacity_used": 20
@@ -317,8 +319,9 @@ async def initialize_user_node(user_id: str):
             "icon": "link",
             "status": "running",
             "subscribers_served": 432,
-            "revenue_opt": 67.8,
-            "revenue_usd": 0,
+            "revenue_usd": 172.80,
+            "signups_driven": 18,
+            "opt_rewards_earned": 36.0,
             "health": "warning",
             "installed_at": now,
             "capacity_used": 10
@@ -326,17 +329,31 @@ async def initialize_user_node(user_id: str):
     ]
     await db.installed_apps.insert_many(apps)
     
-    # Generate earnings history
+    # Generate earnings history (USD + OPT rewards)
     earnings_history = []
     for i in range(30):
         date = (datetime.now(timezone.utc) - timedelta(days=29-i)).strftime("%Y-%m-%d")
         earnings_history.append({
             "user_id": user_id,
             "date": date,
-            "opt": round(random.uniform(8, 25), 2),
-            "usd": 0
+            "usd": round(random.uniform(25, 45), 2),  # USD from subscriptions
+            "opt_rewards": round(random.uniform(2, 8), 2)  # OPT from referrals
         })
     await db.earnings_history.insert_many(earnings_history)
+    
+    # Initialize referral data
+    referral_data = {
+        "user_id": user_id,
+        "operator_invites_sent": random.randint(5, 20),
+        "operator_signups": random.randint(1, 5),
+        "operator_opt_earned": round(random.uniform(50, 250), 2),
+        "app_link_clicks": random.randint(500, 3000),
+        "app_signups_driven": random.randint(50, 200),
+        "app_opt_earned": round(random.uniform(100, 400), 2),
+        "total_opt_earned": 0
+    }
+    referral_data["total_opt_earned"] = referral_data["operator_opt_earned"] + referral_data["app_opt_earned"]
+    await db.referrals.insert_one(referral_data)
 
 # ==================== NODE STATS ENDPOINTS ====================
 
