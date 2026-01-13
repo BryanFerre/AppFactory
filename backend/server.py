@@ -1225,7 +1225,7 @@ async def check_featured_payment_status(session_id: str, user=Depends(get_curren
         }
 
 @api_router.post("/webhook/stripe")
-async def stripe_webhook(request):
+async def stripe_webhook(request: Request):
     """Handle Stripe webhooks"""
     from emergentintegrations.payments.stripe.checkout import StripeCheckout
     
