@@ -40,6 +40,12 @@ Design and implement the NAPP Node Operator Dashboard for a decentralized blockc
 - [x] Capacity monitoring and usage tracking
 - [x] Payouts history
 - [x] AI recommendations (GPT-5.2 integration)
+- [x] **App Developer submission system (January 13, 2025)**:
+  - Submit app API (/api/developer/submit)
+  - Get submissions API (/api/developer/submissions)
+  - Icon/code upload endpoints
+  - Featured listing checkout with Stripe ($29/30 days, $59/60 days)
+  - Featured apps API for App Factory display
 
 ### Frontend (React + Tailwind + Shadcn)
 - [x] Dashboard with dual earnings display (USD + OPT)
@@ -58,6 +64,20 @@ Design and implement the NAPP Node Operator Dashboard for a decentralized blockc
   - Sidebar: Logo at top of navigation
   - App Factory page: Normal text header (no logo)
   - App Factory sidebar nav: Generic Factory icon
+- [x] **App Developer page (January 13, 2025)**:
+  - Nav item at bottom of sidebar
+  - Stats cards (Total Submissions, Approved Apps, Featured Apps)
+  - Submit New App form with all fields:
+    * SVG icon upload
+    * App Name, Description, Category
+    * Resources Required (GB), Monthly Subscription Fee
+    * Revenue Sharing %, Number of Nodes Available
+    * GitHub URL or code file upload
+    * Contact Email, Documentation URL
+    * Terms of Service acceptance
+  - Submissions list with status badges (Pending/Approved/Rejected)
+  - Featured listing purchase dialog ($29/30 days, $59/60 days)
+  - App Factory shows Featured Apps section (when apps are approved and featured)
 
 ### Integrations
 - [x] CoinMarketCap API key configured
