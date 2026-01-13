@@ -76,14 +76,32 @@ class NodeStats(BaseModel):
     reputation_score: float
 
 class EarningsData(BaseModel):
-    today_opt: float
+    # USD earnings from app subscriptions
     today_usd: float
-    week_opt: float
     week_usd: float
-    month_opt: float
     month_usd: float
+    # OPT rewards from referrals
+    today_opt_rewards: float
+    week_opt_rewards: float
+    month_opt_rewards: float
+    total_opt_rewards: float
+    # Breakdown
     earnings_by_app: List[dict]
     daily_history: List[dict]
+
+class ReferralStats(BaseModel):
+    # Node operator referrals
+    operator_invites_sent: int
+    operator_signups: int
+    operator_opt_earned: float
+    # App user referrals (signups driven to apps you host)
+    app_user_signups: int
+    app_user_opt_earned: float
+    # Totals
+    total_opt_earned: float
+    pending_opt: float
+    referral_links: List[dict]
+    recent_signups: List[dict]
 
 class InstalledApp(BaseModel):
     id: str
@@ -91,8 +109,9 @@ class InstalledApp(BaseModel):
     icon: str
     status: str
     subscribers_served: int
-    revenue_opt: float
-    revenue_usd: float
+    revenue_usd: float  # USD earned from subscribers
+    signups_driven: int  # Users who signed up via your promotion
+    opt_rewards_earned: float  # OPT rewards for driving signups
     health: str
     installed_at: str
 
@@ -111,11 +130,18 @@ class AvailableApp(BaseModel):
     installs: int
 
 class PromotionStats(BaseModel):
-    clicks: int
-    referrals: int
-    conversions: int
-    revenue_attributed_opt: float
-    share_links: List[dict]
+    # App promotion stats
+    app_link_clicks: int
+    app_signups_driven: int
+    app_opt_rewards: float
+    # Operator referral stats
+    operator_invites_sent: int
+    operator_signups: int
+    operator_opt_rewards: float
+    # Share links
+    app_share_links: List[dict]
+    operator_referral_link: str
+    recent_activity: List[dict]
 
 class CapacityData(BaseModel):
     total_capacity: float
