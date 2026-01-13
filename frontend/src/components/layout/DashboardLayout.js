@@ -133,6 +133,7 @@ export default function DashboardLayout() {
           <nav className="flex-1 space-y-1 overflow-y-auto">
             {navItems.map((item) => {
               const isActive = location.pathname === item.path;
+              const IconComponent = item.icon;
               return (
                 <NavLink
                   key={item.path}
@@ -143,11 +144,15 @@ export default function DashboardLayout() {
                     flex items-center gap-3 px-3 py-2.5 rounded-xl
                     transition-colors duration-200
                     ${isActive 
-                      ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/30' 
+                      ? 'bg-[#4865af]/20 text-[#6b8dd6] border border-[#4865af]/30' 
                       : 'text-slate-400 hover:text-white hover:bg-white/5'}
                   `}
                 >
-                  <item.icon className={`w-5 h-5 ${isActive ? 'text-cyan-400' : ''}`} />
+                  {item.isCustom ? (
+                    <IconComponent className={`w-5 h-5 ${isActive ? '' : ''}`} />
+                  ) : (
+                    <IconComponent className={`w-5 h-5 ${isActive ? 'text-[#6b8dd6]' : ''}`} />
+                  )}
                   <span className="text-sm font-medium">{item.label}</span>
                 </NavLink>
               );
