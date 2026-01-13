@@ -56,6 +56,7 @@ class UserCreate(BaseModel):
 class UserLogin(BaseModel):
     email: EmailStr
     password: str
+    totp_code: Optional[str] = None  # 2FA code if enabled
 
 class UserResponse(BaseModel):
     id: str
@@ -63,11 +64,26 @@ class UserResponse(BaseModel):
     name: str
     wallet_address: Optional[str] = None
     created_at: str
+    two_factor_enabled: Optional[bool] = False
 
 class TokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
     user: UserResponse
+    requires_2fa: Optional[bool] = False  # True if 2FA is needed
+
+class TwoFactorSetupResponse(BaseModel):
+    secret: str
+    qr_code: str  # Base64 encoded QR code image
+    provisioning_uri: str
+
+class TwoFactorVerifyRequest(BaseModel):
+    code: str
+
+class TwoFactorLoginRequest(BaseModel):
+    email: EmailStr
+    password: str
+    totp_code: str
 
 class NodeStats(BaseModel):
     node_id: str
