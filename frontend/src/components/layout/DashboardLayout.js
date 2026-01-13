@@ -193,7 +193,7 @@ export default function DashboardLayout() {
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-h-screen">
         {/* Top Bar */}
-        <header className="sticky top-0 z-30 glass-card border-b border-white/5 px-4 lg:px-6 py-3">
+        <header className="sticky top-0 z-30 bg-[rgba(15,17,26,0.95)] backdrop-blur-xl border-b border-white/5 px-4 lg:px-6 py-3">
           <div className="flex items-center justify-between">
             {/* Mobile menu button */}
             <button 
