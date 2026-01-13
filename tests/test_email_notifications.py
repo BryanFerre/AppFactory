@@ -12,9 +12,13 @@ import uuid
 
 BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://app-factory-971.preview.emergentagent.com').rstrip('/')
 
-# Test credentials
-TEST_USER_EMAIL = "reftest@napp.io"
+# Test credentials - using user without 2FA enabled
+TEST_USER_EMAIL = "emailtest@napp.io"
 TEST_USER_PASSWORD = "testpass123"
+
+# Alternative test user with 2FA (for reference)
+TEST_USER_2FA_EMAIL = "reftest@napp.io"
+TEST_USER_2FA_PASSWORD = "testpass123"
 
 
 class TestEmailAuthentication:
