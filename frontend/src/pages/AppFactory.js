@@ -161,6 +161,55 @@ export default function AppFactory() {
         </Select>
       </div>
 
+      {/* Featured Apps Section */}
+      {featuredApps.length > 0 && (
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-5 h-5 text-amber-400" />
+            <h2 className="text-lg font-semibold text-white">Featured Apps</h2>
+          </div>
+          <motion.div
+            variants={container}
+            initial="hidden"
+            animate="show"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+          >
+            {featuredApps.map((app) => (
+              <motion.div
+                key={app.id}
+                variants={item}
+                className="glass-card p-4 border-2 border-amber-500/30 relative overflow-hidden"
+                data-testid={`featured-app-${app.id}`}
+              >
+                <div className="absolute top-0 right-0 bg-gradient-to-l from-amber-500 to-orange-500 text-black text-xs font-bold px-3 py-1 rounded-bl-lg">
+                  FEATURED
+                </div>
+                <div className="flex items-center gap-3 mt-4">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500/20 to-orange-500/20 flex items-center justify-center border border-amber-500/30">
+                    <Package className="w-6 h-6 text-amber-400" />
+                  </div>
+                  <div>
+                    <h3 className="text-white font-semibold">{app.name}</h3>
+                    <p className="text-xs text-slate-400">{app.category}</p>
+                  </div>
+                </div>
+                <p className="text-sm text-slate-400 mt-3 line-clamp-2">{app.description}</p>
+                <div className="flex items-center justify-between mt-4 pt-3 border-t border-white/5">
+                  <div className="flex items-center gap-1 text-emerald-400">
+                    <DollarSign className="w-4 h-4" />
+                    <span className="text-sm font-semibold">${app.subscription_price}/mo</span>
+                  </div>
+                  <div className="flex items-center gap-1 text-slate-400 text-xs">
+                    <Layers className="w-3 h-3" />
+                    <span>{app.revenue_share}% share</span>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      )}
+
       {/* Apps Grid */}
       {loading ? (
         <div className="flex items-center justify-center h-64">
