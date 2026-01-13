@@ -382,7 +382,14 @@ export default function AppFactory() {
       <Dialog open={!!installDialog} onOpenChange={() => setInstallDialog(null)}>
         <DialogContent className="glass-card border-white/10 max-w-lg">
           <DialogHeader>
-            <DialogTitle className="text-white font-['Outfit'] text-xl">Install {installDialog?.name}</DialogTitle>
+            <DialogTitle className="text-white font-['Outfit'] text-xl flex items-center gap-2">
+              Install {installDialog?.name}
+              {installDialog?.is_featured && (
+                <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-black text-xs">
+                  <Star className="w-3 h-3 mr-1 fill-current" /> FEATURED
+                </Badge>
+              )}
+            </DialogTitle>
             <DialogDescription className="text-slate-400">
               Review the app details before installing on your node
             </DialogDescription>
@@ -391,7 +398,11 @@ export default function AppFactory() {
           {installDialog && (
             <div className="space-y-4 py-4">
               <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-[#4865af] to-[#6b8dd6] flex items-center justify-center">
+                <div className={`w-16 h-16 rounded-xl flex items-center justify-center ${
+                  installDialog.is_featured 
+                    ? 'bg-gradient-to-br from-amber-500/30 to-orange-500/30 border border-amber-500/50' 
+                    : 'bg-gradient-to-br from-[#4865af] to-[#6b8dd6]'
+                }`}>
                   {getAppIcon(installDialog.icon)}
                 </div>
                 <div>
@@ -402,7 +413,11 @@ export default function AppFactory() {
 
               <p className="text-slate-300">{installDialog.description}</p>
 
-              <div className="bg-white/5 rounded-xl p-4 space-y-3">
+              <div className={`rounded-xl p-4 space-y-3 ${
+                installDialog.is_featured 
+                  ? 'bg-amber-500/10 border border-amber-500/20' 
+                  : 'bg-white/5'
+              }`}>
                 <div className="flex justify-between">
                   <span className="text-slate-400">Subscription Price</span>
                   <span className="text-white font-semibold">${installDialog.subscription_price}/user/month</span>
@@ -421,11 +436,11 @@ export default function AppFactory() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-400">Current Subscribers</span>
-                  <span className="text-white font-semibold">{installDialog.subscribers.toLocaleString()}</span>
+                  <span className="text-white font-semibold">{installDialog.subscribers?.toLocaleString() || 'N/A'}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-400">Available Slots</span>
-                  <span className="text-emerald-400 font-semibold">{installDialog.available_slots} / {installDialog.total_slots}</span>
+                  <span className="text-emerald-400 font-semibold">{installDialog.available_slots || 'N/A'} / {installDialog.total_slots || 'N/A'}</span>
                 </div>
               </div>
             </div>
