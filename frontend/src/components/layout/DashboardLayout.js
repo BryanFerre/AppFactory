@@ -36,7 +36,7 @@ export default function DashboardLayout() {
   const { user, logout } = useAuth();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [nodeStatus, setNodeStatus] = useState({ status: 'healthy', earnings_today: 0 });
+  const [nodeStatus, setNodeStatus] = useState({ status: 'healthy', earnings_today_usd: 0, earnings_today_opt: 0 });
   const [notifications, setNotifications] = useState([]);
   const [optPrice, setOptPrice] = useState(0.85);
 
@@ -56,7 +56,8 @@ export default function DashboardLayout() {
       ]);
       setNodeStatus({
         status: nodeRes.data.status,
-        earnings_today: earningsRes.data.today_opt
+        earnings_today_usd: earningsRes.data.today_usd,
+        earnings_today_opt: earningsRes.data.today_opt_rewards
       });
     } catch (error) {
       console.error('Failed to fetch node status');
@@ -186,8 +187,9 @@ export default function DashboardLayout() {
               <div className="h-4 w-px bg-white/10" />
               <div className="text-sm">
                 <span className="text-slate-400">Today: </span>
-                <span className="text-cyan-400 font-semibold">{nodeStatus.earnings_today.toFixed(2)} OPT</span>
-                <span className="text-slate-500 ml-1">(${(nodeStatus.earnings_today * optPrice).toFixed(2)})</span>
+                <span className="text-emerald-400 font-semibold">${nodeStatus.earnings_today_usd?.toFixed(2)}</span>
+                <span className="text-slate-500 mx-1">+</span>
+                <span className="text-cyan-400 font-semibold">{nodeStatus.earnings_today_opt?.toFixed(2)} OPT</span>
               </div>
             </div>
 
