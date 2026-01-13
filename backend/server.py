@@ -168,6 +168,46 @@ class AIRecommendation(BaseModel):
     action: Optional[str]
     priority: str
 
+# ==================== APP DEVELOPER MODELS ====================
+
+class AppSubmissionCreate(BaseModel):
+    app_name: str
+    description: str
+    category: str
+    resources_required: float  # GB
+    monthly_subscription_fee: float
+    revenue_sharing: float  # Percentage
+    nodes_available: int
+    github_url: Optional[str] = None
+    documentation_url: Optional[str] = None
+    contact_email: EmailStr
+    terms_accepted: bool
+
+class AppSubmissionResponse(BaseModel):
+    id: str
+    app_name: str
+    description: str
+    category: str
+    resources_required: float
+    monthly_subscription_fee: float
+    revenue_sharing: float
+    nodes_available: int
+    github_url: Optional[str]
+    documentation_url: Optional[str]
+    contact_email: str
+    icon_url: Optional[str]
+    code_file_url: Optional[str]
+    status: str  # pending, approved, rejected
+    featured: bool
+    featured_until: Optional[str]
+    created_at: str
+    updated_at: str
+
+class FeaturedListingRequest(BaseModel):
+    submission_id: str
+    plan: str  # "30_days" or "60_days"
+    origin_url: str
+
 # ==================== HELPER FUNCTIONS ====================
 
 def hash_password(password: str) -> str:
