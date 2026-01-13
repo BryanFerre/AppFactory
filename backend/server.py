@@ -342,6 +342,60 @@ def create_token(user_id: str, is_admin: bool = False) -> str:
     }
     return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
 
+def generate_referral_code(user_id: str) -> str:
+    """Generate a unique, short referral code from user ID"""
+    import hashlib
+    # Create a short hash from user_id
+    hash_input = f"{user_id}{JWT_SECRET}"
+    hash_obj = hashlib.sha256(hash_input.encode())
+    # Take first 8 characters of hex digest
+    return hash_obj.hexdigest()[:8].upper()
+
+async def process_referral_signup(referred_user_id: str, referral_code: str, referral_type: str = "operator"):
+    """Process a successful referral signup and credit OPT rewards"""
+    # Find the referrer by code
+    referrer = await db.users.find_one({"referral_code": referral_code}, {"_id": 0})
+    if not referrer:
+        logger.warning(f"Referral code {referral_code} not found")
+        return False
+    
+    now = datetime.now(timezone.utc).isoformat()
+    
+    # Determine reward amount
+    opt_reward = 50.0 if referral_type == "operator" else 2.0
+    
+    # Create referral record
+    referral_record = {
+        "id": str(uuid.uuid4()),
+        "referrer_id": referrer["id"],
+        "referred_id": referred_user_id,
+        "referral_code": referral_code,
+        "referral_type": referral_type,  # "operator" or "app_user"
+        "opt_reward": opt_reward,
+        "status": "pending",  # pending, confirmed, paid
+        "created_at": now
+    }
+    await db.referral_conversions.insert_one(referral_record)
+    
+    # Update referrer's stats
+    update_field = "operator_signups" if referral_type == "operator" else "app_signups"
+    pending_field = "operator_pending_opt" if referral_type == "operator" else "app_pending_opt"
+    
+    await db.referral_stats.update_one(
+        {"user_id": referrer["id"]},
+        {
+            "$inc": {
+                update_field: 1,
+                pending_field: opt_reward,
+                "total_pending_opt": opt_reward
+            }
+        },
+        upsert=True
+    )
+    
+    logger.info(f"Referral processed: {referrer['id']} referred {referred_user_id} ({referral_type}), reward: {opt_reward} OPT")
+    return True
+
 async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
     try:
         payload = jwt.decode(credentials.credentials, JWT_SECRET, algorithms=[JWT_ALGORITHM])
