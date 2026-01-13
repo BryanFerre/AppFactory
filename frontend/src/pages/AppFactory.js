@@ -161,52 +161,51 @@ export default function AppFactory() {
         </Select>
       </div>
 
-      {/* Featured Apps Section */}
+      {/* Featured Apps Section - Horizontal Scroll */}
       {featuredApps.length > 0 && (
-        <div className="space-y-4">
+        <div className="space-y-3">
           <div className="flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-amber-400" />
             <h2 className="text-lg font-semibold text-white">Featured Apps</h2>
           </div>
-          <motion.div
-            variants={container}
-            initial="hidden"
-            animate="show"
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
-          >
-            {featuredApps.map((app) => (
-              <motion.div
-                key={app.id}
-                variants={item}
-                className="glass-card p-4 border-2 border-amber-500/30 relative overflow-hidden"
-                data-testid={`featured-app-${app.id}`}
-              >
-                <div className="absolute top-0 right-0 bg-gradient-to-l from-amber-500 to-orange-500 text-black text-xs font-bold px-3 py-1 rounded-bl-lg">
-                  FEATURED
-                </div>
-                <div className="flex items-center gap-3 mt-4">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500/20 to-orange-500/20 flex items-center justify-center border border-amber-500/30">
-                    <Package className="w-6 h-6 text-amber-400" />
+          <div className="relative">
+            <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+              {featuredApps.map((app) => (
+                <motion.div
+                  key={app.id}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="flex-shrink-0 w-64 glass-card p-4 border border-amber-500/40 relative overflow-hidden hover:border-amber-500/60 transition-colors cursor-pointer"
+                  data-testid={`featured-app-${app.id}`}
+                >
+                  {/* Featured Badge */}
+                  <div className="absolute top-0 right-0 bg-gradient-to-l from-amber-500 to-orange-500 text-black text-[10px] font-bold px-2 py-0.5 rounded-bl-lg flex items-center gap-1">
+                    <Star className="w-3 h-3 fill-current" />
+                    FEATURED
                   </div>
-                  <div>
-                    <h3 className="text-white font-semibold">{app.name}</h3>
-                    <p className="text-xs text-slate-400">{app.category}</p>
+                  
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-amber-500/20 to-orange-500/20 flex items-center justify-center border border-amber-500/30">
+                      <Package className="w-5 h-5 text-amber-400" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-white font-semibold text-sm truncate">{app.name}</h3>
+                      <p className="text-xs text-amber-400/80">{app.category}</p>
+                    </div>
                   </div>
-                </div>
-                <p className="text-sm text-slate-400 mt-3 line-clamp-2">{app.description}</p>
-                <div className="flex items-center justify-between mt-4 pt-3 border-t border-white/5">
-                  <div className="flex items-center gap-1 text-emerald-400">
-                    <DollarSign className="w-4 h-4" />
-                    <span className="text-sm font-semibold">${app.subscription_price}/mo</span>
+                  
+                  <p className="text-xs text-slate-400 mt-2 line-clamp-2 h-8">{app.description}</p>
+                  
+                  <div className="flex items-center justify-between mt-3 pt-2 border-t border-amber-500/20">
+                    <span className="text-emerald-400 font-semibold text-sm">${app.subscription_price}/mo</span>
+                    <span className="text-slate-500 text-xs">{app.revenue_share}% share</span>
                   </div>
-                  <div className="flex items-center gap-1 text-slate-400 text-xs">
-                    <Layers className="w-3 h-3" />
-                    <span>{app.revenue_share}% share</span>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
+                </motion.div>
+              ))}
+            </div>
+            {/* Fade gradient on right edge */}
+            <div className="absolute right-0 top-0 bottom-4 w-16 bg-gradient-to-l from-[#0a0f1c] to-transparent pointer-events-none" />
+          </div>
         </div>
       )}
 
