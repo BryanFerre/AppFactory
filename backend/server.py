@@ -476,6 +476,7 @@ async def register(user_data: UserCreate):
     user_id = str(uuid.uuid4())
     wallet_address = f"0x{uuid.uuid4().hex[:40]}"
     now = datetime.now(timezone.utc).isoformat()
+    referral_code = generate_referral_code(user_id)
     
     user_doc = {
         "id": user_id,
@@ -483,10 +484,32 @@ async def register(user_data: UserCreate):
         "password": hash_password(user_data.password),
         "name": user_data.name,
         "wallet_address": wallet_address,
+        "referral_code": referral_code,
+        "referred_by": user_data.referral_code,  # Store who referred this user
         "created_at": now
     }
     
     await db.users.insert_one(user_doc)
+    
+    # Initialize referral stats for new user
+    await db.referral_stats.insert_one({
+        "user_id": user_id,
+        "operator_clicks": 0,
+        "operator_signups": 0,
+        "operator_opt_earned": 0.0,
+        "operator_pending_opt": 0.0,
+        "app_clicks": 0,
+        "app_signups": 0,
+        "app_opt_earned": 0.0,
+        "app_pending_opt": 0.0,
+        "total_opt_earned": 0.0,
+        "total_pending_opt": 0.0,
+        "created_at": now
+    })
+    
+    # Process referral if user was referred
+    if user_data.referral_code:
+        await process_referral_signup(user_id, user_data.referral_code, "operator")
     
     # Initialize node for user
     await initialize_user_node(user_id)
