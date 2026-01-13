@@ -81,6 +81,7 @@ function AppRoutes() {
         <Route path="support" element={<Support />} />
         <Route path="settings" element={<Settings />} />
         <Route path="wallet" element={<Wallet />} />
+        <Route path="app-developer" element={<AppDeveloper />} />
       </Route>
     </Routes>
   );
