@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import {
   Package, MoreVertical, TrendingUp, Users, Activity,
   Trash2, BarChart2, Share2, AlertTriangle, CheckCircle2,
-  HardDrive, Globe, Cpu, Gamepad2, Shield, Image
+  HardDrive, Globe, Cpu, Gamepad2, Shield, Image, DollarSign, Coins
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -83,8 +83,10 @@ export default function InstalledApps() {
     return icons[iconName] || <Package className="w-6 h-6" />;
   };
 
-  const totalRevenue = apps.reduce((sum, app) => sum + app.revenue_opt, 0);
-  const totalUsers = apps.reduce((sum, app) => sum + app.subscribers_served, 0);
+  const totalRevenue = apps.reduce((sum, app) => sum + (app.revenue_usd || 0), 0);
+  const totalUsers = apps.reduce((sum, app) => sum + (app.subscribers_served || 0), 0);
+  const totalSignups = apps.reduce((sum, app) => sum + (app.signups_driven || 0), 0);
+  const totalOptRewards = apps.reduce((sum, app) => sum + (app.opt_rewards_earned || 0), 0);
 
   return (
     <div className="space-y-6">
@@ -98,18 +100,23 @@ export default function InstalledApps() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="glass-card p-4">
           <p className="text-sm text-slate-400 mb-1">Total Apps</p>
           <p className="text-2xl font-bold text-white">{apps.length}</p>
         </div>
         <div className="glass-card p-4">
-          <p className="text-sm text-slate-400 mb-1">Total Revenue</p>
-          <p className="text-2xl font-bold text-cyan-400">{totalRevenue.toFixed(2)} OPT</p>
+          <p className="text-sm text-slate-400 mb-1">Revenue (USD)</p>
+          <p className="text-2xl font-bold text-emerald-400">${totalRevenue.toFixed(2)}</p>
         </div>
         <div className="glass-card p-4">
-          <p className="text-sm text-slate-400 mb-1">Users Served</p>
+          <p className="text-sm text-slate-400 mb-1">Subscribers</p>
           <p className="text-2xl font-bold text-white">{totalUsers.toLocaleString()}</p>
+        </div>
+        <div className="glass-card p-4">
+          <p className="text-sm text-slate-400 mb-1">OPT Rewards</p>
+          <p className="text-2xl font-bold text-cyan-400">{totalOptRewards.toFixed(0)} OPT</p>
+          <p className="text-xs text-slate-500">{totalSignups} signups driven</p>
         </div>
       </div>
 
@@ -141,7 +148,7 @@ export default function InstalledApps() {
               className="glass-card glass-card-hover p-6"
               data-testid={`installed-app-${app.id}`}
             >
-              <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+              <div className="flex flex-col lg:flex-row lg:items-center gap-4">
                 {/* App Info */}
                 <div className="flex items-center gap-4 flex-1">
                   <div className={`w-14 h-14 rounded-xl ${
@@ -171,25 +178,33 @@ export default function InstalledApps() {
                 </div>
 
                 {/* Stats */}
-                <div className="flex items-center gap-6">
-                  <div className="text-center">
-                    <p className="text-xs text-slate-500 mb-1">Users</p>
-                    <p className="text-lg font-semibold text-white flex items-center gap-1">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 lg:gap-6">
+                  <div className="text-center lg:text-left">
+                    <p className="text-xs text-slate-500 mb-1">Subscribers</p>
+                    <p className="text-lg font-semibold text-white flex items-center gap-1 justify-center lg:justify-start">
                       <Users className="w-4 h-4 text-slate-400" />
-                      {app.subscribers_served.toLocaleString()}
+                      {app.subscribers_served?.toLocaleString()}
                     </p>
                   </div>
-                  <div className="text-center">
+                  <div className="text-center lg:text-left">
                     <p className="text-xs text-slate-500 mb-1">Revenue</p>
-                    <p className="text-lg font-semibold text-cyan-400 flex items-center gap-1">
-                      <TrendingUp className="w-4 h-4" />
-                      {app.revenue_opt.toFixed(2)} OPT
+                    <p className="text-lg font-semibold text-emerald-400 flex items-center gap-1 justify-center lg:justify-start">
+                      <DollarSign className="w-4 h-4" />
+                      {app.revenue_usd?.toFixed(2)}
                     </p>
                   </div>
-                  <div className="text-center hidden md:block">
-                    <p className="text-xs text-slate-500 mb-1">USD Value</p>
-                    <p className="text-lg font-semibold text-slate-300">
-                      ${app.revenue_usd.toFixed(2)}
+                  <div className="text-center lg:text-left">
+                    <p className="text-xs text-slate-500 mb-1">Signups Driven</p>
+                    <p className="text-lg font-semibold text-white flex items-center gap-1 justify-center lg:justify-start">
+                      <TrendingUp className="w-4 h-4 text-slate-400" />
+                      {app.signups_driven || 0}
+                    </p>
+                  </div>
+                  <div className="text-center lg:text-left">
+                    <p className="text-xs text-slate-500 mb-1">OPT Rewards</p>
+                    <p className="text-lg font-semibold text-cyan-400 flex items-center gap-1 justify-center lg:justify-start">
+                      <Coins className="w-4 h-4" />
+                      {app.opt_rewards_earned?.toFixed(0)}
                     </p>
                   </div>
                 </div>
@@ -208,7 +223,7 @@ export default function InstalledApps() {
                     </DropdownMenuItem>
                     <DropdownMenuItem className="cursor-pointer">
                       <Share2 className="w-4 h-4 mr-2" />
-                      Promote
+                      Get Share Link
                     </DropdownMenuItem>
                     <DropdownMenuItem 
                       className="cursor-pointer text-red-400 focus:text-red-400"
