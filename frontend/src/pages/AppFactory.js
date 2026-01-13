@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import {
   Search, TrendingUp, Download, Users, Server, Layers, DollarSign,
   Package, Activity, Cpu, Globe, Gamepad2, Shield, Image, HardDrive,
-  Sparkles, Clock
+  Sparkles, Clock, Star
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
