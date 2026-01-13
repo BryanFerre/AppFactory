@@ -3,9 +3,9 @@ import { Outlet, NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import axios from 'axios';
 import {
-  LayoutDashboard, Factory, Package, TrendingUp, Megaphone,
+  LayoutDashboard, Package, TrendingUp, Megaphone,
   Activity, HardDrive, Wallet, FileText, HelpCircle, Settings,
-  Bell, ChevronDown, LogOut, Menu, X, Zap
+  Bell, ChevronDown, LogOut, Menu, X
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -19,9 +19,19 @@ import { Badge } from '@/components/ui/badge';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
+// App Factory Logo Icon Component
+const AppFactoryIcon = ({ className }) => (
+  <svg viewBox="0 0 48 48" className={className}>
+    <path fill="#4865af" d="M39.71,15.49h1.91c-.13-.14-.24-.29-.33-.46-.17-.32-.35-.63-.54-.94-.41-.66-.44-1.47-.1-2.17l1.17-2.35c.46-.93.23-2.04-.56-2.71l-2.86-2.4c-.79-.66-1.93-.7-2.76-.09l-2.11,1.55c-.62.46-1.43.56-2.15.28-.34-.13-.68-.26-1.02-.37-.73-.24-1.28-.85-1.46-1.59l-.61-2.54c-.24-1-1.14-1.71-2.17-1.71h-3.73c-1.03,0-1.93.71-2.17,1.71l-.61,2.54c-.18.75-.73,1.35-1.46,1.59-.35.11-.69.24-1.02.37-.72.28-1.53.18-2.15-.28l-2.11-1.55c-.83-.61-1.97-.58-2.76.09l-2.86,2.4c-.79.66-1.02,1.78-.56,2.71l1.17,2.35c.34.69.31,1.51-.1,2.17-.19.31-.37.62-.54.94-.37.68-1.05,1.11-1.82,1.16l-2.61.16c-1.03.06-1.88.83-2.06,1.84L.03,21.87c-.18,1.02.36,2.02,1.31,2.44l2.39,1.05c.71.31,1.2.96,1.32,1.72.05.36.11.72.19,1.08.15.75-.09,1.53-.65,2.06l-1.89,1.8c-.75.71-.91,1.84-.39,2.74l1.86,3.23c.52.89,1.58,1.32,2.57,1.03l2.84-.83c.41-.08,1.01-.08,1.54.34.06.06.13.12.19.17,0,0,0,0,0,0h0c.29.26.58.51.88.75.6.48.92,1.23.83,2l-.29,2.6c-.11,1.03.49,2,1.46,2.35l3.5,1.28c.97.35,2.06,0,2.63-.86l1.45-2.18c.43-.64,1.15-1.02,1.92-1,.18,0,.36,0,.54,0s.36,0,.54,0c.77-.02,1.5.35,1.92,1l1.45,2.18c.57.86,1.66,1.22,2.63.86l3.5-1.28c.97-.35,1.57-1.32,1.46-2.35l-.29-2.6c-.09-.76.23-1.52.83-2,.3-.24.6-.49.89-.75,0,0,.56-.54,1.38-.54.17,0,.35.02.53.08l2.65.78c.99.29,2.05-.13,2.57-1.03l1.86-3.23c.52-.89.35-2.02-.39-2.74l-1.89-1.8c-.56-.53-.8-1.31-.65-2.06.07-.36.14-.72.19-1.08.11-.76.61-1.42,1.32-1.72l2.39-1.05s.09-.04.13-.06h-7.55v-8.76ZM35.03,7.69h3.61v3.61h-3.61v-3.61ZM38.2,26.77h-1.94c-1.19,5.66-6.27,9.9-12.31,9.76-6.55-.14-11.87-5.47-12.01-12.02-.16-7,5.57-12.72,12.57-12.57,2.99.06,5.73,1.21,7.84,3.07h3.93v4.03h-.9c.7,1.5,1.11,3.16,1.15,4.91,0,.02,0,.04,0,.07h1.68v2.74ZM41.21,29.43v2.74h-2.74v-2.74h2.74Z"/>
+    <rect fill="#fff" x="41.65" y="17.28" width="5.23" height="5.23"/>
+    <rect fill="#fff" x="32.84" y="16.01" width="2.19" height="2.19"/>
+    <rect fill="#fff" x="25.83" y="20.43" width="3.61" height="3.61"/>
+  </svg>
+);
+
 const navItems = [
   { path: '/', icon: LayoutDashboard, label: 'Dashboard' },
-  { path: '/app-factory', icon: Factory, label: 'App Factory' },
+  { path: '/app-factory', icon: AppFactoryIcon, label: 'App Factory', isCustom: true },
   { path: '/installed-apps', icon: Package, label: 'Installed Apps' },
   { path: '/earnings', icon: TrendingUp, label: 'Earnings' },
   { path: '/promotion', icon: Megaphone, label: 'Promotion Tools' },
