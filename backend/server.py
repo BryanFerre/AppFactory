@@ -355,13 +355,52 @@ def hash_password(password: str) -> str:
 def verify_password(password: str, hashed: str) -> bool:
     return bcrypt.checkpw(password.encode('utf-8'), hashed.encode('utf-8'))
 
-def create_token(user_id: str, is_admin: bool = False) -> str:
+def create_token(user_id: str, is_admin: bool = False, pending_2fa: bool = False) -> str:
     payload = {
         "sub": user_id,
         "is_admin": is_admin,
+        "pending_2fa": pending_2fa,  # True if 2FA verification is still needed
         "exp": datetime.now(timezone.utc) + timedelta(hours=JWT_EXPIRATION_HOURS)
     }
     return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
+
+# ==================== 2FA HELPER FUNCTIONS ====================
+
+def generate_totp_secret() -> str:
+    """Generate a new TOTP secret for 2FA setup"""
+    return pyotp.random_base32()
+
+def get_totp_uri(secret: str, email: str) -> str:
+    """Generate the provisioning URI for authenticator apps"""
+    totp = pyotp.TOTP(secret)
+    return totp.provisioning_uri(name=email, issuer_name=TOTP_ISSUER)
+
+def generate_qr_code(uri: str) -> str:
+    """Generate a QR code image as base64 string"""
+    qr = qrcode.QRCode(version=1, box_size=10, border=5)
+    qr.add_data(uri)
+    qr.make(fit=True)
+    
+    img = qr.make_image(fill_color="black", back_color="white")
+    buffer = io.BytesIO()
+    img.save(buffer, format='PNG')
+    buffer.seek(0)
+    
+    return base64.b64encode(buffer.getvalue()).decode('utf-8')
+
+def verify_totp(secret: str, code: str) -> bool:
+    """Verify a TOTP code against the secret"""
+    totp = pyotp.TOTP(secret)
+    # Allow 1 window tolerance for clock skew
+    return totp.verify(code, valid_window=1)
+
+def generate_backup_codes(count: int = 8) -> List[str]:
+    """Generate backup codes for 2FA recovery"""
+    codes = []
+    for _ in range(count):
+        code = ''.join([str(random.randint(0, 9)) for _ in range(8)])
+        codes.append(f"{code[:4]}-{code[4:]}")
+    return codes
 
 def generate_referral_code(user_id: str) -> str:
     """Generate a unique, short referral code from user ID"""
