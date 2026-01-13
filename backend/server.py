@@ -586,23 +586,54 @@ async def register(user_data: UserCreate):
         )
     )
 
-@api_router.post("/auth/login", response_model=TokenResponse)
+@api_router.post("/auth/login")
 async def login(user_data: UserLogin):
     user = await db.users.find_one({"email": user_data.email}, {"_id": 0})
     if not user or not verify_password(user_data.password, user["password"]):
         raise HTTPException(status_code=401, detail="Invalid credentials")
     
+    two_fa_enabled = user.get("two_factor_enabled", False)
+    
+    # Check if 2FA is enabled for this user
+    if two_fa_enabled:
+        if not user_data.totp_code:
+            # Return a response indicating 2FA is required
+            return {
+                "requires_2fa": True,
+                "message": "Two-factor authentication code required",
+                "access_token": None,
+                "user": None
+            }
+        
+        # Verify the TOTP code
+        totp_secret = user.get("totp_secret")
+        if not totp_secret or not verify_totp(totp_secret, user_data.totp_code):
+            # Check backup codes
+            backup_codes = user.get("backup_codes", [])
+            if user_data.totp_code in backup_codes:
+                # Valid backup code - remove it after use
+                backup_codes.remove(user_data.totp_code)
+                await db.users.update_one(
+                    {"id": user["id"]},
+                    {"$set": {"backup_codes": backup_codes}}
+                )
+            else:
+                raise HTTPException(status_code=401, detail="Invalid 2FA code")
+    
     token = create_token(user["id"])
-    return TokenResponse(
-        access_token=token,
-        user=UserResponse(
-            id=user["id"],
-            email=user["email"],
-            name=user["name"],
-            wallet_address=user.get("wallet_address"),
-            created_at=user["created_at"]
-        )
-    )
+    return {
+        "access_token": token,
+        "token_type": "bearer",
+        "requires_2fa": False,
+        "user": {
+            "id": user["id"],
+            "email": user["email"],
+            "name": user["name"],
+            "wallet_address": user.get("wallet_address"),
+            "created_at": user["created_at"],
+            "two_factor_enabled": two_fa_enabled
+        }
+    }
 
 @api_router.get("/auth/me", response_model=UserResponse)
 async def get_me(user=Depends(get_current_user)):
@@ -611,8 +642,119 @@ async def get_me(user=Depends(get_current_user)):
         email=user["email"],
         name=user["name"],
         wallet_address=user.get("wallet_address"),
-        created_at=user["created_at"]
+        created_at=user["created_at"],
+        two_factor_enabled=user.get("two_factor_enabled", False)
     )
+
+# ==================== 2FA ENDPOINTS (USER) ====================
+
+@api_router.post("/auth/2fa/setup", response_model=TwoFactorSetupResponse)
+async def setup_2fa(user=Depends(get_current_user)):
+    """Initialize 2FA setup - returns QR code and secret"""
+    if user.get("two_factor_enabled"):
+        raise HTTPException(status_code=400, detail="2FA is already enabled")
+    
+    # Generate new TOTP secret
+    secret = generate_totp_secret()
+    uri = get_totp_uri(secret, user["email"])
+    qr_code = generate_qr_code(uri)
+    
+    # Store the pending secret (not yet verified)
+    await db.users.update_one(
+        {"id": user["id"]},
+        {"$set": {"pending_totp_secret": secret}}
+    )
+    
+    return TwoFactorSetupResponse(
+        secret=secret,
+        qr_code=qr_code,
+        provisioning_uri=uri
+    )
+
+@api_router.post("/auth/2fa/verify")
+async def verify_2fa_setup(verify_data: TwoFactorVerifyRequest, user=Depends(get_current_user)):
+    """Verify 2FA setup with first code - enables 2FA"""
+    pending_secret = user.get("pending_totp_secret")
+    if not pending_secret:
+        raise HTTPException(status_code=400, detail="No pending 2FA setup found. Please start setup first.")
+    
+    if not verify_totp(pending_secret, verify_data.code):
+        raise HTTPException(status_code=400, detail="Invalid verification code")
+    
+    # Generate backup codes
+    backup_codes = generate_backup_codes()
+    
+    # Enable 2FA
+    await db.users.update_one(
+        {"id": user["id"]},
+        {
+            "$set": {
+                "totp_secret": pending_secret,
+                "two_factor_enabled": True,
+                "backup_codes": backup_codes,
+                "two_factor_enabled_at": datetime.now(timezone.utc).isoformat()
+            },
+            "$unset": {"pending_totp_secret": ""}
+        }
+    )
+    
+    return {
+        "message": "Two-factor authentication enabled successfully",
+        "backup_codes": backup_codes
+    }
+
+@api_router.post("/auth/2fa/disable")
+async def disable_2fa(verify_data: TwoFactorVerifyRequest, user=Depends(get_current_user)):
+    """Disable 2FA - requires current code for verification"""
+    if not user.get("two_factor_enabled"):
+        raise HTTPException(status_code=400, detail="2FA is not enabled")
+    
+    totp_secret = user.get("totp_secret")
+    if not verify_totp(totp_secret, verify_data.code):
+        # Check backup codes
+        backup_codes = user.get("backup_codes", [])
+        if verify_data.code not in backup_codes:
+            raise HTTPException(status_code=400, detail="Invalid verification code")
+    
+    # Disable 2FA
+    await db.users.update_one(
+        {"id": user["id"]},
+        {
+            "$set": {"two_factor_enabled": False},
+            "$unset": {"totp_secret": "", "backup_codes": "", "pending_totp_secret": ""}
+        }
+    )
+    
+    return {"message": "Two-factor authentication disabled successfully"}
+
+@api_router.get("/auth/2fa/status")
+async def get_2fa_status(user=Depends(get_current_user)):
+    """Get current 2FA status"""
+    return {
+        "two_factor_enabled": user.get("two_factor_enabled", False),
+        "enabled_at": user.get("two_factor_enabled_at"),
+        "backup_codes_remaining": len(user.get("backup_codes", []))
+    }
+
+@api_router.post("/auth/2fa/backup-codes/regenerate")
+async def regenerate_backup_codes(verify_data: TwoFactorVerifyRequest, user=Depends(get_current_user)):
+    """Regenerate backup codes - requires current code"""
+    if not user.get("two_factor_enabled"):
+        raise HTTPException(status_code=400, detail="2FA is not enabled")
+    
+    totp_secret = user.get("totp_secret")
+    if not verify_totp(totp_secret, verify_data.code):
+        raise HTTPException(status_code=400, detail="Invalid verification code")
+    
+    # Generate new backup codes
+    backup_codes = generate_backup_codes()
+    
+    await db.users.update_one(
+        {"id": user["id"]},
+        {"$set": {"backup_codes": backup_codes}}
+    )
+    
+    return {"backup_codes": backup_codes}
 
 # ==================== NODE INITIALIZATION ====================
 
