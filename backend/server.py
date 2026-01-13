@@ -699,16 +699,53 @@ async def install_app(app_id: str, user=Depends(get_current_user)):
 
 @api_router.get("/promotion/stats", response_model=PromotionStats)
 async def get_promotion_stats(user=Depends(get_current_user)):
+    # Get referral data
+    referral_data = await db.referrals.find_one({"user_id": user["id"]}, {"_id": 0})
+    
+    if not referral_data:
+        # Initialize referral data for new users
+        referral_data = {
+            "user_id": user["id"],
+            "operator_invites_sent": 12,
+            "operator_signups": 3,
+            "operator_opt_earned": 150.0,
+            "app_link_clicks": 2847,
+            "app_signups_driven": 156,
+            "app_opt_earned": 312.0,
+            "total_opt_earned": 462.0
+        }
+        await db.referrals.insert_one(referral_data)
+    
+    # Get installed apps for share links
+    apps = await db.installed_apps.find({"user_id": user["id"]}, {"_id": 0, "name": 1, "id": 1}).to_list(100)
+    
+    app_share_links = []
+    for app in apps:
+        app_share_links.append({
+            "app_name": app["name"],
+            "app_id": app["id"],
+            "url": f"https://napp.io/app/{app['id'][:8]}?ref={user['id'][:8]}",
+            "signups": random.randint(10, 80),
+            "opt_earned": round(random.uniform(5, 50), 2)
+        })
+    
+    recent_activity = [
+        {"type": "app_signup", "app": "DataVault Pro", "user": "john_d***", "opt_reward": 2.0, "time": "2 hours ago"},
+        {"type": "operator_signup", "user": "sarah_m***", "opt_reward": 50.0, "time": "1 day ago"},
+        {"type": "app_signup", "app": "StreamRelay", "user": "mike_t***", "opt_reward": 2.0, "time": "2 days ago"},
+        {"type": "app_signup", "app": "ChainBridge", "user": "lisa_k***", "opt_reward": 2.0, "time": "3 days ago"}
+    ]
+    
     return PromotionStats(
-        clicks=2847,
-        referrals=156,
-        conversions=42,
-        revenue_attributed_opt=325.5,
-        share_links=[
-            {"platform": "twitter", "url": f"https://napp.io/ref/{user['id'][:8]}?utm=tw", "clicks": 1240},
-            {"platform": "telegram", "url": f"https://napp.io/ref/{user['id'][:8]}?utm=tg", "clicks": 890},
-            {"platform": "discord", "url": f"https://napp.io/ref/{user['id'][:8]}?utm=dc", "clicks": 717}
-        ]
+        app_link_clicks=referral_data.get("app_link_clicks", 0),
+        app_signups_driven=referral_data.get("app_signups_driven", 0),
+        app_opt_rewards=referral_data.get("app_opt_earned", 0),
+        operator_invites_sent=referral_data.get("operator_invites_sent", 0),
+        operator_signups=referral_data.get("operator_signups", 0),
+        operator_opt_rewards=referral_data.get("operator_opt_earned", 0),
+        app_share_links=app_share_links,
+        operator_referral_link=f"https://napp.io/join?ref={user['id'][:8]}",
+        recent_activity=recent_activity
     )
 
 # ==================== CAPACITY ENDPOINTS ====================
