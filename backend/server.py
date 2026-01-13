@@ -191,11 +191,24 @@ class PayoutRecord(BaseModel):
     tx_hash: Optional[str]
 
 class AIRecommendation(BaseModel):
-    type: str
+    type: str  # "promotion", "social_post", "earnings", "optimization"
     title: str
     description: str
-    action: Optional[str]
-    priority: str
+    action: Optional[str] = None
+    priority: str  # "high", "medium", "low"
+    app_name: Optional[str] = None  # For app-specific recommendations
+    social_platforms: Optional[List[str]] = None  # ["twitter", "linkedin", "facebook"]
+    post_content: Optional[str] = None  # Ready-to-use social media post
+    hashtags: Optional[List[str]] = None
+
+class AppPromotion(BaseModel):
+    app_id: str
+    app_name: str
+    app_description: str
+    social_posts: List[dict]  # {platform, content, hashtags}
+    promotion_tips: List[str]
+    target_audience: str
+    referral_link: str
 
 # ==================== APP DEVELOPER MODELS ====================
 
