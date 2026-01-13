@@ -258,6 +258,7 @@ class AdminCreate(BaseModel):
 class AdminLogin(BaseModel):
     email: EmailStr
     password: str
+    totp_code: Optional[str] = None  # 2FA code if enabled
 
 class AdminResponse(BaseModel):
     id: str
@@ -268,6 +269,7 @@ class AdminResponse(BaseModel):
     is_active: bool
     last_login: Optional[str]
     created_at: str
+    two_factor_enabled: Optional[bool] = False
 
 class AdminActionLog(BaseModel):
     admin_id: str
