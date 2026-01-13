@@ -671,6 +671,19 @@ async def process_referral_signup(referred_user_id: str, referral_code: str, ref
         upsert=True
     )
     
+    # Get total referrals count
+    stats = await db.referral_stats.find_one({"user_id": referrer["id"]}, {"_id": 0})
+    total_referrals = (stats.get("operator_signups", 0) if stats else 0) + (stats.get("app_signups", 0) if stats else 0)
+    
+    # Send email notification to referrer
+    base_url = os.environ.get("FRONTEND_URL", "https://napp.io")
+    await send_notification_email("referral_signup", referrer["email"], {
+        "opt_reward": opt_reward,
+        "referral_type": referral_type,
+        "total_referrals": total_referrals,
+        "dashboard_url": base_url
+    })
+    
     logger.info(f"Referral processed: {referrer['id']} referred {referred_user_id} ({referral_type}), reward: {opt_reward} OPT")
     return True
 
