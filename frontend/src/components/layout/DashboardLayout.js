@@ -5,7 +5,7 @@ import axios from 'axios';
 import {
   LayoutDashboard, Store, Package, TrendingUp, Megaphone,
   Activity, HardDrive, Wallet, FileText, HelpCircle, Settings,
-  Bell, ChevronDown, LogOut, Menu, X, Code
+  Bell, ChevronDown, LogOut, Menu, X, Code, Trophy
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -24,6 +24,7 @@ const navItems = [
   { path: '/', icon: LayoutDashboard, label: 'Dashboard' },
   { path: '/app-marketplace', icon: Store, label: 'App Marketplace' },
   { path: '/installed-apps', icon: Package, label: 'Installed Apps' },
+  { path: '/proof-of-impact', icon: Trophy, label: 'Proof of Impact' },
   { path: '/earnings', icon: TrendingUp, label: 'Earnings' },
   { path: '/promotion', icon: Megaphone, label: 'Promotion Tools' },
   { path: '/node-health', icon: Activity, label: 'Node Health' },
