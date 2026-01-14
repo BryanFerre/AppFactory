@@ -7,7 +7,7 @@ import { Toaster } from "@/components/ui/sonner";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
 import Dashboard from "@/pages/Dashboard";
-import AppFactory from "@/pages/AppFactory";
+import AppMarketplace from "@/pages/AppMarketplace";
 import InstalledApps from "@/pages/InstalledApps";
 import Earnings from "@/pages/Earnings";
 import Promotion from "@/pages/Promotion";
@@ -85,7 +85,7 @@ function AppRoutes() {
       
       <Route path="/" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
         <Route index element={<Dashboard />} />
-        <Route path="app-factory" element={<AppFactory />} />
+        <Route path="app-marketplace" element={<AppMarketplace />} />
         <Route path="installed-apps" element={<InstalledApps />} />
         <Route path="earnings" element={<Earnings />} />
         <Route path="promotion" element={<Promotion />} />
