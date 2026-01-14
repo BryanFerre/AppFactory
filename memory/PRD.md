@@ -334,7 +334,8 @@ Build a full-stack application called "AppCloud by Optio" (formerly NAPP Node Op
 ## Future Tasks (P2)
 - Real-time notifications via WebSockets
 - Production blockchain integration
-- Points redemption system (external API ready for third-party app to consume)
+- NFT license integration (make licenses transferable on blockchain)
+- Additional landing page sections (Features, Pricing, About)
 
 ## External API Documentation
 
