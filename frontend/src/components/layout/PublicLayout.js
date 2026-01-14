@@ -136,13 +136,7 @@ export default function PublicLayout() {
             {/* Brand */}
             <div className="col-span-1 md:col-span-2">
               <div className="flex items-center gap-2 mb-4">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
-                  <Cloud className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <span className="text-xl font-bold text-white font-['Outfit']">Optio</span>
-                  <span className="text-xl font-light text-cyan-400 font-['Outfit']">Cloud</span>
-                </div>
+                <AppCloudLogo className="h-10 w-auto" />
               </div>
               <p className="text-slate-500 text-sm max-w-md">
                 Decentralized cloud infrastructure powered by independent node operators. 
