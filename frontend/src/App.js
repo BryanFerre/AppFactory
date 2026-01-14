@@ -36,6 +36,7 @@ import AdminReports from "@/pages/admin/AdminReports";
 import AdminAuditLogs from "@/pages/admin/AdminAuditLogs";
 import AdminSettings from "@/pages/admin/AdminSettings";
 import AdminAccounting from "@/pages/admin/AdminAccounting";
+import AdminPointsConfig from "@/pages/admin/AdminPointsConfig";
 
 // Layout
 import DashboardLayout from "@/components/layout/DashboardLayout";
