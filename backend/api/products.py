@@ -322,6 +322,19 @@ async def seed_default_products():
     """Seed the default CloudNode product if not exists"""
     existing = await db.products.find_one({"slug": "optio-cloudnode"})
     if existing:
+        # Update existing product with new pricing structure if needed
+        if "regular_price" not in existing or "monthly_fee" not in existing:
+            await db.products.update_one(
+                {"slug": "optio-cloudnode"},
+                {"$set": {
+                    "regular_price": 7500.00,
+                    "price": 5000.00,
+                    "monthly_fee": 99.00,
+                    "is_on_sale": True,
+                    "sale_label": "Pre-Launch Special",
+                    "updated_at": datetime.now(timezone.utc).isoformat()
+                }}
+            )
         return
     
     now = datetime.now(timezone.utc)
@@ -334,12 +347,16 @@ async def seed_default_products():
 
 By combining decentralized hosting, built-in incentives, and a global network of independent operators, Optio CloudNode transforms cloud computing from a centralized service into a shared, revenue-generating ecosystem designed for blockchain, AI, and the apps of the future.""",
         "short_description": "Own a piece of the decentralized cloud. Earn passive income by powering the apps of tomorrow.",
+        "regular_price": 7500.00,
         "price": 5000.00,
+        "monthly_fee": 99.00,
+        "is_on_sale": True,
+        "sale_label": "Pre-Launch Special",
         "currency": "USD",
         "category": "node",
         "image_url": None,
         "features": [
-            "Lifetime license with no recurring fees",
+            "Lifetime license included",
             "Earn passive income from app hosting",
             "No technical skills required",
             "24/7 automated operation",
@@ -354,7 +371,8 @@ By combining decentralized hosting, built-in incentives, and a global network of
             "network": "Optio Blockchain Cloud",
             "license": "Lifetime",
             "setup": "Automated",
-            "support": "Community + Priority"
+            "support": "Community + Priority",
+            "monthly_operation": "$99/month"
         },
         "is_active": True,
         "is_featured": True,
