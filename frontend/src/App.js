@@ -33,6 +33,7 @@ import AdminRevenue from "@/pages/admin/AdminRevenue";
 import AdminReports from "@/pages/admin/AdminReports";
 import AdminAuditLogs from "@/pages/admin/AdminAuditLogs";
 import AdminSettings from "@/pages/admin/AdminSettings";
+import AdminAccounting from "@/pages/admin/AdminAccounting";
 
 // Layout
 import DashboardLayout from "@/components/layout/DashboardLayout";
@@ -114,6 +115,7 @@ function AppRoutes() {
         <Route path="reports" element={<AdminReports />} />
         <Route path="audit" element={<AdminAuditLogs />} />
         <Route path="settings" element={<AdminSettings />} />
+        <Route path="accounting" element={<AdminAccounting />} />
       </Route>
     </Routes>
   );

@@ -5,7 +5,7 @@ import axios from 'axios';
 import {
   LayoutDashboard, Users, Server, Package, CreditCard, HeadphonesIcon,
   TrendingUp, FileText, ScrollText, Settings, Shield, Search, Bell,
-  LogOut, ChevronDown, AlertTriangle, Menu, X
+  LogOut, ChevronDown, AlertTriangle, Menu, X, Calculator
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,6 +26,7 @@ const navItems = [
   { path: '/admin/nodes', icon: Server, label: 'NAPP Nodes' },
   { path: '/admin/apps', icon: Package, label: 'App Submissions' },
   { path: '/admin/billing', icon: CreditCard, label: 'Billing & Payments' },
+  { path: '/admin/accounting', icon: Calculator, label: 'Accounting' },
   { path: '/admin/support', icon: HeadphonesIcon, label: 'Customer Support' },
   { path: '/admin/revenue', icon: TrendingUp, label: 'Revenue & Payouts' },
   { path: '/admin/reports', icon: FileText, label: 'Reports & Exports' },
