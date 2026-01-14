@@ -3,9 +3,15 @@ import "@/App.css";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
 
-// Pages
+// Public Pages
+import LandingPage from "@/pages/public/LandingPage";
+import PurchaseSuccess from "@/pages/public/PurchaseSuccess";
+
+// Auth Pages
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
+
+// Dashboard Pages
 import Dashboard from "@/pages/Dashboard";
 import AppMarketplace from "@/pages/AppMarketplace";
 import InstalledApps from "@/pages/InstalledApps";
@@ -38,10 +44,12 @@ import AdminAuditLogs from "@/pages/admin/AdminAuditLogs";
 import AdminSettings from "@/pages/admin/AdminSettings";
 import AdminAccounting from "@/pages/admin/AdminAccounting";
 import AdminPointsConfig from "@/pages/admin/AdminPointsConfig";
+import AdminProducts from "@/pages/admin/AdminProducts";
 
-// Layout
+// Layouts
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import AdminLayout from "@/components/layout/AdminLayout";
+import PublicLayout from "@/components/layout/PublicLayout";
 
 // Auth Context
 import { AuthProvider, useAuth } from "@/context/AuthContext";
@@ -65,7 +73,7 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
-const PublicRoute = ({ children }) => {
+const AuthRoute = ({ children }) => {
   const { user, loading } = useAuth();
   
   if (loading) {
@@ -77,7 +85,7 @@ const PublicRoute = ({ children }) => {
   }
   
   if (user) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/dashboard" replace />;
   }
   
   return children;
@@ -86,10 +94,20 @@ const PublicRoute = ({ children }) => {
 function AppRoutes() {
   return (
     <Routes>
-      <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
-      <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
+      {/* Public Routes with Public Layout */}
+      <Route element={<PublicLayout />}>
+        <Route path="/" element={<LandingPage />} />
+      </Route>
       
-      <Route path="/" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
+      {/* Purchase Success (no layout) */}
+      <Route path="/purchase-success" element={<PurchaseSuccess />} />
+      
+      {/* Auth Routes */}
+      <Route path="/login" element={<AuthRoute><Login /></AuthRoute>} />
+      <Route path="/register" element={<AuthRoute><Register /></AuthRoute>} />
+      
+      {/* Protected Dashboard Routes */}
+      <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
         <Route index element={<Dashboard />} />
         <Route path="app-marketplace" element={<AppMarketplace />} />
         <Route path="installed-apps" element={<InstalledApps />} />
@@ -124,7 +142,11 @@ function AppRoutes() {
         <Route path="settings" element={<AdminSettings />} />
         <Route path="accounting" element={<AdminAccounting />} />
         <Route path="points-config" element={<AdminPointsConfig />} />
+        <Route path="products" element={<AdminProducts />} />
       </Route>
+
+      {/* Catch all - redirect to landing */}
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }
