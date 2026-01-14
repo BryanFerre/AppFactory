@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="19" skipped="0" tests="22" time="7.523" timestamp="2026-01-14T01:58:30.619937+00:00" hostname="agent-env-ac4728e4-fa29-4a8f-ad3b-8f124d383ab9"><testcase classname="tests.test_admin_accounting.TestAdminAccountingAuth" name="test_dashboard_requires_auth" time="0.353" /><testcase classname="tests.test_admin_accounting.TestAdminAccountingAuth" name="test_commissions_requires_auth" time="0.350" /><testcase classname="tests.test_admin_accounting.TestAdminAccountingAuth" name="test_payouts_requires_auth" time="0.292" /><testcase classname="tests.test_admin_accounting.TestAdminAccountingDashboard" name="test_dashboard_returns_stats" time="0.330"><failure message="assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code">tests/test_admin_accounting.py:75: in test_dashboard_returns_stats
+    assert response.status_code == 200
+E   assert 401 == 200
+E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="tests.test_admin_accounting.TestSeedDemoData" name="test_seed_demo_data" time="0.338"><failure message="assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code">tests/test_admin_accounting.py:122: in test_seed_demo_data
+    assert response.status_code == 200
+E   assert 401 == 200
+E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="tests.test_admin_accounting.TestCommissions" name="test_list_commissions" time="0.324"><failure message="assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code">tests/test_admin_accounting.py:158: in test_list_commissions
+    assert response.status_code == 200
+E   assert 401 == 200
+E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="tests.test_admin_accounting.TestCommissions" name="test_list_commissions_with_status_filter" time="0.317"><failure message="assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code">tests/test_admin_accounting.py:174: in test_list_commissions_with_status_filter
+    assert response.status_code == 200
+E   assert 401 == 200
+E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="tests.test_admin_accounting.TestCommissions" name="test_commission_has_correct_structure" time="0.326"><failure message="assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code">tests/test_admin_accounting.py:189: in test_commission_has_correct_structure
+    assert response.status_code == 200
+E   assert 401 == 200
+E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="tests.test_admin_accounting.TestCommissions" name="test_approve_commission" time="0.318"><failure message="assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code">tests/test_admin_accounting.py:215: in test_approve_commission
+    assert response.status_code == 200
+E   assert 401 == 200
+E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="tests.test_admin_accounting.TestCommissions" name="test_reject_commission" time="0.316"><failure message="assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code">tests/test_admin_accounting.py:242: in test_reject_commission
+    assert response.status_code == 200
+E   assert 401 == 200
+E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="tests.test_admin_accounting.TestCommissions" name="test_mark_commission_paid" time="0.404"><failure message="KeyError: 'commissions'">tests/test_admin_accounting.py:271: in test_mark_commission_paid
+    if not data["commissions"]:
+           ^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'commissions'</failure></testcase><testcase classname="tests.test_admin_accounting.TestCommissions" name="test_cannot_approve_non_pending_commission" time="0.366"><failure message="KeyError: 'commissions'">tests/test_admin_accounting.py:301: in test_cannot_approve_non_pending_commission
+    if not data["commissions"]:
+           ^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'commissions'</failure></testcase><testcase classname="tests.test_admin_accounting.TestBulkCommissionActions" name="test_bulk_approve_commissions" time="0.323"><failure message="KeyError: 'commissions'">tests/test_admin_accounting.py:346: in test_bulk_approve_commissions
+    if len(data["commissions"]) &lt; 2:
+           ^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'commissions'</failure></testcase><testcase classname="tests.test_admin_accounting.TestBulkCommissionActions" name="test_bulk_reject_commissions" time="0.319"><failure message="KeyError: 'commissions'">tests/test_admin_accounting.py:372: in test_bulk_reject_commissions
+    if len(data["commissions"]) &lt; 2:
+           ^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'commissions'</failure></testcase><testcase classname="tests.test_admin_accounting.TestPayouts" name="test_list_payouts" time="0.338"><failure message="assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code">tests/test_admin_accounting.py:416: in test_list_payouts
+    assert response.status_code == 200
+E   assert 401 == 200
+E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="tests.test_admin_accounting.TestPayouts" name="test_list_payouts_with_status_filter" time="0.325"><failure message="assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code">tests/test_admin_accounting.py:431: in test_list_payouts_with_status_filter
+    assert response.status_code == 200
+E   assert 401 == 200
+E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="tests.test_admin_accounting.TestPayouts" name="test_payout_has_correct_structure" time="0.325"><failure message="assert 401 == 200&#10; +  where 401 = &lt;Response [401]&gt;.status_code">tests/test_admin_accounting.py:446: in test_payout_has_correct_structure
+    assert response.status_code == 200
+E   assert 401 == 200
+E    +  where 401 = &lt;Response [401]&gt;.status_code</failure></testcase><testcase classname="tests.test_admin_accounting.TestPayouts" name="test_process_payout" time="0.325"><failure message="KeyError: 'payouts'">tests/test_admin_accounting.py:476: in test_process_payout
+    if not data["payouts"]:
+           ^^^^^^^^^^^^^^^
+E   KeyError: 'payouts'</failure></testcase><testcase classname="tests.test_admin_accounting.TestPayouts" name="test_reject_payout" time="0.317"><failure message="KeyError: 'payouts'">tests/test_admin_accounting.py:502: in test_reject_payout
+    if not data["payouts"]:
+           ^^^^^^^^^^^^^^^
+E   KeyError: 'payouts'</failure></testcase><testcase classname="tests.test_admin_accounting.TestPayouts" name="test_complete_payout" time="0.336"><failure message="KeyError: 'payouts'">tests/test_admin_accounting.py:528: in test_complete_payout
+    if not data["payouts"]:
+           ^^^^^^^^^^^^^^^
+E   KeyError: 'payouts'</failure></testcase><testcase classname="tests.test_admin_accounting.TestBulkPayoutActions" name="test_bulk_process_payouts" time="0.320"><failure message="KeyError: 'payouts'">tests/test_admin_accounting.py:592: in test_bulk_process_payouts
+    if len(data["payouts"]) &lt; 2:
+           ^^^^^^^^^^^^^^^
+E   KeyError: 'payouts'</failure></testcase><testcase classname="tests.test_admin_accounting.TestBulkPayoutActions" name="test_bulk_reject_payouts" time="0.324"><failure message="KeyError: 'payouts'">tests/test_admin_accounting.py:618: in test_bulk_reject_payouts
+    if len(data["payouts"]) &lt; 2:
+           ^^^^^^^^^^^^^^^
+E   KeyError: 'payouts'</failure></testcase></testsuite></testsuites>
