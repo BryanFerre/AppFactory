@@ -121,6 +121,7 @@ function AppRoutes() {
         <Route path="audit" element={<AdminAuditLogs />} />
         <Route path="settings" element={<AdminSettings />} />
         <Route path="accounting" element={<AdminAccounting />} />
+        <Route path="points-config" element={<AdminPointsConfig />} />
       </Route>
     </Routes>
   );
