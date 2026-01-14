@@ -15,6 +15,23 @@ from models.schemas import ReferralClick, ReferralStatsResponse
 router = APIRouter(prefix="/referral", tags=["Referral"])
 
 
+async def award_user_points(user_id: str, action_id: str, source_entity_id: str = None, metadata: dict = None):
+    """Helper function to award points to a user"""
+    try:
+        from services.points_engine import PointsEngine
+        engine = PointsEngine(db)
+        return await engine.award_points(
+            user_id=user_id,
+            action_id=action_id,
+            source_entity_id=source_entity_id,
+            metadata=metadata
+        )
+    except Exception as e:
+        import logging
+        logging.error(f"Failed to award points: {e}")
+        return None
+
+
 @router.get("/code")
 async def get_referral_code(user=Depends(get_current_user)):
     """Get user's referral code and links"""
