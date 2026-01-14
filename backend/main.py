@@ -72,6 +72,7 @@ app.include_router(accounting.router, prefix="/api")
 # Activity Points System
 app.include_router(activity.router, prefix="/api")
 app.include_router(activity.admin_router, prefix="/api")
+app.include_router(activity.external_router, prefix="/api")
 
 
 # Root endpoints
