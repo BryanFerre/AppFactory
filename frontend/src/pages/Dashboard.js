@@ -355,7 +355,7 @@ export default function Dashboard() {
         </motion.div>
 
         {/* Capacity Widget */}
-        <motion.div variants={item} className="glass-card glass-card-hover p-6" data-testid="capacity-widget">
+        <motion.div variants={item} className="md:col-span-2 glass-card glass-card-hover p-6" data-testid="capacity-widget">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-white font-['Outfit']">Capacity</h2>
             <span className="text-sm text-slate-400">{capacity?.used_capacity}/{capacity?.total_capacity} GB</span>
