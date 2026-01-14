@@ -21,6 +21,7 @@ import Wallet from "@/pages/Wallet";
 import AppDeveloper from "@/pages/AppDeveloper";
 import AppDetails from "@/pages/AppDetails";
 import ProofOfImpact from "@/pages/ProofOfImpact";
+import Leaderboard from "@/pages/Leaderboard";
 
 // Admin Pages
 import AdminLogin from "@/pages/admin/AdminLogin";
@@ -92,6 +93,7 @@ function AppRoutes() {
         <Route path="installed-apps" element={<InstalledApps />} />
         <Route path="app/:appId" element={<AppDetails />} />
         <Route path="proof-of-impact" element={<ProofOfImpact />} />
+        <Route path="leaderboard" element={<Leaderboard />} />
         <Route path="earnings" element={<Earnings />} />
         <Route path="promotion" element={<Promotion />} />
         <Route path="node-health" element={<NodeHealth />} />
