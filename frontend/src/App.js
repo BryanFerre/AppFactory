@@ -20,6 +20,7 @@ import Settings from "@/pages/Settings";
 import Wallet from "@/pages/Wallet";
 import AppDeveloper from "@/pages/AppDeveloper";
 import AppDetails from "@/pages/AppDetails";
+import ProofOfImpact from "@/pages/ProofOfImpact";
 
 // Admin Pages
 import AdminLogin from "@/pages/admin/AdminLogin";
