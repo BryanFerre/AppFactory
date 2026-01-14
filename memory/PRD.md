@@ -57,6 +57,14 @@ Build a full-stack application called "AppCloud by Optio" (formerly NAPP Node Op
   - Business logic in `/app/backend/services/`
   - All 33 API endpoint tests passing (100%)
 
+- ✅ **App Factory Filtering & Comparison Features**
+  - Sort by: Revenue, Subscribers, Price, Popularity, Capacity
+  - Sort order: High to Low / Low to High
+  - Advanced filters: Minimum Revenue ($0-$200+), Maximum Capacity (1-10 GB)
+  - App comparison: Select up to 3 apps for side-by-side comparison
+  - Active filter badges with quick remove
+  - New API endpoints: `/api/apps/compare`, `/api/apps/categories`
+
 ### Previously Completed
 - ✅ **Admin Control Panel:** All 10 admin modules fully implemented
 - ✅ **Referral System:** Backend for tracking codes, clicks, signups, OPT rewards
