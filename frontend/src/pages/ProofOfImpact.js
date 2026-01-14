@@ -169,12 +169,17 @@ export default function ProofOfImpact() {
   const tierBgGlow = tierConfig[currentTier]?.bgGlow || 'bg-slate-500/20';
   const tierTextColor = tierConfig[currentTier]?.textColor || 'text-slate-400';
 
-  // Prepare chart data
-  const categoryData = Object.entries(summary?.points_by_category || {}).map(([key, value]) => ({
+  // Prepare chart data - show ALL categories, even those with 0 points
+  const allCategories = ['ecosystem', 'growth', 'revenue', 'builder', 'operations', 'community', 'feedback', 'engagement', 'milestones', 'longterm'];
+  const categoryData = allCategories.map(key => ({
+    key,
     name: categoryConfig[key]?.label || key,
-    value,
+    value: summary?.points_by_category?.[key] || 0,
     color: categoryConfig[key]?.color || '#64748B'
   }));
+  
+  // Filter for pie chart (only show categories with points)
+  const pieChartData = categoryData.filter(cat => cat.value > 0);
 
   // Calculate tier progress
   const currentTierData = summary?.tiers?.find(t => t.name === currentTier);
