@@ -222,6 +222,182 @@ async def get_tiers():
     }
 
 
+# ==================== BADGES ENDPOINTS ====================
+
+@router.get("/badges")
+async def get_user_badges(user: dict = Depends(get_current_user)):
+    """Get current user's badges and achievements"""
+    engine = await get_badges_engine()
+    
+    # Check and award any new badges
+    newly_awarded = await engine.check_and_award_badges(user["id"])
+    
+    # Get summary
+    summary = await engine.get_user_badges_summary(user["id"])
+    summary["newly_awarded"] = newly_awarded
+    summary["badge_categories"] = BADGE_CATEGORIES
+    
+    return summary
+
+
+@router.get("/badges/all")
+async def get_all_badges():
+    """Get all available badges"""
+    engine = await get_badges_engine()
+    badges = await engine.get_all_badges()
+    
+    return {
+        "badges": badges,
+        "categories": BADGE_CATEGORIES,
+        "total": len(badges)
+    }
+
+
+# ==================== REWARDS & REDEMPTION ENDPOINTS ====================
+
+@router.get("/rewards")
+async def get_rewards_catalog(user: dict = Depends(get_current_user)):
+    """Get available rewards for redemption"""
+    engine = await get_redemption_engine()
+    points_engine_inst = await get_points_engine()
+    
+    rewards = await engine.get_rewards_catalog()
+    summary = await points_engine_inst.get_user_summary(user["id"])
+    
+    # Mark which rewards user can afford
+    for reward in rewards:
+        reward["can_afford"] = summary.get("total_points", 0) >= reward["points_cost"]
+    
+    return {
+        "rewards": rewards,
+        "categories": REWARD_CATEGORIES,
+        "user_points": summary.get("total_points", 0)
+    }
+
+
+class RedeemRequest(BaseModel):
+    reward_id: str
+
+
+@router.post("/redeem")
+async def redeem_reward(
+    request: RedeemRequest,
+    user: dict = Depends(get_current_user)
+):
+    """Redeem a reward using points"""
+    engine = await get_redemption_engine()
+    result = await engine.redeem_reward(user["id"], request.reward_id)
+    
+    if not result["success"]:
+        raise HTTPException(status_code=400, detail=result["message"])
+    
+    return result
+
+
+@router.get("/redemptions")
+async def get_user_redemptions(
+    limit: int = Query(50, le=100),
+    user: dict = Depends(get_current_user)
+):
+    """Get user's redemption history"""
+    engine = await get_redemption_engine()
+    redemptions = await engine.get_user_redemptions(user["id"], limit)
+    active = await engine.get_user_active_rewards(user["id"])
+    
+    return {
+        "redemptions": redemptions,
+        "active_rewards": active,
+        "total": len(redemptions)
+    }
+
+
+# ==================== WEEKLY/MONTHLY LEADERBOARD ====================
+
+@router.get("/leaderboard/weekly")
+async def get_weekly_leaderboard(limit: int = Query(50, le=100)):
+    """Get top users by points earned this week"""
+    now = datetime.now(timezone.utc)
+    week_start = now - timedelta(days=now.weekday())
+    week_start = week_start.replace(hour=0, minute=0, second=0, microsecond=0)
+    
+    pipeline = [
+        {"$match": {"created_at": {"$gte": week_start.isoformat()}}},
+        {"$group": {
+            "_id": "$user_id",
+            "points_this_week": {"$sum": "$points"}
+        }},
+        {"$sort": {"points_this_week": -1}},
+        {"$limit": limit}
+    ]
+    
+    results = await db.activity_points_ledger.aggregate(pipeline).to_list(length=limit)
+    
+    # Enrich with user info
+    leaderboard = []
+    for i, result in enumerate(results):
+        user = await db.users.find_one({"id": result["_id"]}, {"_id": 0, "name": 1, "email": 1})
+        summary = await db.user_points_summary.find_one({"user_id": result["_id"]}, {"_id": 0, "tier": 1, "tier_color": 1})
+        
+        leaderboard.append({
+            "rank": i + 1,
+            "user_id": result["_id"],
+            "name": user.get("name") if user else "Unknown",
+            "email": user.get("email") if user else None,
+            "points_this_week": result["points_this_week"],
+            "tier": summary.get("tier", "Starter") if summary else "Starter",
+            "tier_color": summary.get("tier_color", "#94A3B8") if summary else "#94A3B8"
+        })
+    
+    return {
+        "leaderboard": leaderboard,
+        "period": "weekly",
+        "period_start": week_start.isoformat(),
+        "total": len(leaderboard)
+    }
+
+
+@router.get("/leaderboard/monthly")
+async def get_monthly_leaderboard(limit: int = Query(50, le=100)):
+    """Get top users by points earned this month"""
+    now = datetime.now(timezone.utc)
+    month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    
+    pipeline = [
+        {"$match": {"created_at": {"$gte": month_start.isoformat()}}},
+        {"$group": {
+            "_id": "$user_id",
+            "points_this_month": {"$sum": "$points"}
+        }},
+        {"$sort": {"points_this_month": -1}},
+        {"$limit": limit}
+    ]
+    
+    results = await db.activity_points_ledger.aggregate(pipeline).to_list(length=limit)
+    
+    # Enrich with user info
+    leaderboard = []
+    for i, result in enumerate(results):
+        user = await db.users.find_one({"id": result["_id"]}, {"_id": 0, "name": 1, "email": 1})
+        summary = await db.user_points_summary.find_one({"user_id": result["_id"]}, {"_id": 0, "tier": 1, "tier_color": 1})
+        
+        leaderboard.append({
+            "rank": i + 1,
+            "user_id": result["_id"],
+            "name": user.get("name") if user else "Unknown",
+            "email": user.get("email") if user else None,
+            "points_this_month": result["points_this_month"],
+            "tier": summary.get("tier", "Starter") if summary else "Starter",
+            "tier_color": summary.get("tier_color", "#94A3B8") if summary else "#94A3B8"
+        })
+    
+    return {
+        "leaderboard": leaderboard,
+        "period": "monthly",
+        "period_start": month_start.isoformat(),
+        "total": len(leaderboard)
+    }
+
+
 # ==================== INTERNAL ENDPOINT ====================
 # This endpoint is for internal service-to-service calls
 
