@@ -17,7 +17,7 @@ import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from utils.database import db
-from utils.auth import get_current_user, create_access_token, get_password_hash
+from utils.auth import get_current_user, create_token, hash_password
 from api.licenses import issue_license
 from services.points_engine import PointsEngine
 
@@ -166,7 +166,7 @@ async def verify_purchase(request: VerifyPurchaseRequest):
         license = await db.licenses.find_one({"order_id": order["id"]})
         
         if user and license:
-            token = create_access_token(data={"sub": user["id"]})
+            token = create_token(user["id"])
             return {
                 "success": True,
                 "already_processed": True,
@@ -199,7 +199,7 @@ async def verify_purchase(request: VerifyPurchaseRequest):
         
         # Generate random password
         password = ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(12))
-        hashed_password = get_password_hash(password)
+        hashed_password = hash_password(password)
         
         # Generate referral code
         referral_code = ''.join(secrets.choice(string.ascii_uppercase + string.digits) for _ in range(8))
@@ -272,7 +272,7 @@ async def verify_purchase(request: VerifyPurchaseRequest):
         print(f"Failed to award purchase points: {e}")
     
     # Generate auth token
-    token = create_access_token(data={"sub": user_id})
+    token = create_token(user_id)
     
     # Get user for response
     user = await db.users.find_one({"id": user_id})
