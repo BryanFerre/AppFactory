@@ -611,3 +611,199 @@ async def admin_get_user_history(
         "history": history,
         "total": len(history)
     }
+
+
+# ==================== EXTERNAL API ENDPOINT ====================
+# This endpoint is designed for third-party applications to consume points data
+
+external_router = APIRouter(prefix="/external/activity", tags=["external-activity"])
+
+
+@external_router.get("/points/export")
+async def export_all_points_data(
+    limit: int = Query(1000, le=10000),
+    offset: int = Query(0, ge=0)
+):
+    """
+    Export all user points data for third-party consumption.
+    This endpoint is designed for external apps to ingest reward points data.
+    
+    Returns a list of all users with their points, tier, and summary info.
+    No authentication required for public consumption.
+    """
+    # Get all user summaries
+    cursor = db.user_points_summary.find(
+        {},
+        {"_id": 0}
+    ).sort("total_points", -1).skip(offset).limit(limit)
+    
+    summaries = await cursor.to_list(length=limit)
+    
+    # Enrich with user info
+    result = []
+    for summary in summaries:
+        user = await db.users.find_one(
+            {"id": summary["user_id"]}, 
+            {"_id": 0, "name": 1, "email": 1, "wallet_address": 1}
+        )
+        
+        # Get streak info
+        streak = await db.user_login_streaks.find_one(
+            {"user_id": summary["user_id"]},
+            {"_id": 0, "current_streak": 1, "longest_streak": 1}
+        )
+        
+        result.append({
+            "user_id": summary["user_id"],
+            "name": user.get("name") if user else None,
+            "email": user.get("email") if user else None,
+            "wallet_address": user.get("wallet_address") if user else None,
+            "total_points": summary.get("total_points", 0),
+            "tier": summary.get("tier", "Starter"),
+            "points_by_category": summary.get("points_by_category", {}),
+            "current_streak": streak.get("current_streak", 0) if streak else 0,
+            "longest_streak": streak.get("longest_streak", 0) if streak else 0,
+            "last_updated": summary.get("last_updated")
+        })
+    
+    total_count = await db.user_points_summary.count_documents({})
+    
+    return {
+        "success": True,
+        "data": result,
+        "pagination": {
+            "total": total_count,
+            "limit": limit,
+            "offset": offset,
+            "has_more": offset + limit < total_count
+        },
+        "export_timestamp": datetime.now(timezone.utc).isoformat()
+    }
+
+
+@external_router.get("/points/user/{user_id}")
+async def get_user_points_external(user_id: str):
+    """
+    Get a specific user's points data for third-party consumption.
+    """
+    summary = await db.user_points_summary.find_one(
+        {"user_id": user_id},
+        {"_id": 0}
+    )
+    
+    if not summary:
+        raise HTTPException(status_code=404, detail="User not found or has no points")
+    
+    user = await db.users.find_one(
+        {"id": user_id}, 
+        {"_id": 0, "name": 1, "email": 1, "wallet_address": 1}
+    )
+    
+    streak = await db.user_login_streaks.find_one(
+        {"user_id": user_id},
+        {"_id": 0, "current_streak": 1, "longest_streak": 1}
+    )
+    
+    # Get badges
+    badges_cursor = db.user_badges.find({"user_id": user_id}, {"_id": 0})
+    badges = await badges_cursor.to_list(length=100)
+    
+    return {
+        "success": True,
+        "data": {
+            "user_id": user_id,
+            "name": user.get("name") if user else None,
+            "email": user.get("email") if user else None,
+            "wallet_address": user.get("wallet_address") if user else None,
+            "total_points": summary.get("total_points", 0),
+            "tier": summary.get("tier", "Starter"),
+            "tier_color": summary.get("tier_color"),
+            "points_by_category": summary.get("points_by_category", {}),
+            "next_tier": summary.get("next_tier"),
+            "points_to_next_tier": summary.get("points_to_next_tier"),
+            "current_streak": streak.get("current_streak", 0) if streak else 0,
+            "longest_streak": streak.get("longest_streak", 0) if streak else 0,
+            "badges": badges,
+            "last_updated": summary.get("last_updated")
+        },
+        "export_timestamp": datetime.now(timezone.utc).isoformat()
+    }
+
+
+@external_router.get("/leaderboard/export")
+async def export_leaderboard(
+    period: str = Query("all", enum=["all", "weekly", "monthly"]),
+    limit: int = Query(100, le=500)
+):
+    """
+    Export leaderboard data for third-party consumption.
+    Supports all-time, weekly, and monthly periods.
+    """
+    now = datetime.now(timezone.utc)
+    
+    if period == "weekly":
+        week_start = now - timedelta(days=now.weekday())
+        week_start = week_start.replace(hour=0, minute=0, second=0, microsecond=0)
+        
+        pipeline = [
+            {"$match": {"created_at": {"$gte": week_start.isoformat()}}},
+            {"$group": {
+                "_id": "$user_id",
+                "period_points": {"$sum": "$points"}
+            }},
+            {"$sort": {"period_points": -1}},
+            {"$limit": limit}
+        ]
+        results = await db.activity_points_ledger.aggregate(pipeline).to_list(length=limit)
+        period_start = week_start.isoformat()
+        
+    elif period == "monthly":
+        month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        
+        pipeline = [
+            {"$match": {"created_at": {"$gte": month_start.isoformat()}}},
+            {"$group": {
+                "_id": "$user_id",
+                "period_points": {"$sum": "$points"}
+            }},
+            {"$sort": {"period_points": -1}},
+            {"$limit": limit}
+        ]
+        results = await db.activity_points_ledger.aggregate(pipeline).to_list(length=limit)
+        period_start = month_start.isoformat()
+        
+    else:
+        cursor = db.user_points_summary.find(
+            {},
+            {"_id": 0, "user_id": 1, "total_points": 1, "tier": 1}
+        ).sort("total_points", -1).limit(limit)
+        results = await cursor.to_list(length=limit)
+        results = [{"_id": r["user_id"], "period_points": r["total_points"], "tier": r.get("tier")} for r in results]
+        period_start = None
+    
+    # Enrich with user info
+    leaderboard = []
+    for i, result in enumerate(results):
+        user_id = result.get("_id") or result.get("user_id")
+        user = await db.users.find_one({"id": user_id}, {"_id": 0, "name": 1, "email": 1, "wallet_address": 1})
+        summary = await db.user_points_summary.find_one({"user_id": user_id}, {"_id": 0, "tier": 1, "total_points": 1})
+        
+        leaderboard.append({
+            "rank": i + 1,
+            "user_id": user_id,
+            "name": user.get("name") if user else None,
+            "email": user.get("email") if user else None,
+            "wallet_address": user.get("wallet_address") if user else None,
+            "period_points": result.get("period_points", 0),
+            "total_points": summary.get("total_points", 0) if summary else 0,
+            "tier": summary.get("tier", "Starter") if summary else "Starter"
+        })
+    
+    return {
+        "success": True,
+        "period": period,
+        "period_start": period_start,
+        "data": leaderboard,
+        "total": len(leaderboard),
+        "export_timestamp": datetime.now(timezone.utc).isoformat()
+    }
