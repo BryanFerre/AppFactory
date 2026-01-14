@@ -251,40 +251,40 @@ export default function LandingPage() {
               >
                 {/* Sale Badge - Centered Above */}
                 {product.is_on_sale && (
-                  <Badge className="mb-4 bg-gradient-to-r from-orange-500 to-red-500 text-white border-0 px-4 py-1.5 text-sm font-semibold">
+                  <Badge className="mb-4 bg-gradient-to-r from-orange-500 to-red-500 text-white border-0 px-4 py-1.5 text-sm font-semibold shadow-lg shadow-orange-500/30">
                     {product.sale_label || 'On Sale'}
                   </Badge>
                 )}
                 
                 {/* Pricing Box - Narrower */}
-                <div className="inline-flex items-center gap-4 bg-white/5 backdrop-blur-sm rounded-2xl px-6 py-4 border border-white/10">
-                  <div className="text-left">
-                    <p className="text-sm text-slate-500">Node License</p>
-                    <div className="flex items-baseline gap-2">
-                      <p className="text-3xl font-bold text-white">{formatPrice(product.price)}</p>
+                <div className="inline-flex items-center gap-5 bg-white/5 backdrop-blur-sm rounded-2xl px-5 py-4 border border-white/10">
+                  <div className="text-center">
+                    <p className="text-xs text-slate-500 mb-1">Node License</p>
+                    <div className="flex items-baseline justify-center gap-2">
+                      <p className="text-2xl font-bold text-white">{formatPrice(product.price)}</p>
                       {product.regular_price && product.regular_price > product.price && (
-                        <p className="text-lg text-slate-500 line-through">{formatPrice(product.regular_price)}</p>
+                        <p className="text-sm text-slate-500 line-through">{formatPrice(product.regular_price)}</p>
                       )}
                     </div>
                   </div>
                   
-                  <div className="w-px h-12 bg-white/10" />
+                  <div className="w-px h-10 bg-white/10" />
                   
-                  <div className="text-left">
-                    <p className="text-sm text-slate-500">Monthly Operation</p>
+                  <div className="text-center">
+                    <p className="text-xs text-slate-500 mb-1">Monthly Operation</p>
                     <p className="text-2xl font-bold text-cyan-400">
                       {product.monthly_fee ? `${formatPrice(product.monthly_fee)}/mo` : 'Free'}
                     </p>
                   </div>
                   
-                  <div className="w-px h-12 bg-white/10" />
+                  <div className="w-px h-10 bg-white/10" />
                   
-                  <div className="text-left">
-                    <p className="text-sm text-emerald-400 flex items-center gap-1">
-                      <CheckCircle2 className="w-4 h-4" />
+                  <div className="text-center">
+                    <p className="text-xs text-emerald-400 flex items-center gap-1">
+                      <CheckCircle2 className="w-3.5 h-3.5" />
                       Lifetime License
                     </p>
-                    <p className="text-xs text-slate-500">Apps add to monthly cost</p>
+                    <p className="text-[10px] text-slate-500 mt-0.5">Apps add to monthly cost</p>
                   </div>
                 </div>
               </motion.div>
