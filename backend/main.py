@@ -12,7 +12,7 @@ from utils.database import db, client, init_indexes
 from api.admin import init_super_admin
 
 # Import all route modules
-from api import auth, node, earnings, apps, referral, promotion, ai, developer, notifications, webhooks, admin, accounting, activity
+from api import auth, node, earnings, apps, referral, promotion, ai, developer, notifications, webhooks, admin, accounting, activity, products, licenses, purchase
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -26,6 +26,11 @@ async def lifespan(app: FastAPI):
     logger.info("Starting AppCloud API...")
     await init_indexes()
     await init_super_admin()
+    
+    # Seed default products
+    from api.products import seed_default_products
+    await seed_default_products()
+    
     logger.info("AppCloud API started successfully")
     
     yield
@@ -73,6 +78,14 @@ app.include_router(accounting.router, prefix="/api")
 app.include_router(activity.router, prefix="/api")
 app.include_router(activity.admin_router, prefix="/api")
 app.include_router(activity.external_router, prefix="/api")
+
+# Products, Licenses, and Purchase
+app.include_router(products.router, prefix="/api")
+app.include_router(products.admin_router, prefix="/api")
+app.include_router(licenses.router, prefix="/api")
+app.include_router(licenses.admin_router, prefix="/api")
+app.include_router(purchase.router, prefix="/api")
+app.include_router(purchase.admin_router, prefix="/api")
 
 
 # Root endpoints
