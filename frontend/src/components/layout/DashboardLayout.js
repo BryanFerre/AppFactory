@@ -94,6 +94,18 @@ export default function DashboardLayout() {
     }
   };
 
+  const fetchLicenses = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get(`${API}/licenses`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setLicenses(response.data.licenses || []);
+    } catch (error) {
+      console.error('Failed to fetch licenses');
+    }
+  };
+
   const unreadCount = notifications.filter(n => !n.read).length;
 
   return (
