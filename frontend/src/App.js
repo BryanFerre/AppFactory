@@ -88,6 +88,7 @@ function AppRoutes() {
         <Route index element={<Dashboard />} />
         <Route path="app-marketplace" element={<AppMarketplace />} />
         <Route path="installed-apps" element={<InstalledApps />} />
+        <Route path="app/:appId" element={<AppDetails />} />
         <Route path="earnings" element={<Earnings />} />
         <Route path="promotion" element={<Promotion />} />
         <Route path="node-health" element={<NodeHealth />} />
