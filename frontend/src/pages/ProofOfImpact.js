@@ -484,7 +484,8 @@ export default function ProofOfImpact() {
         <TabsContent value="milestones" className="space-y-6">
           {/* Streak Milestones */}
           <motion.div
-            variants={item}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
             className="glass-card p-6"
           >
             <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
