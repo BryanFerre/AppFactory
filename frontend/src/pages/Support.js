@@ -19,7 +19,7 @@ export default function Support() {
   const faqs = [
     {
       question: 'How do I increase my node earnings?',
-      answer: 'Install more apps from the App Factory, promote your referral links, and ensure your node maintains high uptime. Higher capacity nodes can run more apps simultaneously.'
+      answer: 'Install more apps from the App Marketplace, promote your referral links, and ensure your node maintains high uptime. Higher capacity nodes can run more apps simultaneously.'
     },
     {
       question: 'When do I receive payouts?',

@@ -234,7 +234,7 @@ export default function AppDeveloper() {
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-white font-['Outfit']">App Developer</h1>
-          <p className="text-slate-400 mt-1">Submit your app to the App Factory marketplace</p>
+          <p className="text-slate-400 mt-1">Submit your app to the App Marketplace marketplace</p>
         </div>
         <Button
           onClick={() => setShowForm(true)}
@@ -674,7 +674,7 @@ export default function AppDeveloper() {
                 data-testid="terms-checkbox"
               />
               <label htmlFor="terms" className="text-sm text-slate-300 cursor-pointer">
-                I accept the <span className="text-purple-400 hover:underline">Terms of Service</span> and agree to the App Factory developer guidelines. I understand that my submission will be reviewed before being published.
+                I accept the <span className="text-purple-400 hover:underline">Terms of Service</span> and agree to the App Marketplace developer guidelines. I understand that my submission will be reviewed before being published.
               </label>
             </div>
 
@@ -721,7 +721,7 @@ export default function AppDeveloper() {
               <ul className="text-sm text-slate-300 space-y-1">
                 <li className="flex items-center gap-2">
                   <Star className="w-4 h-4 text-amber-400" />
-                  Prominent placement at the top of App Factory
+                  Prominent placement at the top of App Marketplace
                 </li>
                 <li className="flex items-center gap-2">
                   <Users className="w-4 h-4 text-amber-400" />

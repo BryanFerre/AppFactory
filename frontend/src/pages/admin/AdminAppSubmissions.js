@@ -133,7 +133,7 @@ export default function AdminAppSubmissions() {
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-white font-['Outfit']">App Submissions</h1>
-          <p className="text-slate-400 mt-1">Review and manage app submissions for the App Factory</p>
+          <p className="text-slate-400 mt-1">Review and manage app submissions for the App Marketplace</p>
         </div>
         <div className="flex items-center gap-2">
           <Badge className="bg-amber-500/20 text-amber-400 border border-amber-500/30 px-3 py-1">

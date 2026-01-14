@@ -129,9 +129,9 @@ export default function InstalledApps() {
         <div className="glass-card p-12 text-center">
           <Package className="w-16 h-16 text-slate-600 mx-auto mb-4" />
           <h3 className="text-xl font-semibold text-white mb-2">No apps installed</h3>
-          <p className="text-slate-400 mb-6">Visit the App Factory to discover and install revenue-generating apps</p>
+          <p className="text-slate-400 mb-6">Visit the App Marketplace to discover and install revenue-generating apps</p>
           <Button className="bg-cyan-500 hover:bg-cyan-400 text-black font-semibold rounded-full">
-            Browse App Factory
+            Browse App Marketplace
           </Button>
         </div>
       ) : (
