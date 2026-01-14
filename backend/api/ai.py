@@ -19,7 +19,7 @@ async def generate_promotional_content(apps: list, user_name: str) -> list:
         return []
     
     try:
-        from emergentintegrations.llm.chat import chat, LlmModel
+        from emergentintegrations.llm.chat import LlmChat
         
         # Pick top performing app
         top_app = max(apps, key=lambda x: x.get("subscribers_served", 0))
@@ -40,9 +40,8 @@ async def generate_promotional_content(apps: list, user_name: str) -> list:
         POST 3: [content]
         """
         
-        response = await chat(
-            api_key=EMERGENT_LLM_KEY,
-            model=LlmModel.GPT_5_2,
+        llm = LlmChat(api_key=EMERGENT_LLM_KEY)
+        response = await llm.chat(
             system_prompt="You are a social media marketing expert helping node operators promote their hosted apps.",
             user_prompt=prompt
         )
