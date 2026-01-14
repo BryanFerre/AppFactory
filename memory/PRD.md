@@ -1,153 +1,103 @@
-# NAPP Node Operator Dashboard - Product Requirements Document
+# AppCloud by Optio - Product Requirements Document
 
 ## Original Problem Statement
-Design and implement the NAPP Node Operator Dashboard for a decentralized blockchain product called the NAPP Node, built on Optio Blockchain Cloud. The dashboard enables non-technical, entrepreneurial users to operate a licensed node as a recurring-revenue micro hosting business.
+Build a full-stack application called "AppCloud by Optio" (formerly NAPP Node Operator Dashboard) that serves three main purposes:
+1. **Node Operator Dashboard:** User-facing dashboard showing income, node health, and an "App Factory" for installing apps. Includes referral system, 2FA, and AI-powered promotional content generation.
+2. **App Developer Portal:** Section for developers to submit applications to the App Factory, with Stripe integration for "featured" listings.
+3. **Admin Control Panel:** Secure dashboard for Optio staff to manage users, nodes, app submissions, billing, and audit logs.
 
-## Business Model (Refined)
-- **USD Revenue**: Node operators earn USD from subscribers using apps hosted on their node
-- **OPT Rewards**: Earned through two referral programs:
-  1. Referring new node operators (50 OPT per signup)
-  2. Driving user signups to hosted apps (2 OPT per user)
+## Tech Stack
+- **Frontend:** React, React Router, Axios, TailwindCSS, lucide-react, Shadcn UI
+- **Backend:** FastAPI (Python), Pydantic, JWT authentication
+- **Database:** MongoDB (persistent)
+- **Integrations:** Stripe, CoinMarketCap, OpenAI (via emergentintegrations), Resend
 
-## User Personas
-- **Primary User**: Non-technical entrepreneurs operating blockchain nodes as micro-businesses
-- **Use Case**: 5-10 minute daily check-ins to monitor earnings and node health
-- **Goals**: Maximize passive income (USD), grow OPT rewards through promotion, maintain node health
+## Architecture (Post-Refactor)
+```
+/app/
+├── backend/
+│   ├── main.py              # Entry point, routers, lifespan
+│   ├── server.py            # Legacy wrapper (imports from main.py)
+│   ├── api/                  # Modular route files
+│   │   ├── auth.py          # User auth & 2FA
+│   │   ├── admin.py         # Admin routes
+│   │   ├── apps.py          # Installed/available apps
+│   │   ├── ai.py            # AI recommendations
+│   │   ├── developer.py     # Developer portal
+│   │   ├── earnings.py      # Earnings & payouts
+│   │   ├── node.py          # Node stats
+│   │   ├── promotion.py     # Promotion stats
+│   │   ├── referral.py      # Referral system
+│   │   ├── notifications.py # User notifications
+│   │   └── webhooks.py      # Stripe webhooks
+│   ├── models/
+│   │   └── schemas.py       # Pydantic models
+│   ├── services/
+│   │   ├── email.py         # Email notifications (Resend)
+│   │   └── referral.py      # Referral processing
+│   └── utils/
+│       ├── auth.py          # Auth helpers, JWT, 2FA
+│       ├── config.py        # Environment config
+│       └── database.py      # MongoDB connection
+├── frontend/
+│   └── src/
+│       ├── pages/           # React pages
+│       └── components/      # Reusable components
+└── tests/
+    └── test_all_endpoints.py # Comprehensive API tests
+```
 
-## Core Requirements (Static)
-1. JWT-based authentication (email/password) - 2FA planned
-2. Real-time node health monitoring (CPU, memory, storage, latency)
-3. Dual earnings visibility: USD (subscriptions) + OPT (referrals)
-4. App Factory for discovering and installing revenue-generating apps
-5. Referral tracking for both operator invites and app user signups
-6. Promotion tools with shareable links per app
-7. Payout tracking and tax-ready reports
-8. AI-powered recommendations for optimization
-9. Dark mode UI with glassmorphism design
+## What's Been Implemented
 
-## What's Been Implemented (January 2025)
+### Date: January 14, 2026
+- ✅ **MAJOR: Backend Refactoring Complete**
+  - Migrated from monolithic 4000+ line server.py to modular architecture
+  - Created 11 separate route modules under `/app/backend/api/`
+  - Centralized utilities in `/app/backend/utils/`
+  - Business logic in `/app/backend/services/`
+  - All 33 API endpoint tests passing (100%)
 
-### Backend (FastAPI + MongoDB)
-- [x] JWT authentication (register, login, token verification)
-- [x] Node stats and verification endpoints
-- [x] Earnings tracking with USD (subscriptions) and OPT (rewards)
-- [x] Installed apps with revenue_usd, signups_driven, opt_rewards_earned
-- [x] App Factory with install/uninstall functionality
-- [x] Referral system tracking:
-  - Operator referrals (invites sent, signups, OPT earned)
-  - App user signups (clicks, signups, OPT earned)
-- [x] Promotion stats with per-app share links
-- [x] Capacity monitoring and usage tracking
-- [x] Payouts history
-- [x] AI recommendations (GPT-5.2 integration)
-- [x] **App Developer submission system (January 13, 2025)**:
-  - Submit app API (/api/developer/submit)
-  - Get submissions API (/api/developer/submissions)
-  - Icon/code upload endpoints
-  - Featured listing checkout with Stripe ($29/30 days, $59/60 days)
-  - Featured apps API for App Factory display
+### Previously Completed
+- ✅ **Admin Control Panel:** All 10 admin modules fully implemented
+- ✅ **Referral System:** Backend for tracking codes, clicks, signups, OPT rewards
+- ✅ **2FA Authentication:** TOTP-based 2FA for user and admin accounts
+- ✅ **Email Notifications:** Resend integration for welcome, referral, 2FA emails
+- ✅ **AI Promotional Content:** LLM-powered social media post generation
+- ✅ **Full Rebranding:** NAPP → AppCloud across all components
+- ✅ **MongoDB Persistence:** All data persisted to MongoDB
 
-### Frontend (React + Tailwind + Shadcn)
-- [x] Dashboard with dual earnings display (USD + OPT)
-- [x] Node Health widget
-- [x] Revenue Trend chart (USD)
-- [x] Installed Apps with signups driven and OPT rewards
-- [x] Promotion Tools with:
-  - Two reward types explained
-  - Operator referral link
-  - Per-app share links with signup tracking
-  - Recent activity feed
-- [x] All other pages (Earnings, Capacity, Payouts, Reports, etc.)
-- [x] Branding update with new AppFactory logo (January 13, 2025):
-  - Login page: Logo on branding panel
-  - Register page: Logo on branding panel
-  - Sidebar: Logo at top of navigation
-  - App Factory page: Normal text header (no logo)
-  - App Factory sidebar nav: Generic Factory icon
-- [x] **App Developer page (January 13, 2025)**:
-  - Nav item at bottom of sidebar
-  - Stats cards (Total Submissions, Approved Apps, Featured Apps)
-  - Submit New App form with all fields:
-    * SVG icon upload
-    * App Name, Description, Category
-    * Resources Required (GB), Monthly Subscription Fee
-    * Revenue Sharing %, Number of Nodes Available
-    * GitHub URL or code file upload
-    * Contact Email, Documentation URL
-    * Terms of Service acceptance
-  - Submissions list with status badges (Pending/Approved/Rejected)
-  - Featured listing purchase dialog ($29/30 days, $59/60 days)
-  - App Factory shows Featured Apps section (when apps are approved and featured)
+## Key API Endpoints
+- `POST /api/auth/login` - User login with optional 2FA
+- `POST /api/auth/register` - User registration with referral tracking
+- `POST /api/auth/2fa/setup` - Initialize 2FA
+- `GET /api/node/stats` - Node health and performance
+- `GET /api/earnings` - USD earnings and OPT rewards
+- `GET /api/apps/installed` - User's installed apps
+- `GET /api/apps/available` - App Factory catalog
+- `GET /api/apps/featured` - Featured apps
+- `GET /api/referral/stats` - Referral statistics
+- `GET /api/ai/recommendations` - AI-powered recommendations
+- `POST /api/admin/auth/login` - Admin login
+- `GET /api/admin/dashboard/stats` - Admin dashboard overview
 
-### Integrations
-- [x] CoinMarketCap API key configured
-- [x] OpenAI GPT-5.2 for AI recommendations (Emergent LLM Key)
-- [x] Stripe for featured listings payment (test keys configured)
+## Test Credentials
+- **User:** dev@test.io / devpass123
+- **Admin:** admin@optio.com / admin123
 
-### Admin Control Panel (January 13, 2025) ✅ COMPLETE
-- [x] **Admin Authentication** - Separate JWT auth for admins with role-based permissions
-- [x] **Admin Dashboard** - Overview with stats (users, nodes, apps, support tickets, revenue)
-- [x] **Users & Accounts** - List users, search, filter by status, suspend/reinstate actions
-- [x] **NAPP Nodes** - Node health monitoring, filter by status, capacity/uptime display
-- [x] **App Submissions Management** - Full review workflow:
-  - List all submissions with search and status filtering
-  - View submission details modal with full app info
-  - Review dialog with Approve/Reject/Request Changes actions
-  - Compliance notes for internal documentation
-  - Review history tracking per submission
-  - Audit logging for all admin actions
-- [x] **Billing & Payments** - Transaction listing, revenue stats, payment status tracking
-- [x] **Customer Support** - Ticket management, status updates, response workflow
-- [x] **Revenue & Payouts** - Revenue analytics by category, top apps, payout tracking
-- [x] **Reports & Exports** - Generate reports (Users, Nodes, Apps, Revenue, Payouts) in CSV/PDF/XLSX
-- [x] **System Logs & Audit** - Complete audit trail of admin actions with filtering
-- [x] **Admin Settings** - Admin account management, create new admins, security settings
-- [x] Admin credentials: `admin@optio.com` / `admin123`
+## Mocked Data (By Design)
+- Admin node list (mock data)
+- OPT price (mock with realistic variation ~$0.85)
+- Admin revenue statistics
+- Some admin dashboard counts
 
-## Prioritized Backlog
+## Known Issues
+- **P2:** Stripe account requires user to configure test business details
 
-### P0 (Critical for Production)
-- [x] ~~**Admin Dashboard** for app approval (approve/reject submitted apps)~~ ✅ COMPLETED
-- [x] ~~**Full Admin Panel modules**~~ ✅ COMPLETED (Users, Nodes, Billing, Support, Revenue, Reports, Audit, Settings)
-- [ ] Real blockchain wallet connection (MetaMask/WalletConnect)
-- [x] ~~Actual referral link tracking system~~ ✅ COMPLETED
-- [ ] Production node orchestration backend
-- [ ] Stripe account setup (business name required for checkout)
+## Upcoming Tasks
+- **P1:** App Factory filtering/comparison features
+- **P1:** PDF/CSV export for Admin Reports
+- **P2:** Real-time notifications via WebSockets
+- **P2:** Production blockchain integration
 
-### P1 (High Priority)
-- [x] ~~Two-factor authentication (2FA)~~ ✅ COMPLETED (TOTP with backup codes)
-- [x] ~~Email notifications for referral signups~~ ✅ COMPLETED (Resend API)
-- [ ] Export functionality (CSV/PDF reports)
-- [ ] Real-time signup notifications
-- [ ] App Factory filtering/sorting features
-
-### P2 (Nice to Have)
-- [ ] Dark/Light theme toggle
-- [ ] Mobile app version
-- [ ] Multi-language support
-- [ ] Advanced analytics per referral source
-
-## Technical Architecture
-- **Frontend**: React 19, Tailwind CSS, Shadcn UI, Recharts, Framer Motion
-- **Backend**: FastAPI, Motor (async MongoDB), JWT, bcrypt
-- **Database**: MongoDB (users, nodes, apps, earnings, payouts, referrals)
-- **Integrations**: Emergent LLM (GPT-5.2), CoinMarketCap API
-
-## Next Tasks
-1. Real export functionality (CSV/PDF report downloads)
-2. Production blockchain integration
-3. Verify Resend domain for email delivery in production
-
-## Test Reports
-- `/app/test_reports/iteration_3.json` - Admin App Submissions (15/15 tests passed)
-- `/app/test_reports/iteration_4.json` - All Admin Modules (24/24 backend + 100% frontend tests passed)
-- `/app/test_reports/iteration_5.json` - Real Referral System (13/13 backend + 100% frontend tests passed)
-- `/app/test_reports/iteration_6.json` - 2FA Authentication (12/12 backend + 100% frontend tests passed)
-- `/app/test_reports/iteration_7.json` - Email Notifications (14/14 backend tests passed)
-- `/app/test_reports/iteration_8.json` - AI Promotional Content (19/19 backend + 12/12 frontend tests passed)
-
-## Known Limitations (MOCK DATA)
-- Revenue data is mock-generated (not from real transactions)
-- Node data is mock-generated (50 nodes with random health status)
-- Support tickets and billing transactions are initially empty
-- All backend data resets on server restart (except referral data now persisted)
+## Preview URL
+https://nodeapp-control.preview.emergentagent.com
