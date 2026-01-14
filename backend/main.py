@@ -67,6 +67,7 @@ app.include_router(webhooks.router, prefix="/api")
 
 # Admin router (already has /admin prefix internally)
 app.include_router(admin.router, prefix="/api")
+app.include_router(accounting.router, prefix="/api")
 
 
 # Root endpoints
