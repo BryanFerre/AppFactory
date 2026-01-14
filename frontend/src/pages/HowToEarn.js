@@ -372,7 +372,7 @@ export default function HowToEarn() {
                 </div>
                 <h4 className="text-white font-medium mb-2">Level Up Tiers</h4>
                 <p className="text-sm text-slate-400">
-                  As you accumulate points, you'll progress through tiers: Starter → Builder → Contributor → Champion → Legend.
+                  As you accumulate points, you&apos;ll progress through tiers: Starter → Builder → Contributor → Champion → Legend.
                 </p>
               </div>
               
@@ -647,7 +647,7 @@ export default function HowToEarn() {
                   Special Recognition
                 </h4>
                 <p className="text-sm text-slate-400">
-                  Top performers may be recognized as "Top Node Operator" or "Top Ambassador".
+                  Top performers may be recognized as &quot;Top Node Operator&quot; or &quot;Top Ambassador&quot;.
                 </p>
               </div>
               
