@@ -3,7 +3,7 @@ import { Outlet, NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import axios from 'axios';
 import {
-  LayoutDashboard, Factory, Package, TrendingUp, Megaphone,
+  LayoutDashboard, Store, Package, TrendingUp, Megaphone,
   Activity, HardDrive, Wallet, FileText, HelpCircle, Settings,
   Bell, ChevronDown, LogOut, Menu, X, Code
 } from 'lucide-react';
@@ -22,7 +22,7 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 const navItems = [
   { path: '/', icon: LayoutDashboard, label: 'Dashboard' },
-  { path: '/app-factory', icon: Factory, label: 'App Factory' },
+  { path: '/app-marketplace', icon: Store, label: 'App Marketplace' },
   { path: '/installed-apps', icon: Package, label: 'Installed Apps' },
   { path: '/earnings', icon: TrendingUp, label: 'Earnings' },
   { path: '/promotion', icon: Megaphone, label: 'Promotion Tools' },
