@@ -5,7 +5,8 @@ import axios from 'axios';
 import {
   LayoutDashboard, Store, Package, TrendingUp, Megaphone,
   Activity, HardDrive, Wallet, FileText, HelpCircle, Settings,
-  Bell, ChevronDown, LogOut, Menu, X, Code, Trophy, Medal, Lightbulb
+  Bell, ChevronDown, LogOut, Menu, X, Code, Trophy, Medal, Lightbulb,
+  Key, Cloud, CheckCircle2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -22,23 +23,23 @@ import PointsNotification from '@/components/PointsNotification';
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 const navItems = [
-  { path: '/', icon: LayoutDashboard, label: 'Dashboard' },
-  { path: '/app-marketplace', icon: Store, label: 'App Marketplace' },
-  { path: '/installed-apps', icon: Package, label: 'Installed Apps' },
-  { path: '/proof-of-impact', icon: Trophy, label: 'Proof of Impact' },
-  { path: '/leaderboard', icon: Medal, label: 'Leaderboard' },
-  { path: '/how-to-earn', icon: Lightbulb, label: 'How to Earn' },
-  { path: '/earnings', icon: TrendingUp, label: 'Earnings' },
-  { path: '/promotion', icon: Megaphone, label: 'Promotion Tools' },
-  { path: '/node-health', icon: Activity, label: 'Node Health' },
-  { path: '/capacity', icon: HardDrive, label: 'Capacity & Upgrades' },
-  { path: '/payouts', icon: Wallet, label: 'Payouts' },
-  { path: '/reports', icon: FileText, label: 'Reports / Tax' },
-  { path: '/support', icon: HelpCircle, label: 'Support' },
+  { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+  { path: '/dashboard/app-marketplace', icon: Store, label: 'App Marketplace' },
+  { path: '/dashboard/installed-apps', icon: Package, label: 'Installed Apps' },
+  { path: '/dashboard/proof-of-impact', icon: Trophy, label: 'Proof of Impact' },
+  { path: '/dashboard/leaderboard', icon: Medal, label: 'Leaderboard' },
+  { path: '/dashboard/how-to-earn', icon: Lightbulb, label: 'How to Earn' },
+  { path: '/dashboard/earnings', icon: TrendingUp, label: 'Earnings' },
+  { path: '/dashboard/promotion', icon: Megaphone, label: 'Promotion Tools' },
+  { path: '/dashboard/node-health', icon: Activity, label: 'Node Health' },
+  { path: '/dashboard/capacity', icon: HardDrive, label: 'Capacity & Upgrades' },
+  { path: '/dashboard/payouts', icon: Wallet, label: 'Payouts' },
+  { path: '/dashboard/reports', icon: FileText, label: 'Reports / Tax' },
+  { path: '/dashboard/support', icon: HelpCircle, label: 'Support' },
 ];
 
 const bottomNavItems = [
-  { path: '/app-developer', icon: Code, label: 'App Developer' },
+  { path: '/dashboard/app-developer', icon: Code, label: 'App Developer' },
 ];
 
 export default function DashboardLayout() {
