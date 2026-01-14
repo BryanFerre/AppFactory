@@ -247,16 +247,17 @@ export default function LandingPage() {
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.3 }}
-                className="inline-flex flex-col sm:flex-row items-center gap-4 bg-white/5 backdrop-blur-sm rounded-2xl px-6 py-4 border border-white/10"
+                className="flex flex-col items-center"
               >
-                {/* Sale Badge */}
+                {/* Sale Badge - Centered Above */}
                 {product.is_on_sale && (
-                  <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white border-0 px-3 py-1 absolute -top-3 -right-3 sm:static sm:-mt-8 sm:mb-2">
+                  <Badge className="mb-4 bg-gradient-to-r from-orange-500 to-red-500 text-white border-0 px-4 py-1.5 text-sm font-semibold">
                     {product.sale_label || 'On Sale'}
                   </Badge>
                 )}
                 
-                <div className="flex items-center gap-4">
+                {/* Pricing Box - Narrower */}
+                <div className="inline-flex items-center gap-4 bg-white/5 backdrop-blur-sm rounded-2xl px-6 py-4 border border-white/10">
                   <div className="text-left">
                     <p className="text-sm text-slate-500">Node License</p>
                     <div className="flex items-baseline gap-2">
@@ -275,16 +276,16 @@ export default function LandingPage() {
                       {product.monthly_fee ? `${formatPrice(product.monthly_fee)}/mo` : 'Free'}
                     </p>
                   </div>
-                </div>
-                
-                <div className="w-full sm:w-px h-px sm:h-12 bg-white/10" />
-                
-                <div className="text-left">
-                  <p className="text-sm text-emerald-400 flex items-center gap-1">
-                    <CheckCircle2 className="w-4 h-4" />
-                    Lifetime License
-                  </p>
-                  <p className="text-xs text-slate-500">Apps add to monthly cost</p>
+                  
+                  <div className="w-px h-12 bg-white/10" />
+                  
+                  <div className="text-left">
+                    <p className="text-sm text-emerald-400 flex items-center gap-1">
+                      <CheckCircle2 className="w-4 h-4" />
+                      Lifetime License
+                    </p>
+                    <p className="text-xs text-slate-500">Apps add to monthly cost</p>
+                  </div>
                 </div>
               </motion.div>
             )}
