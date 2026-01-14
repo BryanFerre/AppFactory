@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import {
   Trophy, Medal, Award, Crown, Star, Users, TrendingUp,
   ChevronUp, ChevronDown, Minus, Filter, Search, Loader2,
-  Flame, Zap, Target, ArrowUpRight
+  Flame, Zap, Target, ArrowUpRight, Calendar, Clock
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -117,11 +117,12 @@ export default function Leaderboard() {
   const [loading, setLoading] = useState(true);
   const [category, setCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [timeframe, setTimeframe] = useState('all');
+  const [timeframe, setTimeframe] = useState('all-time');
+  const [periodInfo, setPeriodInfo] = useState(null);
 
   useEffect(() => {
     fetchLeaderboard();
-  }, [category]);
+  }, [category, timeframe]);
 
   const fetchLeaderboard = async () => {
     setLoading(true);
@@ -129,14 +130,37 @@ export default function Leaderboard() {
       const token = localStorage.getItem('token');
       const headers = { Authorization: `Bearer ${token}` };
       
-      const params = category !== 'all' ? `?category=${category}&limit=100` : '?limit=100';
-      const response = await axios.get(`${API}/activity/leaderboard${params}`, { headers });
+      let endpoint = `${API}/activity/leaderboard`;
+      let params = '?limit=100';
       
-      setLeaderboard(response.data.leaderboard);
+      // Handle timeframe-based endpoints
+      if (timeframe === 'weekly') {
+        endpoint = `${API}/activity/leaderboard/weekly`;
+        params = '?limit=100';
+      } else if (timeframe === 'monthly') {
+        endpoint = `${API}/activity/leaderboard/monthly`;
+        params = '?limit=100';
+      } else if (category !== 'all') {
+        params = `?category=${category}&limit=100`;
+      }
+      
+      const response = await axios.get(`${endpoint}${params}`, { headers });
+      
+      // Map response based on timeframe (different point field names)
+      const leaderboardData = response.data.leaderboard.map(entry => ({
+        ...entry,
+        total_points: entry.total_points || entry.points_this_week || entry.points_this_month || 0
+      }));
+      
+      setLeaderboard(leaderboardData);
+      setPeriodInfo(response.data.period_start ? {
+        period: response.data.period,
+        start: response.data.period_start
+      } : null);
       
       // Find current user's rank
       if (user) {
-        const userEntry = response.data.leaderboard.find(entry => entry.user_id === user.id);
+        const userEntry = leaderboardData.find(entry => entry.user_id === user.id);
         if (userEntry) {
           setUserRank(userEntry.rank);
         } else {
@@ -206,21 +230,6 @@ export default function Leaderboard() {
         </div>
         
         <div className="flex items-center gap-3">
-          {/* Category Filter */}
-          <Select value={category} onValueChange={setCategory}>
-            <SelectTrigger className="w-48 bg-white/5 border-white/10">
-              <Filter className="w-4 h-4 mr-2" />
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent className="glass-card border-white/10">
-              {categories.map(cat => (
-                <SelectItem key={cat.value} value={cat.value}>
-                  {cat.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          
           {/* Search */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
@@ -233,6 +242,66 @@ export default function Leaderboard() {
           </div>
         </div>
       </div>
+
+      {/* Timeframe Tabs */}
+      <Tabs value={timeframe} onValueChange={setTimeframe} className="w-full">
+        <TabsList className="bg-white/5 p-1 w-full md:w-auto">
+          <TabsTrigger 
+            value="all-time" 
+            className="data-[state=active]:bg-amber-500/20 data-[state=active]:text-amber-400 flex items-center gap-2"
+          >
+            <Trophy className="w-4 h-4" />
+            All Time
+          </TabsTrigger>
+          <TabsTrigger 
+            value="monthly"
+            className="data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400 flex items-center gap-2"
+          >
+            <Calendar className="w-4 h-4" />
+            This Month
+          </TabsTrigger>
+          <TabsTrigger 
+            value="weekly"
+            className="data-[state=active]:bg-emerald-500/20 data-[state=active]:text-emerald-400 flex items-center gap-2"
+          >
+            <Flame className="w-4 h-4" />
+            This Week
+          </TabsTrigger>
+        </TabsList>
+        
+        {/* Period Info */}
+        {periodInfo && (
+          <div className="mt-3 flex items-center gap-2 text-sm text-slate-400">
+            <Clock className="w-4 h-4" />
+            <span>
+              {timeframe === 'weekly' ? 'Week' : 'Month'} started: {new Date(periodInfo.start).toLocaleDateString('en-US', { 
+                month: 'short', 
+                day: 'numeric',
+                year: 'numeric'
+              })}
+            </span>
+          </div>
+        )}
+      </Tabs>
+
+      {/* Category Filter - only show for all-time */}
+      {timeframe === 'all-time' && (
+        <div className="flex items-center gap-3">
+          <Select value={category} onValueChange={setCategory}>
+            <SelectTrigger className="w-56 bg-white/5 border-white/10">
+              <Filter className="w-4 h-4 mr-2" />
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="glass-card border-white/10">
+              {categories.map(cat => (
+                <SelectItem key={cat.value} value={cat.value}>
+                  {cat.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
 
       {/* User's Current Rank Card */}
       {user && (

@@ -244,6 +244,28 @@ BADGES = [
         "requirement": {"type": "leaderboard", "position": 1, "period": "monthly"},
         "points_bonus": 500
     },
+    
+    # Top Performer Badges
+    {
+        "id": "top_node_operator",
+        "name": "Top Node Operator",
+        "description": "Recognized as a top-performing node operator",
+        "category": "special",
+        "icon": "server",
+        "color": "#06B6D4",
+        "requirement": {"type": "special", "condition": "top_node_operator"},
+        "points_bonus": 1000
+    },
+    {
+        "id": "top_ambassador",
+        "name": "Top Ambassador",
+        "description": "Recognized as a top community ambassador",
+        "category": "special",
+        "icon": "megaphone",
+        "color": "#8B5CF6",
+        "requirement": {"type": "special", "condition": "top_ambassador"},
+        "points_bonus": 1000
+    },
 ]
 
 
