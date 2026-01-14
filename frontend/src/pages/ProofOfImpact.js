@@ -36,6 +36,15 @@ const item = {
   show: { opacity: 1, y: 0 }
 };
 
+// Globe icon component (not available in lucide-react)
+const GlobeIcon = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <circle cx="12" cy="12" r="10"/>
+    <line x1="2" y1="12" x2="22" y2="12"/>
+    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+  </svg>
+);
+
 // Tier configurations with icons and gradients
 const tierConfig = {
   Starter: { 
@@ -72,7 +81,7 @@ const tierConfig = {
 
 // Category icons and colors
 const categoryConfig = {
-  ecosystem: { icon: Globe, color: '#10B981', label: 'Ecosystem' },
+  ecosystem: { icon: GlobeIcon, color: '#10B981', label: 'Ecosystem' },
   growth: { icon: TrendingUp, color: '#6366F1', label: 'Growth' },
   revenue: { icon: DollarSign, color: '#F59E0B', label: 'Revenue' },
   builder: { icon: Code, color: '#8B5CF6', label: 'Builder' },
@@ -83,15 +92,6 @@ const categoryConfig = {
   milestones: { icon: Target, color: '#F97316', label: 'Milestones' },
   longterm: { icon: Medal, color: '#A855F7', label: 'Long-Term' },
 };
-
-// Fallback Globe icon
-const Globe = (props) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-    <circle cx="12" cy="12" r="10"/>
-    <line x1="2" y1="12" x2="22" y2="12"/>
-    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-  </svg>
-);
 
 export default function ProofOfImpact() {
   const [summary, setSummary] = useState(null);
