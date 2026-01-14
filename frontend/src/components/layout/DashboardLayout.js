@@ -108,8 +108,8 @@ export default function DashboardLayout() {
       `}>
         <div className="flex flex-col h-full p-4">
           {/* Logo */}
-          <div className="flex items-center gap-3 px-3 py-4 mb-6">
-            <AppCloudLogo className="h-7 w-auto" />
+          <div className="flex items-center gap-3 px-2 py-4 mb-6">
+            <AppCloudLogo className="h-10 w-auto" />
             <button 
               className="lg:hidden ml-auto text-slate-400 hover:text-white"
               onClick={() => setSidebarOpen(false)}
