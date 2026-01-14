@@ -347,15 +347,15 @@ export default function Dashboard() {
           </div>
         </motion.div>
 
-        {/* Installed Apps - Spans 2 cols */}
-        <motion.div variants={item} className="md:col-span-2 glass-card glass-card-hover p-6" data-testid="installed-apps-widget">
+        {/* Installed Apps - Full Width */}
+        <motion.div variants={item} className="md:col-span-2 lg:col-span-4 glass-card glass-card-hover p-6" data-testid="installed-apps-widget">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-white font-['Outfit']">Installed Apps</h2>
             <NavLink to="/installed-apps" className="text-sm text-cyan-400 hover:text-cyan-300 flex items-center gap-1">
               Manage <ArrowUpRight className="w-4 h-4" />
             </NavLink>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {installedApps.map((app) => (
               <div key={app.id} className="bg-white/5 rounded-xl p-4 border border-white/5">
                 <div className="flex items-center gap-3 mb-3">
@@ -378,145 +378,6 @@ export default function Dashboard() {
                     <span className="text-slate-400">Signups driven</span>
                     <span className="font-semibold text-cyan-400">{app.signups_driven} (+{app.opt_rewards_earned} OPT)</span>
                   </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </motion.div>
-
-        {/* AI Promotional Content - Spans 2 cols */}
-        <motion.div variants={item} className="md:col-span-2 glass-card glass-card-hover p-6" data-testid="ai-recommendations-widget">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-purple-400" />
-              <h2 className="text-lg font-semibold text-white font-['Outfit']">AI Promotional Content</h2>
-              <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/30 text-xs">
-                Ready to Post
-              </Badge>
-            </div>
-            <Button 
-              size="sm" 
-              variant="ghost" 
-              onClick={refreshRecommendations}
-              disabled={recsLoading}
-              className="text-purple-400 hover:text-purple-300"
-            >
-              {recsLoading ? (
-                <RefreshCw className="w-4 h-4 animate-spin" />
-              ) : (
-                <RefreshCw className="w-4 h-4" />
-              )}
-              <span className="ml-2 hidden sm:inline">Refresh</span>
-            </Button>
-          </div>
-          
-          <div className="space-y-4">
-            {recommendations.map((rec, i) => (
-              <div key={i} className={`rounded-xl border transition-all ${
-                rec.type === 'social_post' 
-                  ? 'bg-gradient-to-r from-purple-500/5 to-cyan-500/5 border-purple-500/20 hover:border-purple-500/40' 
-                  : 'bg-white/5 border-white/5 hover:border-white/10'
-              }`}>
-                <div className="p-4">
-                  {/* Header */}
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <div className={`w-2 h-2 rounded-full ${
-                        rec.priority === 'high' ? 'bg-cyan-400 animate-pulse' : 
-                        rec.priority === 'medium' ? 'bg-purple-400' : 'bg-slate-400'
-                      }`} />
-                      <p className="font-medium text-white">{rec.title}</p>
-                      {rec.app_name && (
-                        <Badge className="bg-cyan-500/20 text-cyan-400 border-cyan-500/30 text-xs">
-                          {rec.app_name}
-                        </Badge>
-                      )}
-                    </div>
-                    {rec.social_platforms?.length > 0 && (
-                      <div className="flex items-center gap-1">
-                        {rec.social_platforms.map(platform => {
-                          const Icon = platformIcons[platform] || MessageSquare;
-                          return (
-                            <div key={platform} className={`w-6 h-6 rounded-full flex items-center justify-center ${platformColors[platform]}`}>
-                              <Icon className="w-3 h-3" />
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                  
-                  <p className="text-sm text-slate-400">{rec.description}</p>
-                  
-                  {/* Social Post Content */}
-                  {rec.post_content && (
-                    <div className="mt-3 p-3 bg-black/30 rounded-lg border border-white/5">
-                      <p className="text-white text-sm leading-relaxed">{rec.post_content}</p>
-                      {rec.hashtags?.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-2">
-                          {rec.hashtags.map((tag, idx) => (
-                            <span key={idx} className="text-xs text-cyan-400">#{tag}</span>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                  
-                  {/* Action Buttons */}
-                  {rec.post_content && (
-                    <div className="flex items-center gap-2 mt-3 pt-3 border-t border-white/5">
-                      <Button 
-                        size="sm" 
-                        onClick={() => copyPost(rec.post_content + ' ' + (rec.hashtags || []).map(t => `#${t}`).join(' '), i)}
-                        className={`${copiedId === i ? 'bg-emerald-500 text-white' : 'bg-white/10 text-white hover:bg-white/20'}`}
-                      >
-                        {copiedId === i ? (
-                          <>
-                            <CheckCircle2 className="w-3 h-3 mr-1" />
-                            Copied!
-                          </>
-                        ) : (
-                          <>
-                            <Copy className="w-3 h-3 mr-1" />
-                            Copy
-                          </>
-                        )}
-                      </Button>
-                      
-                      {rec.social_platforms?.includes('twitter') && (
-                        <Button 
-                          size="sm" 
-                          variant="outline"
-                          onClick={() => shareOnPlatform('twitter', rec.post_content, rec.hashtags)}
-                          className="border-sky-400/30 text-sky-400 hover:bg-sky-400/10"
-                        >
-                          <Twitter className="w-3 h-3 mr-1" />
-                          Tweet
-                        </Button>
-                      )}
-                      
-                      {rec.social_platforms?.includes('linkedin') && (
-                        <Button 
-                          size="sm" 
-                          variant="outline"
-                          onClick={() => shareOnPlatform('linkedin', rec.post_content, rec.hashtags)}
-                          className="border-blue-500/30 text-blue-500 hover:bg-blue-500/10"
-                        >
-                          <Linkedin className="w-3 h-3 mr-1" />
-                          Share
-                        </Button>
-                      )}
-                    </div>
-                  )}
-                  
-                  {/* Non-post action */}
-                  {!rec.post_content && rec.action && (
-                    <div className="mt-3">
-                      <Button size="sm" variant="ghost" className="text-cyan-400 hover:text-cyan-300">
-                        {rec.action} <ArrowUpRight className="w-3 h-3 ml-1" />
-                      </Button>
-                    </div>
-                  )}
                 </div>
               </div>
             ))}
