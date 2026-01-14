@@ -8,6 +8,9 @@ Endpoints:
 - GET /api/activity/actions - List all action types
 - GET /api/activity/leaderboard - Top users by points
 - GET /api/activity/streak - User's login streak info
+- GET /api/activity/badges - User's badges
+- GET /api/activity/rewards - Available rewards
+- POST /api/activity/redeem - Redeem a reward
 
 Admin endpoints:
 - GET /api/admin/activity/actions - All actions with config
@@ -19,7 +22,7 @@ Admin endpoints:
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 from typing import Optional, Dict, Any, List
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 import sys
 import os
@@ -28,12 +31,16 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from utils.auth import get_current_user
 from utils.database import db
 from services.points_engine import PointsEngine, CATEGORIES, TIERS
+from services.badges_engine import BadgesEngine, BADGE_CATEGORIES
+from services.redemption_engine import RedemptionEngine, REWARD_CATEGORIES
 
 router = APIRouter(prefix="/activity", tags=["activity"])
 admin_router = APIRouter(prefix="/admin/activity", tags=["admin-activity"])
 
-# Initialize points engine
+# Initialize engines
 points_engine = None
+badges_engine = None
+redemption_engine = None
 
 async def get_points_engine() -> PointsEngine:
     global points_engine
@@ -41,6 +48,20 @@ async def get_points_engine() -> PointsEngine:
         points_engine = PointsEngine(db)
         await points_engine.initialize()
     return points_engine
+
+async def get_badges_engine() -> BadgesEngine:
+    global badges_engine
+    if badges_engine is None:
+        badges_engine = BadgesEngine(db)
+        await badges_engine.initialize()
+    return badges_engine
+
+async def get_redemption_engine() -> RedemptionEngine:
+    global redemption_engine
+    if redemption_engine is None:
+        redemption_engine = RedemptionEngine(db)
+        await redemption_engine.initialize()
+    return redemption_engine
 
 
 # ==================== USER ENDPOINTS ====================
