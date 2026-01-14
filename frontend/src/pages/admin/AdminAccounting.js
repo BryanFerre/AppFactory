@@ -100,7 +100,9 @@ export default function AdminAccounting() {
 
   const fetchDashboard = async () => {
     try {
-      const response = await axios.get(`${API}/admin/accounting/dashboard`);
+      const response = await axios.get(`${API}/admin/accounting/dashboard`, {
+        headers: getAuthHeader()
+      });
       setDashboard(response.data);
     } catch (error) {
       console.error('Failed to fetch dashboard');
@@ -110,7 +112,9 @@ export default function AdminAccounting() {
   const fetchCommissions = async () => {
     try {
       const params = statusFilter !== 'all' ? `?status=${statusFilter}` : '';
-      const response = await axios.get(`${API}/admin/accounting/commissions${params}`);
+      const response = await axios.get(`${API}/admin/accounting/commissions${params}`, {
+        headers: getAuthHeader()
+      });
       setCommissions(response.data.commissions);
     } catch (error) {
       toast.error('Failed to fetch commissions');
@@ -122,7 +126,9 @@ export default function AdminAccounting() {
   const fetchPayouts = async () => {
     try {
       const params = statusFilter !== 'all' ? `?status=${statusFilter}` : '';
-      const response = await axios.get(`${API}/admin/accounting/payouts${params}`);
+      const response = await axios.get(`${API}/admin/accounting/payouts${params}`, {
+        headers: getAuthHeader()
+      });
       setPayouts(response.data.payouts);
     } catch (error) {
       toast.error('Failed to fetch payouts');
