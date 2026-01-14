@@ -127,7 +127,7 @@ async def get_ai_recommendations(user=Depends(get_current_user)):
             "priority": "low"
         })
     
-    return {"recommendations": recommendations}
+    return recommendations
 
 
 @router.get("/app-promotions/{app_id}")
