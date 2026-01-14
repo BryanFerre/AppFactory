@@ -5,7 +5,7 @@ import {
   Search, TrendingUp, Download, Users, Server, Layers, DollarSign,
   Package, Activity, Cpu, Globe, Gamepad2, Shield, Image, HardDrive,
   Sparkles, Clock, Star, SlidersHorizontal, ArrowUpDown, X, Check,
-  GitCompare, ChevronDown, Filter, BarChart3
+  GitCompare, ChevronDown, Filter, BarChart3, CreditCard, Zap, AlertCircle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -58,7 +58,31 @@ const item = {
   show: { opacity: 1, y: 0 }
 };
 
-export default function AppFactory() {
+// Calculate resource upgrade cost based on capacity
+const calculateResourceCost = (capacityRequired) => {
+  // Base pricing tiers - larger apps cost more
+  const basePricePerGB = 4.99;
+  const tierMultiplier = capacityRequired <= 2 ? 1 : 
+                         capacityRequired <= 4 ? 1.25 : 
+                         capacityRequired <= 6 ? 1.5 : 
+                         capacityRequired <= 8 ? 1.75 : 2;
+  
+  const monthlyCost = Math.round(capacityRequired * basePricePerGB * tierMultiplier * 100) / 100;
+  
+  return {
+    monthlyCost,
+    tier: capacityRequired <= 2 ? 'Basic' : 
+          capacityRequired <= 4 ? 'Standard' : 
+          capacityRequired <= 6 ? 'Professional' : 
+          capacityRequired <= 8 ? 'Enterprise' : 'Premium',
+    tierColor: capacityRequired <= 2 ? 'text-slate-400' : 
+               capacityRequired <= 4 ? 'text-blue-400' : 
+               capacityRequired <= 6 ? 'text-purple-400' : 
+               capacityRequired <= 8 ? 'text-amber-400' : 'text-rose-400'
+  };
+};
+
+export default function AppMarketplace() {
   const [apps, setApps] = useState([]);
   const [featuredApps, setFeaturedApps] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -138,7 +162,13 @@ export default function AppFactory() {
     setInstalling(true);
     try {
       await axios.post(`${API}/apps/install/${app.id}`);
-      toast.success(`${app.name} installed successfully!`);
+      const resourceCost = calculateResourceCost(app.capacity_required);
+      toast.success(
+        <div>
+          <p className="font-semibold">{app.name} installed successfully!</p>
+          <p className="text-sm text-slate-400">Resource fee of ${resourceCost.monthlyCost}/mo will be billed to your card.</p>
+        </div>
+      );
       setInstallDialog(null);
       fetchApps();
     } catch (error) {
@@ -216,7 +246,7 @@ export default function AppFactory() {
       {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white font-['Outfit']">App Factory</h1>
+          <h1 className="text-2xl font-bold text-white font-['Outfit']">App Marketplace</h1>
           <p className="text-slate-400 mt-1">Discover and install revenue-generating apps for your node</p>
         </div>
         
@@ -712,7 +742,7 @@ export default function AppFactory() {
         </div>
       )}
 
-      {/* Install Dialog */}
+      {/* Install Dialog with Resource Billing */}
       <Dialog open={!!installDialog} onOpenChange={() => setInstallDialog(null)}>
         <DialogContent className="glass-card border-white/10 max-w-lg">
           <DialogHeader>
@@ -725,7 +755,7 @@ export default function AppFactory() {
               )}
             </DialogTitle>
             <DialogDescription className="text-slate-400">
-              Review the app details before installing on your node
+              Review the app details and resource costs before installing
             </DialogDescription>
           </DialogHeader>
           
@@ -747,6 +777,7 @@ export default function AppFactory() {
 
               <p className="text-slate-300">{installDialog.description}</p>
 
+              {/* App Details */}
               <div className={`rounded-xl p-4 space-y-3 ${
                 installDialog.is_featured 
                   ? 'bg-amber-500/10 border border-amber-500/20' 
@@ -765,10 +796,6 @@ export default function AppFactory() {
                   <span className="text-emerald-400 font-bold">${installDialog.revenue_per_node}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-400">Capacity Required</span>
-                  <span className="text-white font-semibold">{installDialog.capacity_required} GB</span>
-                </div>
-                <div className="flex justify-between">
                   <span className="text-slate-400">Current Subscribers</span>
                   <span className="text-white font-semibold">{installDialog.subscribers?.toLocaleString() || 'N/A'}</span>
                 </div>
@@ -777,15 +804,73 @@ export default function AppFactory() {
                   <span className="text-emerald-400 font-semibold">{installDialog.available_slots || 'N/A'} / {installDialog.total_slots || 'N/A'}</span>
                 </div>
               </div>
+
+              {/* Resource Upgrade Billing Section */}
+              {(() => {
+                const resourceCost = calculateResourceCost(installDialog.capacity_required);
+                return (
+                  <div className="rounded-xl p-4 bg-gradient-to-br from-blue-500/10 to-purple-500/10 border border-blue-500/30 space-y-4">
+                    <div className="flex items-center gap-2">
+                      <Zap className="w-5 h-5 text-blue-400" />
+                      <h4 className="font-semibold text-white">Resource Upgrade Required</h4>
+                    </div>
+                    
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-400">Capacity Required</span>
+                        <span className="text-white font-semibold">{installDialog.capacity_required} GB</span>
+                      </div>
+                      
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-400">Resource Tier</span>
+                        <Badge className={`${resourceCost.tierColor} bg-white/10`}>
+                          {resourceCost.tier}
+                        </Badge>
+                      </div>
+                      
+                      <div className="h-px bg-white/10" />
+                      
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-400 flex items-center gap-1">
+                          <CreditCard className="w-4 h-4" />
+                          Monthly Resource Fee
+                        </span>
+                        <span className="text-xl font-bold text-blue-400">${resourceCost.monthlyCost}/mo</span>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-start gap-2 p-3 bg-white/5 rounded-lg">
+                      <AlertCircle className="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" />
+                      <p className="text-xs text-slate-400">
+                        This fee will be automatically billed to your card on file monthly. 
+                        You can cancel anytime by uninstalling the app.
+                      </p>
+                    </div>
+                    
+                    {/* Net Revenue Calculation */}
+                    <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-400 text-sm">Estimated Net Revenue</span>
+                        <span className="text-emerald-400 font-bold">
+                          ${(parseFloat(installDialog.revenue_per_node) - resourceCost.monthlyCost).toFixed(2)}/mo
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-500 mt-1">
+                        Revenue (${installDialog.revenue_per_node}) - Resource Fee (${resourceCost.monthlyCost})
+                      </p>
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
           )}
 
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => setInstallDialog(null)}>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button variant="ghost" onClick={() => setInstallDialog(null)} className="sm:flex-1">
               Cancel
             </Button>
             <Button
-              className="bg-[#4865af] hover:bg-[#5a7ac4] text-white font-semibold rounded-full"
+              className="bg-gradient-to-r from-[#4865af] to-[#6b8dd6] hover:from-[#5a7ac4] hover:to-[#7c9ee0] text-white font-semibold rounded-full sm:flex-1"
               onClick={() => handleInstall(installDialog)}
               disabled={installing}
               data-testid="confirm-install-btn"
@@ -794,8 +879,8 @@ export default function AppFactory() {
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               ) : (
                 <>
-                  <Download className="w-4 h-4 mr-2" />
-                  Confirm Install
+                  <CreditCard className="w-4 h-4 mr-2" />
+                  Install & Subscribe
                 </>
               )}
             </Button>
@@ -862,6 +947,32 @@ export default function AppFactory() {
                         <span className="text-emerald-400 font-bold">${app.revenue_per_node || '-'}</span>
                       </td>
                     ))}
+                  </tr>
+                  <tr>
+                    <td className="text-slate-400 p-3 border-b border-white/10">Resource Fee</td>
+                    {compareData.map(app => {
+                      const cost = calculateResourceCost(app.capacity_required);
+                      return (
+                        <td key={app.id} className="text-center p-3 border-b border-white/10">
+                          <span className="text-blue-400 font-bold">${cost.monthlyCost}/mo</span>
+                          <span className={`text-xs block ${cost.tierColor}`}>{cost.tier}</span>
+                        </td>
+                      );
+                    })}
+                  </tr>
+                  <tr>
+                    <td className="text-slate-400 p-3 border-b border-white/10">Net Revenue</td>
+                    {compareData.map(app => {
+                      const cost = calculateResourceCost(app.capacity_required);
+                      const net = (parseFloat(app.revenue_per_node) - cost.monthlyCost).toFixed(2);
+                      return (
+                        <td key={app.id} className="text-center p-3 border-b border-white/10">
+                          <span className={`font-bold ${parseFloat(net) > 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                            ${net}/mo
+                          </span>
+                        </td>
+                      );
+                    })}
                   </tr>
                   <tr>
                     <td className="text-slate-400 p-3 border-b border-white/10">Capacity Required</td>
