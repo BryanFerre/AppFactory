@@ -456,6 +456,11 @@ async def bulk_payout_action(
 
 # ==================== SEED DATA ====================
 
+# Commission types with their calculations
+# Node sale commission: 5% of $5000 node price = $250
+NODE_PRICE = 5000  # Current promotional price (retail $7500)
+NODE_COMMISSION_RATE = 0.05  # 5% commission
+
 @router.post("/seed-demo-data")
 async def seed_demo_data(admin=Depends(get_current_admin)):
     """Seed demo data for testing (admin only)"""
@@ -466,19 +471,26 @@ async def seed_demo_data(admin=Depends(get_current_admin)):
     if not users:
         return {"message": "No users found to create demo data"}
     
-    # Create demo commissions
-    commission_types = ["node_sale", "node_referral", "upgrade_commission"]
+    # Create demo commissions - two types:
+    # 1. node_sale: 5% commission when referral buys a node ($5000 * 5% = $250)
+    # 2. app_earnings: Fees from installed apps (variable amounts)
     commission_count = 0
     
     for user in users:
-        for i in range(random.randint(1, 3)):
+        # Node sale commissions (5% of $5000 = $250 each)
+        num_node_sales = random.randint(0, 2)
+        for i in range(num_node_sales):
+            referred_user_email = f"referred_{random.randint(1000, 9999)}@example.com"
             commission = {
                 "id": str(uuid.uuid4()),
                 "user_id": user["id"],
-                "type": random.choice(commission_types),
-                "description": f"Commission for node sale #{random.randint(1000, 9999)}",
-                "amount": round(random.uniform(50, 500), 2),
-                "status": random.choice(["pending", "pending", "pending", "approved", "paid"]),
+                "type": "node_sale",
+                "description": f"5% commission for node sale to {referred_user_email}",
+                "amount": NODE_PRICE * NODE_COMMISSION_RATE,  # $250
+                "node_price": NODE_PRICE,
+                "commission_rate": NODE_COMMISSION_RATE,
+                "referred_user": referred_user_email,
+                "status": random.choice(["pending", "pending", "approved", "paid"]),
                 "node_sale_id": str(uuid.uuid4()),
                 "created_at": (now - timedelta(days=random.randint(1, 30))).isoformat(),
                 "updated_at": now.isoformat()
