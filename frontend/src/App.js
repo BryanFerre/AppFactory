@@ -45,6 +45,7 @@ import AdminSettings from "@/pages/admin/AdminSettings";
 import AdminAccounting from "@/pages/admin/AdminAccounting";
 import AdminPointsConfig from "@/pages/admin/AdminPointsConfig";
 import AdminProducts from "@/pages/admin/AdminProducts";
+import AdminCoupons from "@/pages/admin/AdminCoupons";
 
 // Layouts
 import DashboardLayout from "@/components/layout/DashboardLayout";
@@ -143,6 +144,7 @@ function AppRoutes() {
         <Route path="accounting" element={<AdminAccounting />} />
         <Route path="points-config" element={<AdminPointsConfig />} />
         <Route path="products" element={<AdminProducts />} />
+        <Route path="coupons" element={<AdminCoupons />} />
       </Route>
 
       {/* Catch all - redirect to landing */}
