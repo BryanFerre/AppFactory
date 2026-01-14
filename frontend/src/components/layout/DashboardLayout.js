@@ -307,6 +307,9 @@ export default function DashboardLayout() {
           <Outlet />
         </main>
       </div>
+      
+      {/* Points Notification */}
+      <PointsNotification />
     </div>
   );
 }
