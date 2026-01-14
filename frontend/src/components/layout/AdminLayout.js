@@ -97,14 +97,10 @@ export default function AdminLayout() {
       `}>
         <div className="flex flex-col h-full p-4">
           {/* Logo */}
-          <div className="flex items-center gap-3 px-3 py-4 mb-4">
-            <AppCloudLogo className="w-10 h-10" />
-            <div>
-              <h1 className="text-lg font-bold text-white font-['Outfit']">AppCloud Admin</h1>
-              <p className="text-xs text-slate-500">Control Panel</p>
-            </div>
+          <div className="flex items-center justify-between px-3 py-4 mb-4">
+            <AppCloudLogo className="w-32 h-auto" />
             <button 
-              className="lg:hidden ml-auto text-slate-400 hover:text-white"
+              className="lg:hidden text-slate-400 hover:text-white"
               onClick={() => setSidebarOpen(false)}
             >
               <X className="w-5 h-5" />
