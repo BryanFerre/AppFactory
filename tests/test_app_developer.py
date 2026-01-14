@@ -221,7 +221,7 @@ class TestAppDeveloperFeature:
         response = authenticated_client.post(f"{BASE_URL}/api/developer/featured/checkout", json={
             "submission_id": TestAppDeveloperFeature.submission_id,
             "plan": "30_days",
-            "origin_url": "https://nodeapp-control.preview.emergentagent.com"
+            "origin_url": "https://appmarketplace-1.preview.emergentagent.com"
         })
         
         # May return 200 with checkout_url or 400 if Stripe account not configured

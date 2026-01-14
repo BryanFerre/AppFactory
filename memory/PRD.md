@@ -127,4 +127,4 @@ Build a full-stack application called "AppCloud by Optio" (formerly NAPP Node Op
 - **P2:** Production blockchain integration
 
 ## Preview URL
-https://nodeapp-control.preview.emergentagent.com
+https://appmarketplace-1.preview.emergentagent.com
