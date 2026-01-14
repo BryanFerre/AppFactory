@@ -44,6 +44,12 @@ import { toast } from 'sonner';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
+// Get auth header for admin requests
+const getAuthHeader = () => {
+  const token = localStorage.getItem('admin_token');
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
+
 const NODE_PRICE = 5000;
 const COMMISSION_RATE = 0.05; // 5%
 
