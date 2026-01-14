@@ -550,7 +550,9 @@ export default function ProofOfImpact() {
 
           {/* Achievement Categories */}
           <motion.div
-            variants={item}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
             className="glass-card p-6"
           >
             <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
@@ -596,7 +598,8 @@ export default function ProofOfImpact() {
         {/* Activity Tab */}
         <TabsContent value="activity" className="space-y-6">
           <motion.div
-            variants={item}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
             className="glass-card p-6"
           >
             <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
