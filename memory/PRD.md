@@ -94,9 +94,20 @@ Build a full-stack application called "AppCloud by Optio" (formerly NAPP Node Op
     - Tier 9: Milestones & Achievements (300-2,000 pts)
     - Tier 10: Long-Term Impact (1,000-5,000 pts)
   - **Integration with existing actions**:
-    - Daily login awards 25 pts
+    - Daily login awards 25 pts (with toast notification on login)
     - Registration/onboarding awards 200 pts
     - App installation awards 250 pts + milestone bonuses
+    - Referral signups award 500 pts
+    - App submissions award 200 pts
+  - **Admin Points Configuration Panel** (`/admin/points-config`):
+    - View all 60+ actions grouped by category
+    - Enable/disable individual actions
+    - Edit point values and cooldowns
+    - System stats: total points issued, users with points, total events
+    - Tier distribution view
+  - **Points Notifications**:
+    - Toast notification on login showing points earned
+    - Real-time points notification component
   - **Database Collections**:
     - `activity_actions` - Configurable action catalog
     - `activity_events` - Raw event log (idempotent)
