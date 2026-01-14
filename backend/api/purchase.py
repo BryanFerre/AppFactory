@@ -34,6 +34,7 @@ class CreateCheckoutRequest(BaseModel):
     email: EmailStr
     name: str = Field(..., min_length=1)
     referral_code: Optional[str] = None
+    coupon_code: Optional[str] = None
     success_url: str
     cancel_url: str
 
