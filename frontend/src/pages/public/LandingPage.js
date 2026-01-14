@@ -247,17 +247,17 @@ export default function LandingPage() {
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.3 }}
-                className="flex flex-col items-center"
+                className="flex flex-col items-center gap-3"
               >
-                {/* Sale Badge - Centered Above */}
+                {/* Sale Badge - Centered Above, Outside Box */}
                 {product.is_on_sale && (
-                  <Badge className="mb-4 bg-gradient-to-r from-orange-500 to-red-500 text-white border-0 px-4 py-1.5 text-sm font-semibold shadow-lg shadow-orange-500/30">
+                  <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white border-0 px-5 py-2 text-sm font-semibold shadow-lg shadow-orange-500/30">
                     {product.sale_label || 'On Sale'}
                   </Badge>
                 )}
                 
-                {/* Pricing Box - Narrower */}
-                <div className="inline-flex items-center gap-5 bg-white/5 backdrop-blur-sm rounded-2xl px-5 py-4 border border-white/10">
+                {/* Pricing Box */}
+                <div className="flex items-center gap-5 bg-white/5 backdrop-blur-sm rounded-2xl px-5 py-4 border border-white/10">
                   <div className="text-center">
                     <p className="text-xs text-slate-500 mb-1">Node License</p>
                     <div className="flex items-baseline justify-center gap-2">
