@@ -404,165 +404,180 @@ export default function InstalledApps() {
 
       {/* Share & Promote Dialog */}
       <Dialog open={!!shareDialog} onOpenChange={() => setShareDialog(null)}>
-        <DialogContent className="glass-card border-white/10 max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-white font-['Outfit'] text-xl flex items-center gap-2">
-              <Share2 className="w-5 h-5 text-cyan-400" />
-              Share & Promote {shareDialog?.name}
+        <DialogContent className="glass-card border-white/10 max-w-xl">
+          <DialogHeader className="pb-4 border-b border-white/10">
+            <DialogTitle className="text-white font-['Outfit'] text-xl flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500/20 to-purple-500/20 flex items-center justify-center border border-cyan-500/30">
+                <Share2 className="w-5 h-5 text-cyan-400" />
+              </div>
+              <div>
+                <span>Share & Promote</span>
+                <p className="text-sm font-normal text-slate-400 mt-0.5">{shareDialog?.name}</p>
+              </div>
             </DialogTitle>
-            <DialogDescription className="text-slate-400">
-              Share your hosted app to earn referral rewards when users sign up
-            </DialogDescription>
           </DialogHeader>
 
           {shareDialog && (
-            <Tabs defaultValue="share" className="mt-4">
-              <TabsList className="grid w-full grid-cols-2 bg-white/5">
-                <TabsTrigger value="share" className="data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400">
-                  Share Link
-                </TabsTrigger>
-                <TabsTrigger value="social" className="data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400">
-                  Social Post
-                </TabsTrigger>
-              </TabsList>
-
-              {/* Share Link Tab */}
-              <TabsContent value="share" className="space-y-4 mt-4">
-                <div className="space-y-2">
-                  <label className="text-sm text-slate-400">Your Referral Link</label>
-                  <div className="flex gap-2">
-                    <div className="flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-slate-300 truncate">
+            <div className="space-y-6 py-4">
+              {/* Referral Link Section */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-medium text-white flex items-center gap-2">
+                    <Globe className="w-4 h-4 text-cyan-400" />
+                    Your Referral Link
+                  </label>
+                  <Badge className="bg-emerald-500/20 text-emerald-400 text-xs">
+                    Earn 2 OPT per signup
+                  </Badge>
+                </div>
+                
+                <div className="relative">
+                  <div className="bg-black/40 border border-white/10 rounded-lg p-4 pr-24">
+                    <p className="text-sm text-slate-300 truncate font-mono">
                       {getShareLink(shareDialog)}
-                    </div>
-                    <Button
-                      variant="outline"
-                      className="border-white/10 text-slate-300 hover:bg-white/10"
-                      onClick={() => copyToClipboard(getShareLink(shareDialog), 'link')}
-                    >
-                      {copiedLink ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
-                    </Button>
+                    </p>
                   </div>
-                  <p className="text-xs text-slate-500">
-                    Share this link to earn OPT rewards when users sign up through your referral
-                  </p>
+                  <Button
+                    className={`absolute right-2 top-1/2 -translate-y-1/2 ${
+                      copiedLink 
+                        ? 'bg-emerald-500 hover:bg-emerald-600' 
+                        : 'bg-cyan-500 hover:bg-cyan-600'
+                    } text-white`}
+                    size="sm"
+                    onClick={() => copyToClipboard(getShareLink(shareDialog), 'link')}
+                  >
+                    {copiedLink ? (
+                      <>
+                        <Check className="w-4 h-4 mr-1" />
+                        Copied!
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-4 h-4 mr-1" />
+                        Copy
+                      </>
+                    )}
+                  </Button>
                 </div>
+              </div>
 
-                <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Coins className="w-5 h-5 text-emerald-400" />
-                    <span className="text-emerald-400 font-semibold">Earn Rewards</span>
-                  </div>
-                  <p className="text-sm text-slate-400">
-                    Earn <span className="text-emerald-400 font-bold">2 OPT</span> for every user who signs up through your link and installs this app!
-                  </p>
+              {/* Divider */}
+              <div className="flex items-center gap-4">
+                <div className="flex-1 h-px bg-white/10" />
+                <span className="text-xs text-slate-500 uppercase tracking-wider">Or share with AI post</span>
+                <div className="flex-1 h-px bg-white/10" />
+              </div>
+
+              {/* AI Generated Post Section */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-medium text-white flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-purple-400" />
+                    AI-Generated Post
+                  </label>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-slate-400 hover:text-white h-7 text-xs"
+                    onClick={() => generateAIPost(shareDialog)}
+                    disabled={generatingPost}
+                  >
+                    {generatingPost ? (
+                      <Loader2 className="w-3 h-3 animate-spin mr-1" />
+                    ) : (
+                      <RefreshCw className="w-3 h-3 mr-1" />
+                    )}
+                    Regenerate
+                  </Button>
                 </div>
-              </TabsContent>
-
-              {/* Social Post Tab */}
-              <TabsContent value="social" className="space-y-4 mt-4">
-                {/* AI Generated Post */}
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <label className="text-sm text-slate-400 flex items-center gap-2">
-                      <Sparkles className="w-4 h-4 text-purple-400" />
-                      AI-Generated Post
-                    </label>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-slate-400 hover:text-white h-8"
-                      onClick={() => generateAIPost(shareDialog)}
-                      disabled={generatingPost}
-                    >
-                      {generatingPost ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                      ) : (
-                        <>
-                          <RefreshCw className="w-4 h-4 mr-1" />
-                          Regenerate
-                        </>
-                      )}
-                    </Button>
+                
+                {generatingPost ? (
+                  <div className="bg-black/40 border border-white/10 rounded-lg p-6 flex flex-col items-center justify-center gap-2 text-slate-400">
+                    <Loader2 className="w-6 h-6 animate-spin text-purple-400" />
+                    <span className="text-sm">Generating promotional content...</span>
                   </div>
-                  
-                  {generatingPost ? (
-                    <div className="bg-white/5 border border-white/10 rounded-lg p-4 flex items-center justify-center gap-2 text-slate-400">
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                      Generating promotional content...
-                    </div>
-                  ) : (
+                ) : (
+                  <div className="relative">
                     <Textarea
                       value={generatedPost}
                       onChange={(e) => setGeneratedPost(e.target.value)}
-                      className="bg-white/5 border-white/10 text-slate-200 min-h-[120px] resize-none"
+                      className="bg-black/40 border-white/10 text-slate-200 min-h-[100px] resize-none pr-20 text-sm"
                       placeholder="AI-generated promotional content will appear here..."
                     />
-                  )}
-                  
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-slate-500">{generatedPost.length} characters</span>
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="text-slate-400 hover:text-white h-8"
+                      className={`absolute right-2 top-2 h-7 text-xs ${
+                        copiedPost ? 'text-emerald-400' : 'text-slate-400 hover:text-white'
+                      }`}
                       onClick={() => copyToClipboard(generatedPost, 'post')}
                       disabled={!generatedPost}
                     >
-                      {copiedPost ? <Check className="w-4 h-4 text-emerald-400 mr-1" /> : <Copy className="w-4 h-4 mr-1" />}
-                      Copy Text
+                      {copiedPost ? <Check className="w-3 h-3 mr-1" /> : <Copy className="w-3 h-3 mr-1" />}
+                      {copiedPost ? 'Copied!' : 'Copy'}
                     </Button>
+                    <span className="absolute right-2 bottom-2 text-xs text-slate-500">
+                      {generatedPost.length} chars
+                    </span>
                   </div>
-                </div>
+                )}
+              </div>
 
-                {/* Social Share Buttons */}
-                <div className="space-y-3">
-                  <label className="text-sm text-slate-400">Share to Social Media</label>
-                  <div className="grid grid-cols-2 gap-3">
-                    {socialPlatforms.map((platform) => (
-                      <Button
-                        key={platform.id}
-                        className={`${platform.color} text-white justify-start`}
-                        onClick={() => shareToSocial(platform, shareDialog)}
-                        disabled={!generatedPost}
-                        data-testid={`share-${platform.id}`}
-                      >
-                        <platform.icon className="w-5 h-5 mr-2" />
-                        {platform.name}
-                        <ExternalLink className="w-3 h-3 ml-auto opacity-50" />
-                      </Button>
-                    ))}
-                  </div>
+              {/* Social Share Buttons */}
+              <div className="space-y-3">
+                <label className="text-sm font-medium text-white">Share to Social Media</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {socialPlatforms.map((platform) => (
+                    <Button
+                      key={platform.id}
+                      className={`${platform.color} text-white h-11 justify-start font-medium`}
+                      onClick={() => shareToSocial(platform, shareDialog)}
+                      disabled={!generatedPost}
+                      data-testid={`share-${platform.id}`}
+                    >
+                      <platform.icon className="w-5 h-5 mr-3" />
+                      {platform.name}
+                      <ExternalLink className="w-3 h-3 ml-auto opacity-60" />
+                    </Button>
+                  ))}
                 </div>
+                
+                {/* Email Button */}
+                <Button
+                  variant="outline"
+                  className="w-full border-white/20 text-slate-300 hover:bg-white/10 h-11 font-medium"
+                  onClick={() => shareViaEmail(shareDialog)}
+                  disabled={!generatedPost}
+                  data-testid="share-email"
+                >
+                  <Mail className="w-5 h-5 mr-3" />
+                  Send via Email
+                  <ExternalLink className="w-3 h-3 ml-auto opacity-60" />
+                </Button>
+              </div>
 
-                {/* Email Share */}
-                <div className="pt-2">
-                  <Button
-                    variant="outline"
-                    className="w-full border-white/10 text-slate-300 hover:bg-white/10"
-                    onClick={() => shareViaEmail(shareDialog)}
-                    disabled={!generatedPost}
-                    data-testid="share-email"
-                  >
-                    <Mail className="w-5 h-5 mr-2" />
-                    Send via Email
-                    <ExternalLink className="w-3 h-3 ml-auto opacity-50" />
-                  </Button>
+              {/* Pro Tips */}
+              <div className="p-4 bg-gradient-to-br from-purple-500/10 to-cyan-500/10 border border-purple-500/20 rounded-xl">
+                <div className="flex items-center gap-2 mb-3">
+                  <Sparkles className="w-4 h-4 text-purple-400" />
+                  <span className="text-sm font-semibold text-white">Pro Tips</span>
                 </div>
-
-                {/* Tips */}
-                <div className="p-4 bg-purple-500/10 border border-purple-500/20 rounded-lg">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Sparkles className="w-5 h-5 text-purple-400" />
-                    <span className="text-purple-400 font-semibold">Pro Tips</span>
-                  </div>
-                  <ul className="text-sm text-slate-400 space-y-1">
-                    <li>• Post during peak hours (9am-12pm, 7pm-9pm) for maximum reach</li>
-                    <li>• Engage with comments to boost visibility</li>
-                    <li>• Share consistently across multiple platforms</li>
-                  </ul>
-                </div>
-              </TabsContent>
-            </Tabs>
+                <ul className="text-xs text-slate-400 space-y-1.5">
+                  <li className="flex items-start gap-2">
+                    <span className="text-purple-400">•</span>
+                    Post during peak hours (9am-12pm, 7pm-9pm) for max reach
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-purple-400">•</span>
+                    Engage with comments to boost visibility
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-purple-400">•</span>
+                    Share consistently across multiple platforms
+                  </li>
+                </ul>
+              </div>
+            </div>
           )}
         </DialogContent>
       </Dialog>
