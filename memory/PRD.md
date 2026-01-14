@@ -56,8 +56,55 @@ Build a full-stack application called "AppCloud by Optio" (formerly NAPP Node Op
 
 ## What's Been Implemented
 
-### Date: January 14, 2026
-- ✅ **COMPLETED: Admin Accounting Feature**
+### Date: January 14, 2026 (Current Session)
+
+- ✅ **COMPLETED: User Activity Points System - Phase 1 (Backend Core)**
+  - **Points Engine Service** (`/app/backend/services/points_engine.py`):
+    - Event-driven points awarding
+    - Idempotent processing (prevents double-awarding)
+    - Cooldown enforcement (none, daily, weekly, monthly, once)
+    - Login streak tracking with milestone detection
+    - Tier calculation (Starter → Builder → Contributor → Champion → Legend)
+    - Points reversal support
+    - Leaderboard generation
+  - **Activity API** (`/app/backend/api/activity.py`):
+    - `GET /api/activity/summary` - User's points summary with tier info
+    - `GET /api/activity/history` - Paginated activity history
+    - `GET /api/activity/actions` - All available actions by category
+    - `GET /api/activity/streak` - Login streak with milestone progress
+    - `GET /api/activity/leaderboard` - Top users by points
+    - `GET /api/activity/tiers` - Tier definitions
+    - `POST /api/activity/event` - Award points for actions
+    - `POST /api/activity/internal/award` - Internal service-to-service
+  - **Admin Activity API**:
+    - `GET /api/admin/activity/stats` - System-wide stats
+    - `GET /api/admin/activity/actions` - Full action config
+    - `PUT /api/admin/activity/actions/{id}` - Update action config
+    - `POST /api/admin/activity/reverse` - Reverse points
+    - `GET /api/admin/activity/user/{id}/summary` - User lookup
+  - **Action Catalog** (60+ actions across 10 tiers):
+    - Tier 1: Ecosystem-Defining (1,000-5,000 pts)
+    - Tier 2: Growth & Distribution (250-1,000 pts)
+    - Tier 3: Revenue & Monetization (200-1,500 pts)
+    - Tier 4: Builder & Developer (150-750 pts)
+    - Tier 5: Node Operations (100-600 pts)
+    - Tier 6: Community & Ambassador (100-750 pts)
+    - Tier 7: Feedback & Quality (75-250 pts)
+    - Tier 8: Engagement & Consistency (25-300 pts)
+    - Tier 9: Milestones & Achievements (300-2,000 pts)
+    - Tier 10: Long-Term Impact (1,000-5,000 pts)
+  - **Integration with existing actions**:
+    - Daily login awards 25 pts
+    - Registration/onboarding awards 200 pts
+    - App installation awards 250 pts + milestone bonuses
+  - **Database Collections**:
+    - `activity_actions` - Configurable action catalog
+    - `activity_events` - Raw event log (idempotent)
+    - `activity_points_ledger` - Immutable append-only ledger
+    - `user_points_summary` - Cached totals per user
+    - `user_login_streaks` - Streak tracking
+
+- ✅ **COMPLETED: Admin Accounting Executive Dashboard**
   - **Commission Management:**
     - Node sale commissions: 5% of $5,000 node price = $250 per referral
     - View pending/approved/paid/rejected commissions
