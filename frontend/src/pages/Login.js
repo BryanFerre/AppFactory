@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { Mail, Lock, ArrowRight, Smartphone, ArrowLeft, Shield } from 'lucide-react';
+import { Mail, Lock, ArrowRight, Smartphone, ArrowLeft, Shield, Zap } from 'lucide-react';
 import { ReactComponent as AppCloudLogo } from '@/assets/AppCloud.svg';
 
 export default function Login() {
@@ -24,6 +24,15 @@ export default function Login() {
         toast.info('Enter your 2FA code to continue');
       } else {
         toast.success('Welcome back!');
+        // Show points earned notification
+        if (result.points_earned) {
+          setTimeout(() => {
+            toast.success(`+${result.points_earned} points earned for logging in!`, {
+              icon: <Zap className="w-4 h-4 text-emerald-400" />,
+              duration: 3000
+            });
+          }, 500);
+        }
       }
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Login failed');
@@ -44,6 +53,14 @@ export default function Login() {
       const result = await verify2FA(totpCode);
       if (!result.requires_2fa) {
         toast.success('Welcome back!');
+        if (result.points_earned) {
+          setTimeout(() => {
+            toast.success(`+${result.points_earned} points earned for logging in!`, {
+              icon: <Zap className="w-4 h-4 text-emerald-400" />,
+              duration: 3000
+            });
+          }, 500);
+        }
       }
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Invalid 2FA code');
