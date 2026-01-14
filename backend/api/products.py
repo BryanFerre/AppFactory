@@ -28,6 +28,8 @@ class ProductCreate(BaseModel):
     description: str = Field(..., min_length=1)
     short_description: str = Field(None, max_length=500)
     price: float = Field(..., gt=0)
+    regular_price: Optional[float] = None  # Original price before sale
+    monthly_fee: Optional[float] = None  # Monthly operating fee
     currency: str = Field(default="USD")
     category: str = Field(default="node")
     image_url: Optional[str] = None
@@ -35,6 +37,8 @@ class ProductCreate(BaseModel):
     specs: Dict[str, Any] = Field(default={})
     is_active: bool = Field(default=True)
     is_featured: bool = Field(default=False)
+    is_on_sale: bool = Field(default=False)
+    sale_label: Optional[str] = None  # e.g., "Pre-Launch Special"
     stock: int = Field(default=-1)  # -1 = unlimited
     metadata: Dict[str, Any] = Field(default={})
 
@@ -44,6 +48,8 @@ class ProductUpdate(BaseModel):
     description: Optional[str] = None
     short_description: Optional[str] = None
     price: Optional[float] = None
+    regular_price: Optional[float] = None
+    monthly_fee: Optional[float] = None
     currency: Optional[str] = None
     category: Optional[str] = None
     image_url: Optional[str] = None
@@ -51,6 +57,8 @@ class ProductUpdate(BaseModel):
     specs: Optional[Dict[str, Any]] = None
     is_active: Optional[bool] = None
     is_featured: Optional[bool] = None
+    is_on_sale: Optional[bool] = None
+    sale_label: Optional[str] = None
     stock: Optional[int] = None
     metadata: Optional[Dict[str, Any]] = None
 
