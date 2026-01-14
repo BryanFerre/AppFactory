@@ -169,6 +169,47 @@ export default function DashboardLayout() {
 
           {/* Settings at bottom */}
           <div className="pt-4 mt-4 border-t border-white/5 space-y-1">
+            {/* Licenses Section */}
+            {licenses.length > 0 && (
+              <div className="mb-4">
+                <p className="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
+                  My Licenses
+                </p>
+                {licenses.map((license) => (
+                  <div
+                    key={license.id}
+                    className="mx-1 p-3 bg-gradient-to-br from-cyan-500/10 to-blue-500/10 rounded-xl border border-cyan-500/20 mb-2"
+                  >
+                    <div className="flex items-start gap-2">
+                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center shrink-0">
+                        <Cloud className="w-4 h-4 text-white" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-white text-xs font-medium truncate">
+                          {license.product_name || 'CloudNode'}
+                        </p>
+                        <div className="flex items-center gap-1 mt-0.5">
+                          <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                          <span className="text-emerald-400 text-[10px] capitalize">{license.status}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="mt-2 pt-2 border-t border-white/10">
+                      <div className="flex items-center gap-1">
+                        <Key className="w-3 h-3 text-slate-500" />
+                        <span className="text-slate-400 text-[10px] font-mono truncate">
+                          {license.license_key}
+                        </span>
+                      </div>
+                      <p className="text-slate-500 text-[10px] mt-1">
+                        Issued: {new Date(license.issue_date).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
             {bottomNavItems.map((item) => {
               const isActive = location.pathname === item.path;
               const IconComponent = item.icon;
