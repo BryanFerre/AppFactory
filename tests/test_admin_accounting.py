@@ -325,7 +325,7 @@ class TestBulkCommissionActions:
             "password": ADMIN_PASSWORD
         })
         assert response.status_code == 200
-        self.admin_token = response.json().get("token")
+        self.admin_token = response.json().get("access_token")
         self.headers = {"Authorization": f"Bearer {self.admin_token}"}
         
         # Seed demo data
@@ -398,7 +398,7 @@ class TestPayouts:
             "password": ADMIN_PASSWORD
         })
         assert response.status_code == 200
-        self.admin_token = response.json().get("token")
+        self.admin_token = response.json().get("access_token")
         self.headers = {"Authorization": f"Bearer {self.admin_token}"}
         
         # Seed demo data
@@ -571,7 +571,7 @@ class TestBulkPayoutActions:
             "password": ADMIN_PASSWORD
         })
         assert response.status_code == 200
-        self.admin_token = response.json().get("token")
+        self.admin_token = response.json().get("access_token")
         self.headers = {"Authorization": f"Bearer {self.admin_token}"}
         
         # Seed demo data
