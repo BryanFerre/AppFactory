@@ -95,6 +95,10 @@ async def register(user_data: UserCreate):
     })
     
     token = create_token(user_id)
+    
+    # Award onboarding points
+    await award_user_points(user_id, "complete_onboarding")
+    
     return TokenResponse(
         access_token=token,
         user=UserResponse(
