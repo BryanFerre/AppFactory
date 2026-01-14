@@ -79,6 +79,14 @@ async def submit_app(
     
     await db.app_submissions.insert_one(submission)
     
+    # Award points for submitting an app for review
+    await award_user_points(
+        user["id"],
+        "submit_app_review",
+        source_entity_id=submission_id,
+        metadata={"app_name": app_name, "category": category}
+    )
+    
     return {
         "message": "App submitted successfully",
         "submission_id": submission_id,
