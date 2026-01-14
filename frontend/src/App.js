@@ -91,6 +91,7 @@ function AppRoutes() {
         <Route path="app-marketplace" element={<AppMarketplace />} />
         <Route path="installed-apps" element={<InstalledApps />} />
         <Route path="app/:appId" element={<AppDetails />} />
+        <Route path="proof-of-impact" element={<ProofOfImpact />} />
         <Route path="earnings" element={<Earnings />} />
         <Route path="promotion" element={<Promotion />} />
         <Route path="node-health" element={<NodeHealth />} />
