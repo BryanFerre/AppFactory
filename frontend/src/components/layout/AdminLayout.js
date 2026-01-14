@@ -4,7 +4,7 @@ import { useAdminAuth } from '@/context/AdminAuthContext';
 import axios from 'axios';
 import {
   LayoutDashboard, Users, Server, Package, CreditCard, HeadphonesIcon,
-  TrendingUp, FileText, ScrollText, Settings, Shield, Search, Bell,
+  TrendingUp, FileText, ScrollText, Settings, Search, Bell,
   LogOut, ChevronDown, AlertTriangle, Menu, X, Calculator
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -17,6 +17,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { ReactComponent as AppCloudLogo } from '@/assets/AppCloud.svg';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api/admin`;
 
@@ -97,11 +98,9 @@ export default function AdminLayout() {
         <div className="flex flex-col h-full p-4">
           {/* Logo */}
           <div className="flex items-center gap-3 px-3 py-4 mb-4">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
-              <Shield className="w-5 h-5 text-white" />
-            </div>
+            <AppCloudLogo className="w-10 h-10" />
             <div>
-              <h1 className="text-lg font-bold text-white font-['Outfit']">Optio Admin</h1>
+              <h1 className="text-lg font-bold text-white font-['Outfit']">AppCloud Admin</h1>
               <p className="text-xs text-slate-500">Control Panel</p>
             </div>
             <button 
