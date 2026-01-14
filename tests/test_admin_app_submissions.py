@@ -7,7 +7,7 @@ import requests
 import os
 import uuid
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://appmarketplace-1.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://appcloud-impact.preview.emergentagent.com')
 
 # Admin credentials
 ADMIN_EMAIL = "admin@optio.com"
