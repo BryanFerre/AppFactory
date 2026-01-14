@@ -143,6 +143,14 @@ async def track_app_signup(referral_code: str, app_id: str, new_user_id: Optiona
         upsert=True
     )
     
+    # Award points to the referrer for the app signup referral
+    await award_user_points(
+        referrer["id"], 
+        "referral_signup",
+        source_entity_id=app_id,
+        metadata={"app_name": app_name, "referred_user_id": new_user_id}
+    )
+    
     return {"message": "App signup tracked", "opt_reward": OPT_REWARD_APP_SIGNUP}
 
 
