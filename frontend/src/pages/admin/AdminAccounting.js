@@ -141,7 +141,7 @@ export default function AdminAccounting() {
       await axios.post(`${API}/admin/accounting/commissions/${commissionId}/action`, {
         action,
         reason: actionReason
-      });
+      }, { headers: getAuthHeader() });
       toast.success(`Commission ${action}d successfully`);
       setActionDialog(null);
       setActionReason('');
@@ -160,7 +160,7 @@ export default function AdminAccounting() {
       await axios.post(`${API}/admin/accounting/payouts/${payoutId}/action`, {
         action,
         notes: actionReason
-      });
+      }, { headers: getAuthHeader() });
       toast.success(`Payout ${action}ed successfully`);
       setActionDialog(null);
       setActionReason('');
@@ -185,7 +185,7 @@ export default function AdminAccounting() {
         commission_ids: selectedCommissions,
         action,
         reason: actionReason
-      });
+      }, { headers: getAuthHeader() });
       toast.success(`${selectedCommissions.length} commissions ${action}d`);
       setSelectedCommissions([]);
       setActionDialog(null);
@@ -211,7 +211,7 @@ export default function AdminAccounting() {
         payout_ids: selectedPayouts,
         action,
         notes: actionReason
-      });
+      }, { headers: getAuthHeader() });
       toast.success(`${selectedPayouts.length} payouts ${action}ed`);
       setSelectedPayouts([]);
       setActionDialog(null);
@@ -228,7 +228,9 @@ export default function AdminAccounting() {
   const handleMarkPaid = async (commissionId) => {
     setProcessing(true);
     try {
-      await axios.post(`${API}/admin/accounting/commissions/${commissionId}/pay`);
+      await axios.post(`${API}/admin/accounting/commissions/${commissionId}/pay`, {}, {
+        headers: getAuthHeader()
+      });
       toast.success('Commission marked as paid');
       fetchCommissions();
       fetchDashboard();
@@ -241,7 +243,9 @@ export default function AdminAccounting() {
 
   const seedDemoData = async () => {
     try {
-      const response = await axios.post(`${API}/admin/accounting/seed-demo-data`);
+      const response = await axios.post(`${API}/admin/accounting/seed-demo-data`, {}, {
+        headers: getAuthHeader()
+      });
       toast.success(response.data.message);
       fetchCommissions();
       fetchPayouts();
