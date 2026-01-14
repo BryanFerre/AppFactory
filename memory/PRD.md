@@ -76,6 +76,15 @@ Build a full-stack application called "AppCloud by Optio" (formerly NAPP Node Op
   - Net revenue calculation (Revenue - Resource Fee)
   - Comparison table now includes Resource Fee and Net Revenue columns
 
+- ✅ **Share & Promote Feature for Installed Apps**
+  - Each installed app has "Share & Promote" button
+  - Share Link tab: Referral link to app marketplace with user's referral code
+  - Social Post tab: AI-generated promotional content with regenerate option
+  - One-click sharing to: X (Twitter), Facebook, LinkedIn, Parler
+  - Send via Email option
+  - Earn 2 OPT rewards for each signup through referral link
+  - Pro tips for effective social media promotion
+
 ### Previously Completed
 - ✅ **Admin Control Panel:** All 10 admin modules fully implemented
 - ✅ **Referral System:** Backend for tracking codes, clicks, signups, OPT rewards
