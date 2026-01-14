@@ -12,7 +12,7 @@ from utils.database import db, client, init_indexes
 from api.admin import init_super_admin
 
 # Import all route modules
-from api import auth, node, earnings, apps, referral, promotion, ai, developer, notifications, webhooks, admin, accounting
+from api import auth, node, earnings, apps, referral, promotion, ai, developer, notifications, webhooks, admin, accounting, activity
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -68,6 +68,10 @@ app.include_router(webhooks.router, prefix="/api")
 # Admin router (already has /admin prefix internally)
 app.include_router(admin.router, prefix="/api")
 app.include_router(accounting.router, prefix="/api")
+
+# Activity Points System
+app.include_router(activity.router, prefix="/api")
+app.include_router(activity.admin_router, prefix="/api")
 
 
 # Root endpoints
