@@ -94,7 +94,6 @@ Build a full-stack application called "AppCloud by Optio" (formerly NAPP Node Op
 - **P2:** Stripe account requires user to configure test business details
 
 ## Upcoming Tasks
-- **P1:** App Factory filtering/comparison features
 - **P1:** PDF/CSV export for Admin Reports
 - **P2:** Real-time notifications via WebSockets
 - **P2:** Production blockchain integration
