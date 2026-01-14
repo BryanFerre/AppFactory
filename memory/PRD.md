@@ -65,6 +65,17 @@ Build a full-stack application called "AppCloud by Optio" (formerly NAPP Node Op
   - Active filter badges with quick remove
   - New API endpoints: `/api/apps/compare`, `/api/apps/categories`
 
+- ✅ **Renamed App Factory → App Marketplace**
+  - Updated navigation, page title, and all references
+  - Changed route from `/app-factory` to `/app-marketplace`
+
+- ✅ **Resource Billing in Install Modal**
+  - Shows capacity-based monthly resource fee
+  - Tiered pricing: Basic ($4.99/GB), Standard, Professional, Enterprise, Premium
+  - Automatic billing to card on file notification
+  - Net revenue calculation (Revenue - Resource Fee)
+  - Comparison table now includes Resource Fee and Net Revenue columns
+
 ### Previously Completed
 - ✅ **Admin Control Panel:** All 10 admin modules fully implemented
 - ✅ **Referral System:** Backend for tracking codes, clicks, signups, OPT rewards
