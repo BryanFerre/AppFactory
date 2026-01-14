@@ -44,12 +44,20 @@ import { toast } from 'sonner';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
+const NODE_PRICE = 5000;
+const COMMISSION_RATE = 0.05; // 5%
+
 const statusColors = {
   pending: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
   approved: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
   processing: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
   paid: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
   rejected: 'bg-red-500/20 text-red-400 border-red-500/30',
+};
+
+const commissionTypeLabels = {
+  node_sale: { label: 'Node Sale (5%)', color: 'text-emerald-400', bgColor: 'bg-emerald-500/20' },
+  app_earnings: { label: 'App Earnings', color: 'text-purple-400', bgColor: 'bg-purple-500/20' },
 };
 
 const statusIcons = {
@@ -522,9 +530,14 @@ export default function AdminAccounting() {
                             </div>
                           </td>
                           <td className="p-4">
-                            <span className="text-slate-300 capitalize">
-                              {commission.type?.replace(/_/g, ' ')}
-                            </span>
+                            <div className="flex items-center gap-2">
+                              <Badge className={`${commissionTypeLabels[commission.type]?.bgColor || 'bg-slate-500/20'} ${commissionTypeLabels[commission.type]?.color || 'text-slate-400'} border-0`}>
+                                {commissionTypeLabels[commission.type]?.label || commission.type?.replace(/_/g, ' ')}
+                              </Badge>
+                            </div>
+                            {commission.type === 'node_sale' && commission.referred_user && (
+                              <p className="text-xs text-slate-500 mt-1">Referred: {commission.referred_user}</p>
+                            )}
                           </td>
                           <td className="p-4">
                             <span className="text-emerald-400 font-semibold text-lg">
