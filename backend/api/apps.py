@@ -13,6 +13,22 @@ from utils.config import FRONTEND_URL
 
 router = APIRouter(tags=["Apps"])
 
+
+async def award_user_points(user_id: str, action_id: str, source_entity_id: str = None, metadata: dict = None):
+    """Helper function to award points to a user"""
+    try:
+        from services.points_engine import PointsEngine
+        engine = PointsEngine(db)
+        await engine.award_points(
+            user_id=user_id,
+            action_id=action_id,
+            source_entity_id=source_entity_id,
+            metadata=metadata
+        )
+    except Exception as e:
+        import logging
+        logging.error(f"Failed to award points: {e}")
+
 # Available apps catalog - Varied pricing and metrics for comparison
 AVAILABLE_APPS = [
     {
@@ -509,6 +525,16 @@ async def install_app(app_id: str, user=Depends(get_current_user)):
     }
     
     await db.installed_apps.insert_one(new_app)
+    
+    # Award points for installing an app
+    await award_user_points(user["id"], "install_app", source_entity_id=app_id, metadata={"app_name": app_data["name"]})
+    
+    # Check if this is the first app installed
+    installed_count = await db.installed_apps.count_documents({"user_id": user["id"]})
+    if installed_count == 1:
+        await award_user_points(user["id"], "first_app_installed", source_entity_id=app_id)
+    elif installed_count == 10:
+        await award_user_points(user["id"], "host_10_apps")
     
     return {
         "message": "App installed successfully",
