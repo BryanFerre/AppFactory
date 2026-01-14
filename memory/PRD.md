@@ -165,20 +165,42 @@ Build a full-stack application called "AppCloud by Optio" (formerly NAPP Node Op
     - `POST /api/purchase/verify` - Verifies purchase, creates user account + license
     - `POST /api/purchase/webhook` - Handles Stripe webhook events
     - Commission processing for referral purchases (5% = $250)
+    - Coupon code support in checkout
+  - **Product Pricing:**
+    - Regular price: $7,500
+    - Pre-launch sale price: $5,000
+    - Monthly operation fee: $99/mo
+    - Apps add to monthly cost
   - **Public Landing Page** (`/app/frontend/src/pages/public/LandingPage.js`):
+    - **AppCloud logo** in header and footer
     - Hero section with "Own a Piece of the Decentralized Cloud" headline
-    - Product price displayed: $5,000 with "Lifetime License, No monthly fees"
+    - "Pre-Launch Special" badge with sale pricing
+    - Price display: $5,000 (crossed out $7,500) + $99/mo operation fee
     - Stats section (10,000+ Active Nodes, $2.5M+ Paid, 99.9% Uptime, 50+ Countries)
     - 6 Feature cards (Passive Income, Lifetime License, Zero Technical Skills, etc.)
     - "How It Works" section with 3 steps
     - Product details section with features list
     - Testimonials section
     - CTA sections with "Get Your CloudNode" buttons
-    - Purchase modal with form (Name, Email, Referral Code)
+    - Purchase modal with form (Name, Email, Referral Code, Coupon Code)
   - **Public Layout** (`/app/frontend/src/components/layout/PublicLayout.js`):
-    - Main navigation with Sign In and Get Started buttons
+    - Main navigation with AppCloud logo and Sign In/Get Started buttons
     - Footer with brand, product links, and company links
     - Mobile responsive with hamburger menu
+  - **Coupons & Sales System** (`/app/backend/api/coupons.py`):
+    - `POST /api/coupons/validate` - Validate coupon for product
+    - `GET /api/admin/coupons` - List all coupons (admin)
+    - `POST /api/admin/coupons` - Create coupon with auto-generated code
+    - `PUT /api/admin/coupons/{id}` - Update coupon
+    - `DELETE /api/admin/coupons/{id}` - Delete/deactivate coupon
+    - `GET /api/admin/coupons/stats/overview` - Coupon statistics
+    - Supports: percentage or fixed discounts, usage limits, per-user limits, date validity, max discount caps
+  - **Admin Coupons Page** (`/app/frontend/src/pages/admin/AdminCoupons.js`):
+    - Stats cards: Total, Active, Usages, Discounts Given
+    - Coupons table with code, name, discount, usage, validity, status
+    - Create/Edit modal with full coupon options
+    - Delete confirmation with soft/hard delete
+    - Copy coupon code button
   - **Purchase Success Page** (`/app/frontend/src/pages/public/PurchaseSuccess.js`):
     - Verifies purchase with Stripe session ID
     - Auto-creates user account with random password
@@ -186,41 +208,13 @@ Build a full-stack application called "AppCloud by Optio" (formerly NAPP Node Op
     - Displays credentials and license key
     - "Go to Dashboard" CTA
   - **Product Management** (`/app/backend/api/products.py`):
-    - `GET /api/products` - List active products (public)
-    - `GET /api/products/{id}` - Get product by ID (public)
-    - `GET /api/products/slug/{slug}` - Get product by slug (public)
-    - `GET /api/admin/products` - List all products (admin)
-    - `POST /api/admin/products` - Create product (admin)
-    - `PUT /api/admin/products/{id}` - Update product (admin)
-    - `DELETE /api/admin/products/{id}` - Delete/deactivate product (admin)
-    - `GET /api/admin/products/stats/overview` - Product stats (admin)
-    - Default CloudNode product auto-seeded on startup at $5,000
-  - **License Management** (`/app/backend/api/licenses.py`):
-    - `GET /api/licenses` - User's licenses
-    - `GET /api/licenses/{id}` - License detail
-    - `GET /api/admin/licenses` - All licenses (admin)
-    - `PUT /api/admin/licenses/{id}/status` - Update license status (admin)
-    - `GET /api/admin/licenses/stats/overview` - License stats (admin)
-    - License key format: XXXX-XXXX-XXXX-XXXX
-    - License types: lifetime (never expires)
-  - **Admin Products Page** (`/app/frontend/src/pages/admin/AdminProducts.js`):
-    - Products table with name, category, price, sales, status
-    - Create product modal with full form
-    - Edit product with pre-filled form
-    - Delete confirmation with soft/hard delete logic
-    - Stats cards: Total, Active, Top Seller
-    - Search and category filter
-  - **Dashboard Licenses Section:**
-    - Licenses displayed at bottom of sidebar in DashboardLayout
-    - Card shows: Product name, status, license key, issue date
-    - Only visible when user has licenses
+    - Added: regular_price, monthly_fee, is_on_sale, sale_label fields
+    - Default CloudNode auto-seeded with sale pricing
   - **Route Changes:**
-    - `/` - Public landing page (was protected dashboard)
-    - `/dashboard` - Protected user dashboard
-    - `/dashboard/*` - All dashboard routes under /dashboard prefix
-    - `/purchase-success` - Post-purchase success page
-    - `/admin/products` - Admin products page
-  - **Testing:** 20/20 backend tests + 20/20 frontend checks passed
+    - `/` - Public landing page
+    - `/dashboard/*` - Protected user dashboard
+    - `/admin/coupons` - Admin coupons page
+  - **Testing:** All features verified via screenshots
 
 - ✅ **COMPLETED: Admin Accounting Executive Dashboard**
   - **Commission Management:**
