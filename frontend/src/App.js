@@ -19,6 +19,7 @@ import Support from "@/pages/Support";
 import Settings from "@/pages/Settings";
 import Wallet from "@/pages/Wallet";
 import AppDeveloper from "@/pages/AppDeveloper";
+import AppDetails from "@/pages/AppDetails";
 
 // Admin Pages
 import AdminLogin from "@/pages/admin/AdminLogin";
