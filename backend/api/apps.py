@@ -273,9 +273,14 @@ async def uninstall_app(app_id: str, user=Depends(get_current_user)):
 async def get_available_apps(
     category: Optional[str] = None,
     trending: Optional[bool] = None,
+    new: Optional[bool] = None,
+    sort_by: Optional[str] = None,  # revenue, subscribers, price, capacity
+    sort_order: Optional[str] = "desc",  # asc, desc
+    min_revenue: Optional[float] = None,
+    max_capacity: Optional[int] = None,
     user=Depends(get_current_user)
 ):
-    """Get available apps from app factory"""
+    """Get available apps from app factory with filtering and sorting"""
     # Get user's installed apps
     installed = await db.installed_apps.find({"user_id": user["id"]}, {"id": 1}).to_list(100)
     installed_ids = {app["id"] for app in installed}
@@ -288,13 +293,86 @@ async def get_available_apps(
             continue
         if trending is True and not app.get("is_trending"):
             continue
+        if new is True and not app.get("is_new"):
+            continue
+        if min_revenue is not None and app.get("revenue_per_node", 0) < min_revenue:
+            continue
+        if max_capacity is not None and app.get("capacity_required", 0) > max_capacity:
+            continue
         
         result.append({
             **app,
             "is_installed": False
         })
     
+    # Apply sorting
+    if sort_by:
+        sort_key_map = {
+            "revenue": "revenue_per_node",
+            "subscribers": "subscribers",
+            "price": "subscription_price",
+            "capacity": "capacity_required",
+            "popularity": "active_nodes"
+        }
+        key = sort_key_map.get(sort_by, "revenue_per_node")
+        reverse = sort_order != "asc"
+        result.sort(key=lambda x: x.get(key, 0), reverse=reverse)
+    
     return result
+
+
+@router.get("/apps/compare")
+async def compare_apps(
+    app_ids: str,  # Comma-separated app IDs
+    user=Depends(get_current_user)
+):
+    """Compare multiple apps side by side"""
+    ids = [id.strip() for id in app_ids.split(",")]
+    
+    if len(ids) > 4:
+        raise HTTPException(status_code=400, detail="Maximum 4 apps can be compared")
+    
+    # Get user's installed apps
+    installed = await db.installed_apps.find({"user_id": user["id"]}, {"id": 1}).to_list(100)
+    installed_ids = {app["id"] for app in installed}
+    
+    # Find the requested apps
+    result = []
+    for app in AVAILABLE_APPS:
+        if app["id"] in ids:
+            result.append({
+                **app,
+                "is_installed": app["id"] in installed_ids
+            })
+    
+    # Also check featured apps
+    for app in MOCK_FEATURED_APPS:
+        if app["id"] in ids and app["id"] not in [r["id"] for r in result]:
+            result.append({
+                **app,
+                "is_installed": app["id"] in installed_ids,
+                "active_nodes": 1500,
+                "subscribers": 20000,
+                "total_slots": 3000,
+                "available_slots": 1500
+            })
+    
+    return result
+
+
+@router.get("/apps/categories")
+async def get_app_categories():
+    """Get list of available app categories with counts"""
+    categories = {}
+    for app in AVAILABLE_APPS:
+        cat = app["category"]
+        if cat not in categories:
+            categories[cat] = {"name": cat, "count": 0, "trending_count": 0}
+        categories[cat]["count"] += 1
+        if app.get("is_trending"):
+            categories[cat]["trending_count"] += 1
+    
+    return list(categories.values())
 
 
 @router.post("/apps/install/{app_id}")
