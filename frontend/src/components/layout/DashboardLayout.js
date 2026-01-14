@@ -49,11 +49,13 @@ export default function DashboardLayout() {
   const [nodeStatus, setNodeStatus] = useState({ status: 'healthy', earnings_today_usd: 0, earnings_today_opt: 0 });
   const [notifications, setNotifications] = useState([]);
   const [optPrice, setOptPrice] = useState(0.85);
+  const [licenses, setLicenses] = useState([]);
 
   useEffect(() => {
     fetchNodeStatus();
     fetchNotifications();
     fetchOptPrice();
+    fetchLicenses();
     const interval = setInterval(fetchOptPrice, 300000);
     return () => clearInterval(interval);
   }, []);
