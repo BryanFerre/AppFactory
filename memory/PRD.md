@@ -115,6 +115,32 @@ Build a full-stack application called "AppCloud by Optio" (formerly NAPP Node Op
     - `user_points_summary` - Cached totals per user
     - `user_login_streaks` - Streak tracking
 
+- ✅ **COMPLETED: Points System Enhancements (January 14, 2026)**
+  - **New Badges Added** (`/app/backend/services/badges_engine.py`):
+    - "Top Node Operator" badge - special category, server icon, 1000 pts bonus
+    - "Top Ambassador" badge - special category, megaphone icon, 1000 pts bonus
+    - Both are special badges that require manual awarding
+    - Total badges now: 23 across 6 categories
+  - **Weekly/Monthly Leaderboards**:
+    - `GET /api/activity/leaderboard/weekly` - Points earned this week
+    - `GET /api/activity/leaderboard/monthly` - Points earned this month
+    - Both include `period_start` timestamp
+    - Frontend tabs: "All Time", "This Month", "This Week"
+    - Category filter only visible for All Time view
+  - **External API for Third-Party Apps** (`/api/external/activity/*`):
+    - `GET /api/external/activity/points/export` - Export all user points data
+      - Includes: user_id, name, email, wallet_address, total_points, tier, points_by_category, streaks
+      - Pagination support: limit (default 1000), offset
+    - `GET /api/external/activity/points/user/{user_id}` - Get specific user's points
+      - Includes badges earned
+    - `GET /api/external/activity/leaderboard/export?period=all|weekly|monthly` - Export leaderboard
+    - No authentication required (designed for third-party consumption)
+  - **Frontend Updates** (`/app/frontend/src/pages/Leaderboard.js`):
+    - Three tabs: All Time (amber), This Month (cyan), This Week (emerald)
+    - Period info display showing when period started
+    - Automatic data refresh on tab switch
+  - **Testing:** 26/26 backend tests + 11/11 frontend checks passed
+
 - ✅ **COMPLETED: Admin Accounting Executive Dashboard**
   - **Commission Management:**
     - Node sale commissions: 5% of $5,000 node price = $250 per referral
@@ -189,6 +215,13 @@ Build a full-stack application called "AppCloud by Optio" (formerly NAPP Node Op
 - `GET /api/apps/available` - App Marketplace catalog
 - `POST /api/admin/auth/login` - Admin login
 
+### Activity Points Endpoints (NEW)
+- `GET /api/activity/leaderboard/weekly` - Weekly leaderboard with period info
+- `GET /api/activity/leaderboard/monthly` - Monthly leaderboard with period info
+- `GET /api/external/activity/points/export` - Export all user points (third-party API)
+- `GET /api/external/activity/points/user/{user_id}` - Get user points (third-party API)
+- `GET /api/external/activity/leaderboard/export?period=` - Export leaderboard (third-party API)
+
 ## Test Credentials
 - **User:** dev@test.io / devpass123
 - **Admin:** admin@optio.com / admin123
@@ -216,11 +249,35 @@ Build a full-stack application called "AppCloud by Optio" (formerly NAPP Node Op
 
 ## Upcoming Tasks (P1)
 - **PDF/CSV export** for Admin Reports
-- **OPT Point System** explanation UI and backend logic
+- **OPT Point System** explanation UI - how points are earned
 
 ## Future Tasks (P2)
 - Real-time notifications via WebSockets
 - Production blockchain integration
+- Points redemption system (external API ready for third-party app to consume)
+
+## External API Documentation
+
+### Third-Party Points Data Access
+External applications can access points data without authentication:
+
+1. **Export All User Points:**
+   ```
+   GET /api/external/activity/points/export?limit=1000&offset=0
+   ```
+   Returns: user_id, name, email, wallet_address, total_points, tier, points_by_category, streaks
+
+2. **Get Specific User Points:**
+   ```
+   GET /api/external/activity/points/user/{user_id}
+   ```
+   Returns: Full user points data including badges earned
+
+3. **Export Leaderboard:**
+   ```
+   GET /api/external/activity/leaderboard/export?period=all|weekly|monthly&limit=100
+   ```
+   Returns: Ranked leaderboard with wallet addresses for token distribution
 
 ## Preview URL
 https://appcloud-impact.preview.emergentagent.com
