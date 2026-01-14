@@ -22,6 +22,7 @@ import AppDeveloper from "@/pages/AppDeveloper";
 import AppDetails from "@/pages/AppDetails";
 import ProofOfImpact from "@/pages/ProofOfImpact";
 import Leaderboard from "@/pages/Leaderboard";
+import HowToEarn from "@/pages/HowToEarn";
 
 // Admin Pages
 import AdminLogin from "@/pages/admin/AdminLogin";
