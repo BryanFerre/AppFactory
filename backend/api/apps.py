@@ -287,40 +287,40 @@ AVAILABLE_APPS = [
     }
 ]
 
-# Featured apps for demo
+# Featured apps for demo - varied pricing tiers
 MOCK_FEATURED_APPS = [
     {
         "id": "featured-1",
-        "name": "FocusTune",
-        "description": "One-tap background sounds for deep focus.",
+        "name": "BlockDay Pro",
+        "description": "Enterprise-grade time blocking with calendar integration.",
         "category": "Productivity",
-        "subscription_price": 4.99,
-        "revenue_share": 65,
-        "capacity_required": 5,
+        "subscription_price": 19.99,
+        "revenue_share": 60,
+        "capacity_required": 6,
         "icon_url": None,
         "is_featured": True,
         "featured_until": "2025-02-15T00:00:00Z"
     },
     {
         "id": "featured-2",
-        "name": "ToneCheck",
-        "description": "Reviews message tone for clarity and politeness.",
+        "name": "ToneCheck AI",
+        "description": "AI-powered message tone analysis for clarity and professionalism.",
         "category": "Communication",
-        "subscription_price": 5.99,
-        "revenue_share": 68,
-        "capacity_required": 4,
+        "subscription_price": 14.99,
+        "revenue_share": 62,
+        "capacity_required": 7,
         "icon_url": None,
         "is_featured": True,
         "featured_until": "2025-02-20T00:00:00Z"
     },
     {
         "id": "featured-3",
-        "name": "ReframeIt",
-        "description": "Helps rewrite negative thoughts with cognitive reframing.",
-        "category": "Wellness",
-        "subscription_price": 4.99,
-        "revenue_share": 70,
-        "capacity_required": 3,
+        "name": "TeamSync",
+        "description": "Real-time team collaboration with presence indicators.",
+        "category": "Communication",
+        "subscription_price": 24.99,
+        "revenue_share": 58,
+        "capacity_required": 8,
         "icon_url": None,
         "is_featured": True,
         "featured_until": "2025-02-18T00:00:00Z"
