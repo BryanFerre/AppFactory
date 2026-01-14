@@ -348,13 +348,13 @@ export default function ProofOfImpact() {
                 Points by Category
               </h3>
               
-              {categoryData.length > 0 ? (
-                <div className="flex flex-col lg:flex-row items-center gap-6">
-                  <div className="w-48 h-48">
+              <div className="flex flex-col lg:flex-row items-center gap-6">
+                {pieChartData.length > 0 ? (
+                  <div className="w-48 h-48 shrink-0">
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
                         <Pie
-                          data={categoryData}
+                          data={pieChartData}
                           cx="50%"
                           cy="50%"
                           innerRadius={50}
@@ -362,7 +362,7 @@ export default function ProofOfImpact() {
                           paddingAngle={3}
                           dataKey="value"
                         >
-                          {categoryData.map((entry, index) => (
+                          {pieChartData.map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={entry.color} />
                           ))}
                         </Pie>
@@ -377,23 +377,39 @@ export default function ProofOfImpact() {
                       </PieChart>
                     </ResponsiveContainer>
                   </div>
-                  
-                  <div className="flex-1 grid grid-cols-2 gap-2">
-                    {categoryData.map((cat, i) => (
-                      <div key={i} className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: cat.color }} />
-                        <span className="text-sm text-slate-400">{cat.name}</span>
-                        <span className="text-sm text-white ml-auto font-medium">{cat.value}</span>
-                      </div>
-                    ))}
+                ) : (
+                  <div className="w-48 h-48 shrink-0 flex items-center justify-center">
+                    <div className="w-36 h-36 rounded-full border-4 border-dashed border-white/10 flex items-center justify-center">
+                      <Target className="w-10 h-10 text-slate-600" />
+                    </div>
                   </div>
+                )}
+                
+                <div className="flex-1 grid grid-cols-2 gap-2 w-full">
+                  {categoryData.map((cat, i) => {
+                    const Icon = categoryConfig[cat.key]?.icon || Activity;
+                    return (
+                      <div 
+                        key={i} 
+                        className={`flex items-center gap-2 p-2 rounded-lg transition-all ${
+                          cat.value > 0 ? 'bg-white/5' : 'opacity-50'
+                        }`}
+                      >
+                        <div 
+                          className="w-6 h-6 rounded flex items-center justify-center shrink-0"
+                          style={{ backgroundColor: `${cat.color}20` }}
+                        >
+                          <Icon className="w-3.5 h-3.5" style={{ color: cat.color }} />
+                        </div>
+                        <span className="text-xs text-slate-400 truncate flex-1">{cat.name}</span>
+                        <span className={`text-xs font-medium ml-auto ${cat.value > 0 ? 'text-white' : 'text-slate-600'}`}>
+                          {cat.value}
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
-              ) : (
-                <div className="text-center py-12 text-slate-500">
-                  <Target className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                  <p>Start earning points to see your breakdown</p>
-                </div>
-              )}
+              </div>
             </motion.div>
 
             {/* Tier Progress */}
