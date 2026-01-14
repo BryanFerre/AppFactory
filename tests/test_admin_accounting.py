@@ -30,7 +30,7 @@ class TestAdminAccountingAuth:
             "password": ADMIN_PASSWORD
         })
         assert response.status_code == 200, f"Admin login failed: {response.text}"
-        self.admin_token = response.json().get("token")
+        self.admin_token = response.json().get("access_token")
         self.headers = {"Authorization": f"Bearer {self.admin_token}"}
     
     def test_dashboard_requires_auth(self):
@@ -63,7 +63,7 @@ class TestAdminAccountingDashboard:
             "password": ADMIN_PASSWORD
         })
         assert response.status_code == 200, f"Admin login failed: {response.text}"
-        self.admin_token = response.json().get("token")
+        self.admin_token = response.json().get("access_token")
         self.headers = {"Authorization": f"Bearer {self.admin_token}"}
     
     def test_dashboard_returns_stats(self):
@@ -110,7 +110,7 @@ class TestSeedDemoData:
             "password": ADMIN_PASSWORD
         })
         assert response.status_code == 200, f"Admin login failed: {response.text}"
-        self.admin_token = response.json().get("token")
+        self.admin_token = response.json().get("access_token")
         self.headers = {"Authorization": f"Bearer {self.admin_token}"}
     
     def test_seed_demo_data(self):
@@ -140,7 +140,7 @@ class TestCommissions:
             "password": ADMIN_PASSWORD
         })
         assert response.status_code == 200, f"Admin login failed: {response.text}"
-        self.admin_token = response.json().get("token")
+        self.admin_token = response.json().get("access_token")
         self.headers = {"Authorization": f"Bearer {self.admin_token}"}
         
         # Seed demo data to ensure we have commissions
