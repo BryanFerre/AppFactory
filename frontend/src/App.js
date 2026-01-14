@@ -96,6 +96,7 @@ function AppRoutes() {
         <Route path="app/:appId" element={<AppDetails />} />
         <Route path="proof-of-impact" element={<ProofOfImpact />} />
         <Route path="leaderboard" element={<Leaderboard />} />
+        <Route path="how-to-earn" element={<HowToEarn />} />
         <Route path="earnings" element={<Earnings />} />
         <Route path="promotion" element={<Promotion />} />
         <Route path="node-health" element={<NodeHealth />} />
