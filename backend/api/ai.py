@@ -143,7 +143,7 @@ async def get_app_promotions(app_id: str, user=Depends(get_current_user)):
     social_posts = []
     if EMERGENT_LLM_KEY:
         try:
-            from emergentintegrations.llm.chat import chat, LlmModel
+            from emergentintegrations.llm.chat import LlmChat
             
             prompt = f"""Generate 3 unique social media posts promoting "{app['name']}" app.
             
@@ -161,9 +161,8 @@ async def get_app_promotions(app_id: str, user=Depends(get_current_user)):
             TWITTER 3: [post]
             """
             
-            response = await chat(
-                api_key=EMERGENT_LLM_KEY,
-                model=LlmModel.GPT_5_2,
+            llm = LlmChat(api_key=EMERGENT_LLM_KEY)
+            response = await llm.chat(
                 system_prompt="You are a social media expert creating promotional content.",
                 user_prompt=prompt
             )
