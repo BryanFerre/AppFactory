@@ -1,15 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search, TrendingUp, Download, Users, Server, Layers, DollarSign,
   Package, Activity, Cpu, Globe, Gamepad2, Shield, Image, HardDrive,
-  Sparkles, Clock, Star
+  Sparkles, Clock, Star, SlidersHorizontal, ArrowUpDown, X, Check,
+  GitCompare, ChevronDown, Filter, BarChart3
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Select,
   SelectContent,
@@ -25,6 +27,23 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+  DropdownMenuLabel,
+} from '@/components/ui/dropdown-menu';
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet';
+import { Slider } from '@/components/ui/slider';
 import { toast } from 'sonner';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -46,13 +65,45 @@ export default function AppFactory() {
   const [searchQuery, setSearchQuery] = useState('');
   const [category, setCategory] = useState('all');
   const [filter, setFilter] = useState('all');
+  const [sortBy, setSortBy] = useState('revenue');
+  const [sortOrder, setSortOrder] = useState('desc');
+  const [minRevenue, setMinRevenue] = useState(0);
+  const [maxCapacity, setMaxCapacity] = useState(10);
   const [installDialog, setInstallDialog] = useState(null);
   const [installing, setInstalling] = useState(false);
+  
+  // Comparison feature
+  const [compareMode, setCompareMode] = useState(false);
+  const [selectedForCompare, setSelectedForCompare] = useState([]);
+  const [showCompareDialog, setShowCompareDialog] = useState(false);
+  const [compareData, setCompareData] = useState([]);
+
+  const fetchApps = useCallback(async () => {
+    try {
+      let url = `${API}/apps/available`;
+      const params = new URLSearchParams();
+      
+      if (category !== 'all') params.append('category', category);
+      if (filter === 'trending') params.append('trending', 'true');
+      if (filter === 'new') params.append('new', 'true');
+      if (sortBy) params.append('sort_by', sortBy);
+      if (sortOrder) params.append('sort_order', sortOrder);
+      if (minRevenue > 0) params.append('min_revenue', minRevenue.toString());
+      if (maxCapacity < 10) params.append('max_capacity', maxCapacity.toString());
+      
+      const response = await axios.get(`${url}${params.toString() ? '?' + params.toString() : ''}`);
+      setApps(response.data);
+    } catch (error) {
+      toast.error('Failed to fetch apps');
+    } finally {
+      setLoading(false);
+    }
+  }, [category, filter, sortBy, sortOrder, minRevenue, maxCapacity]);
 
   useEffect(() => {
     fetchApps();
     fetchFeaturedApps();
-  }, [category, filter]);
+  }, [fetchApps]);
 
   const fetchFeaturedApps = async () => {
     try {
@@ -63,36 +114,16 @@ export default function AppFactory() {
     }
   };
 
-  const fetchApps = async () => {
-    try {
-      let url = `${API}/apps/available`;
-      const params = new URLSearchParams();
-      if (category !== 'all') params.append('category', category);
-      if (filter === 'trending') params.append('trending', 'true');
-      if (filter === 'new') params.append('new', 'true');
-      
-      const response = await axios.get(`${url}${params.toString() ? '?' + params.toString() : ''}`);
-      setApps(response.data);
-    } catch (error) {
-      toast.error('Failed to fetch apps');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Convert featured app to install dialog format
   const handleFeaturedAppClick = (featuredApp) => {
-    // Create a compatible app object for the install dialog
     const appForDialog = {
       id: featuredApp.id,
       name: featuredApp.name,
       description: featuredApp.description,
       category: featuredApp.category,
-      icon: 'cpu', // default icon
+      icon: 'cpu',
       subscription_price: featuredApp.subscription_price,
       revenue_share: featuredApp.revenue_share,
       capacity_required: featuredApp.capacity_required,
-      // Estimated values for featured apps
       revenue_per_node: (featuredApp.subscription_price * featuredApp.revenue_share / 100 * 30).toFixed(2),
       active_nodes: Math.floor(Math.random() * 2000) + 500,
       subscribers: Math.floor(Math.random() * 30000) + 10000,
@@ -117,6 +148,40 @@ export default function AppFactory() {
     }
   };
 
+  // Comparison handlers
+  const toggleCompareSelection = (app) => {
+    if (selectedForCompare.find(a => a.id === app.id)) {
+      setSelectedForCompare(prev => prev.filter(a => a.id !== app.id));
+    } else {
+      if (selectedForCompare.length >= 3) {
+        toast.error('Maximum 3 apps can be compared');
+        return;
+      }
+      setSelectedForCompare(prev => [...prev, app]);
+    }
+  };
+
+  const handleCompare = async () => {
+    if (selectedForCompare.length < 2) {
+      toast.error('Select at least 2 apps to compare');
+      return;
+    }
+    
+    try {
+      const ids = selectedForCompare.map(a => a.id).join(',');
+      const response = await axios.get(`${API}/apps/compare?app_ids=${ids}`);
+      setCompareData(response.data);
+      setShowCompareDialog(true);
+    } catch (error) {
+      toast.error('Failed to load comparison data');
+    }
+  };
+
+  const clearComparison = () => {
+    setSelectedForCompare([]);
+    setCompareMode(false);
+  };
+
   const getAppIcon = (iconName) => {
     const icons = {
       database: <HardDrive className="w-6 h-6" />,
@@ -137,6 +202,14 @@ export default function AppFactory() {
   );
 
   const categories = ['all', 'Productivity', 'Communication', 'Wellness'];
+  
+  const sortOptions = [
+    { value: 'revenue', label: 'Revenue', icon: DollarSign },
+    { value: 'subscribers', label: 'Subscribers', icon: Users },
+    { value: 'price', label: 'Price', icon: BarChart3 },
+    { value: 'popularity', label: 'Popularity', icon: TrendingUp },
+    { value: 'capacity', label: 'Capacity', icon: Server }
+  ];
 
   return (
     <div className="space-y-6">
@@ -146,10 +219,59 @@ export default function AppFactory() {
           <h1 className="text-2xl font-bold text-white font-['Outfit']">App Factory</h1>
           <p className="text-slate-400 mt-1">Discover and install revenue-generating apps for your node</p>
         </div>
+        
+        {/* Compare Mode Toggle */}
+        <div className="flex items-center gap-3">
+          {compareMode && selectedForCompare.length > 0 && (
+            <motion.div 
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="flex items-center gap-2"
+            >
+              <Badge className="bg-cyan-500/20 text-cyan-400 px-3 py-1">
+                {selectedForCompare.length} selected
+              </Badge>
+              <Button
+                size="sm"
+                onClick={handleCompare}
+                className="bg-cyan-500 hover:bg-cyan-600 text-white"
+                disabled={selectedForCompare.length < 2}
+                data-testid="compare-apps-btn"
+              >
+                <GitCompare className="w-4 h-4 mr-2" />
+                Compare
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={clearComparison}
+                className="text-slate-400 hover:text-white"
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </motion.div>
+          )}
+          <Button
+            variant={compareMode ? "default" : "outline"}
+            onClick={() => {
+              setCompareMode(!compareMode);
+              if (compareMode) clearComparison();
+            }}
+            className={compareMode 
+              ? "bg-cyan-500 hover:bg-cyan-600 text-white" 
+              : "border-white/20 text-slate-300 hover:text-white hover:bg-white/10"
+            }
+            data-testid="toggle-compare-mode"
+          >
+            <GitCompare className="w-4 h-4 mr-2" />
+            {compareMode ? 'Exit Compare' : 'Compare Apps'}
+          </Button>
+        </div>
       </div>
 
-      {/* Filters */}
-      <div className="glass-card p-4 flex flex-col sm:flex-row gap-4">
+      {/* Filters Bar */}
+      <div className="glass-card p-4 flex flex-col lg:flex-row gap-4">
+        {/* Search */}
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
           <Input
@@ -160,8 +282,10 @@ export default function AppFactory() {
             data-testid="app-search"
           />
         </div>
+        
+        {/* Category Filter */}
         <Select value={category} onValueChange={setCategory}>
-          <SelectTrigger className="w-full sm:w-40 bg-black/40 border-white/10" data-testid="category-filter">
+          <SelectTrigger className="w-full lg:w-44 bg-black/40 border-white/10" data-testid="category-filter">
             <SelectValue placeholder="Category" />
           </SelectTrigger>
           <SelectContent className="glass-card border-white/10">
@@ -172,19 +296,187 @@ export default function AppFactory() {
             ))}
           </SelectContent>
         </Select>
+        
+        {/* Status Filter */}
         <Select value={filter} onValueChange={setFilter}>
-          <SelectTrigger className="w-full sm:w-40 bg-black/40 border-white/10" data-testid="status-filter">
+          <SelectTrigger className="w-full lg:w-36 bg-black/40 border-white/10" data-testid="status-filter">
             <SelectValue placeholder="Filter" />
           </SelectTrigger>
           <SelectContent className="glass-card border-white/10">
             <SelectItem value="all">All Apps</SelectItem>
-            <SelectItem value="trending">Trending</SelectItem>
-            <SelectItem value="new">New</SelectItem>
+            <SelectItem value="trending">
+              <span className="flex items-center gap-2">
+                <TrendingUp className="w-4 h-4 text-cyan-400" /> Trending
+              </span>
+            </SelectItem>
+            <SelectItem value="new">
+              <span className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-purple-400" /> New
+              </span>
+            </SelectItem>
           </SelectContent>
         </Select>
+        
+        {/* Sort Dropdown */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" className="border-white/10 text-slate-300 hover:text-white hover:bg-white/10 w-full lg:w-auto" data-testid="sort-dropdown">
+              <ArrowUpDown className="w-4 h-4 mr-2" />
+              Sort: {sortOptions.find(s => s.value === sortBy)?.label}
+              <ChevronDown className="w-4 h-4 ml-2" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="glass-card border-white/10 w-48">
+            <DropdownMenuLabel className="text-slate-400 text-xs">Sort By</DropdownMenuLabel>
+            <DropdownMenuSeparator className="bg-white/10" />
+            {sortOptions.map(option => (
+              <DropdownMenuItem
+                key={option.value}
+                onClick={() => setSortBy(option.value)}
+                className={`flex items-center gap-2 ${sortBy === option.value ? 'text-cyan-400' : 'text-slate-300'}`}
+              >
+                <option.icon className="w-4 h-4" />
+                {option.label}
+                {sortBy === option.value && <Check className="w-4 h-4 ml-auto" />}
+              </DropdownMenuItem>
+            ))}
+            <DropdownMenuSeparator className="bg-white/10" />
+            <DropdownMenuLabel className="text-slate-400 text-xs">Order</DropdownMenuLabel>
+            <DropdownMenuItem
+              onClick={() => setSortOrder('desc')}
+              className={sortOrder === 'desc' ? 'text-cyan-400' : 'text-slate-300'}
+            >
+              High to Low {sortOrder === 'desc' && <Check className="w-4 h-4 ml-auto" />}
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => setSortOrder('asc')}
+              className={sortOrder === 'asc' ? 'text-cyan-400' : 'text-slate-300'}
+            >
+              Low to High {sortOrder === 'asc' && <Check className="w-4 h-4 ml-auto" />}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+        
+        {/* Advanced Filters Sheet */}
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button variant="outline" className="border-white/10 text-slate-300 hover:text-white hover:bg-white/10" data-testid="advanced-filters-btn">
+              <SlidersHorizontal className="w-4 h-4 mr-2" />
+              Filters
+              {(minRevenue > 0 || maxCapacity < 10) && (
+                <Badge className="ml-2 bg-cyan-500/20 text-cyan-400 text-xs">Active</Badge>
+              )}
+            </Button>
+          </SheetTrigger>
+          <SheetContent className="glass-card border-l-white/10">
+            <SheetHeader>
+              <SheetTitle className="text-white font-['Outfit']">Advanced Filters</SheetTitle>
+              <SheetDescription className="text-slate-400">
+                Fine-tune your app search
+              </SheetDescription>
+            </SheetHeader>
+            <div className="space-y-6 mt-6">
+              {/* Min Revenue Filter */}
+              <div className="space-y-3">
+                <label className="text-sm text-slate-300 flex items-center justify-between">
+                  <span className="flex items-center gap-2">
+                    <DollarSign className="w-4 h-4 text-emerald-400" />
+                    Minimum Revenue
+                  </span>
+                  <span className="text-emerald-400 font-semibold">${minRevenue}/mo</span>
+                </label>
+                <Slider
+                  value={[minRevenue]}
+                  onValueChange={(v) => setMinRevenue(v[0])}
+                  max={200}
+                  step={10}
+                  className="w-full"
+                />
+                <div className="flex justify-between text-xs text-slate-500">
+                  <span>$0</span>
+                  <span>$200+</span>
+                </div>
+              </div>
+              
+              {/* Max Capacity Filter */}
+              <div className="space-y-3">
+                <label className="text-sm text-slate-300 flex items-center justify-between">
+                  <span className="flex items-center gap-2">
+                    <Server className="w-4 h-4 text-blue-400" />
+                    Maximum Capacity
+                  </span>
+                  <span className="text-blue-400 font-semibold">{maxCapacity} GB</span>
+                </label>
+                <Slider
+                  value={[maxCapacity]}
+                  onValueChange={(v) => setMaxCapacity(v[0])}
+                  min={1}
+                  max={10}
+                  step={1}
+                  className="w-full"
+                />
+                <div className="flex justify-between text-xs text-slate-500">
+                  <span>1 GB</span>
+                  <span>10 GB</span>
+                </div>
+              </div>
+              
+              {/* Reset Filters */}
+              <Button
+                variant="outline"
+                className="w-full border-white/10 text-slate-300"
+                onClick={() => {
+                  setMinRevenue(0);
+                  setMaxCapacity(10);
+                }}
+              >
+                Reset Filters
+              </Button>
+            </div>
+          </SheetContent>
+        </Sheet>
       </div>
 
-      {/* Featured Apps Section - Horizontal Scroll */}
+      {/* Active Filters Display */}
+      {(minRevenue > 0 || maxCapacity < 10 || filter !== 'all' || category !== 'all') && (
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-sm text-slate-400">Active filters:</span>
+          {category !== 'all' && (
+            <Badge 
+              className="bg-white/10 text-slate-300 cursor-pointer hover:bg-white/20"
+              onClick={() => setCategory('all')}
+            >
+              {category} <X className="w-3 h-3 ml-1" />
+            </Badge>
+          )}
+          {filter !== 'all' && (
+            <Badge 
+              className="bg-white/10 text-slate-300 cursor-pointer hover:bg-white/20"
+              onClick={() => setFilter('all')}
+            >
+              {filter} <X className="w-3 h-3 ml-1" />
+            </Badge>
+          )}
+          {minRevenue > 0 && (
+            <Badge 
+              className="bg-emerald-500/20 text-emerald-400 cursor-pointer hover:bg-emerald-500/30"
+              onClick={() => setMinRevenue(0)}
+            >
+              Min ${minRevenue}/mo <X className="w-3 h-3 ml-1" />
+            </Badge>
+          )}
+          {maxCapacity < 10 && (
+            <Badge 
+              className="bg-blue-500/20 text-blue-400 cursor-pointer hover:bg-blue-500/30"
+              onClick={() => setMaxCapacity(10)}
+            >
+              Max {maxCapacity} GB <X className="w-3 h-3 ml-1" />
+            </Badge>
+          )}
+        </div>
+      )}
+
+      {/* Featured Apps Section */}
       {featuredApps.length > 0 && (
         <div className="space-y-3">
           <div className="flex items-center gap-2">
@@ -202,7 +494,6 @@ export default function AppFactory() {
                   className="flex-shrink-0 w-64 glass-card p-4 border border-amber-500/40 relative overflow-hidden hover:border-amber-500/60 hover:bg-amber-500/5 transition-all cursor-pointer group"
                   data-testid={`featured-app-${app.id}`}
                 >
-                  {/* Featured Badge */}
                   <div className="absolute top-0 right-0 bg-gradient-to-l from-amber-500 to-orange-500 text-black text-[10px] font-bold px-2 py-0.5 rounded-bl-lg flex items-center gap-1">
                     <Star className="w-3 h-3 fill-current" />
                     FEATURED
@@ -225,7 +516,6 @@ export default function AppFactory() {
                     <span className="text-slate-500 text-xs">{app.revenue_share}% share</span>
                   </div>
 
-                  {/* Hover overlay hint */}
                   <div className="absolute inset-0 flex items-center justify-center bg-amber-500/10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                     <span className="bg-amber-500 text-black text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1">
                       <Download className="w-3 h-3" />
@@ -235,11 +525,17 @@ export default function AppFactory() {
                 </motion.div>
               ))}
             </div>
-            {/* Fade gradient on right edge */}
             <div className="absolute right-0 top-0 bottom-4 w-16 bg-gradient-to-l from-[#0a0f1c] to-transparent pointer-events-none" />
           </div>
         </div>
       )}
+
+      {/* Results Count */}
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-slate-400">
+          Showing <span className="text-white font-semibold">{filteredApps.length}</span> apps
+        </p>
+      </div>
 
       {/* Apps Grid */}
       {loading ? (
@@ -257,9 +553,34 @@ export default function AppFactory() {
             <motion.div
               key={app.id}
               variants={item}
-              className="glass-card glass-card-hover p-6"
+              className={`glass-card glass-card-hover p-6 relative ${
+                compareMode && selectedForCompare.find(a => a.id === app.id)
+                  ? 'ring-2 ring-cyan-500 ring-offset-2 ring-offset-[#0a0f1c]'
+                  : ''
+              }`}
               data-testid={`app-card-${app.id}`}
             >
+              {/* Compare Checkbox */}
+              {compareMode && (
+                <div 
+                  className="absolute top-3 right-3 z-10"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleCompareSelection(app);
+                  }}
+                >
+                  <div className={`w-6 h-6 rounded-md border-2 flex items-center justify-center cursor-pointer transition-all ${
+                    selectedForCompare.find(a => a.id === app.id)
+                      ? 'bg-cyan-500 border-cyan-500'
+                      : 'border-white/30 hover:border-cyan-400'
+                  }`}>
+                    {selectedForCompare.find(a => a.id === app.id) && (
+                      <Check className="w-4 h-4 text-white" />
+                    )}
+                  </div>
+                </div>
+              )}
+
               {/* Header */}
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-4">
@@ -267,7 +588,7 @@ export default function AppFactory() {
                     {getAppIcon(app.icon)}
                   </div>
                   <div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <h3 className="text-lg font-semibold text-white">{app.name}</h3>
                       {app.is_trending && (
                         <Badge className="bg-cyan-500/20 text-cyan-400 text-xs">
@@ -375,6 +696,19 @@ export default function AppFactory() {
         <div className="text-center py-12">
           <Package className="w-12 h-12 text-slate-600 mx-auto mb-4" />
           <p className="text-slate-400">No apps found matching your criteria</p>
+          <Button
+            variant="link"
+            className="text-cyan-400 mt-2"
+            onClick={() => {
+              setCategory('all');
+              setFilter('all');
+              setMinRevenue(0);
+              setMaxCapacity(10);
+              setSearchQuery('');
+            }}
+          >
+            Clear all filters
+          </Button>
         </div>
       )}
 
@@ -464,6 +798,157 @@ export default function AppFactory() {
                   Confirm Install
                 </>
               )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Compare Dialog */}
+      <Dialog open={showCompareDialog} onOpenChange={setShowCompareDialog}>
+        <DialogContent className="glass-card border-white/10 max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-white font-['Outfit'] text-xl flex items-center gap-2">
+              <GitCompare className="w-5 h-5 text-cyan-400" />
+              App Comparison
+            </DialogTitle>
+            <DialogDescription className="text-slate-400">
+              Compare selected apps side by side
+            </DialogDescription>
+          </DialogHeader>
+          
+          {compareData.length > 0 && (
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[600px]">
+                <thead>
+                  <tr>
+                    <th className="text-left text-slate-400 font-medium p-3 border-b border-white/10">Feature</th>
+                    {compareData.map(app => (
+                      <th key={app.id} className="text-center p-3 border-b border-white/10">
+                        <div className="flex flex-col items-center gap-2">
+                          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#4865af] to-[#6b8dd6] flex items-center justify-center">
+                            {getAppIcon(app.icon)}
+                          </div>
+                          <span className="text-white font-semibold">{app.name}</span>
+                          <Badge variant="outline" className="text-xs border-slate-600 text-slate-400">
+                            {app.category}
+                          </Badge>
+                        </div>
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td className="text-slate-400 p-3 border-b border-white/10">Price</td>
+                    {compareData.map(app => (
+                      <td key={app.id} className="text-center p-3 border-b border-white/10">
+                        <span className="text-emerald-400 font-bold text-lg">${app.subscription_price}</span>
+                        <span className="text-slate-500 text-xs block">/user/month</span>
+                      </td>
+                    ))}
+                  </tr>
+                  <tr>
+                    <td className="text-slate-400 p-3 border-b border-white/10">Revenue Share</td>
+                    {compareData.map(app => (
+                      <td key={app.id} className="text-center p-3 border-b border-white/10">
+                        <span className="text-emerald-400 font-bold">{app.revenue_share}%</span>
+                      </td>
+                    ))}
+                  </tr>
+                  <tr>
+                    <td className="text-slate-400 p-3 border-b border-white/10">Est. Revenue/Node</td>
+                    {compareData.map(app => (
+                      <td key={app.id} className="text-center p-3 border-b border-white/10">
+                        <span className="text-emerald-400 font-bold">${app.revenue_per_node || '-'}</span>
+                      </td>
+                    ))}
+                  </tr>
+                  <tr>
+                    <td className="text-slate-400 p-3 border-b border-white/10">Capacity Required</td>
+                    {compareData.map(app => (
+                      <td key={app.id} className="text-center p-3 border-b border-white/10">
+                        <span className="text-white font-semibold">{app.capacity_required} GB</span>
+                      </td>
+                    ))}
+                  </tr>
+                  <tr>
+                    <td className="text-slate-400 p-3 border-b border-white/10">Active Nodes</td>
+                    {compareData.map(app => (
+                      <td key={app.id} className="text-center p-3 border-b border-white/10">
+                        <span className="text-white font-semibold">{(app.active_nodes || 0).toLocaleString()}</span>
+                      </td>
+                    ))}
+                  </tr>
+                  <tr>
+                    <td className="text-slate-400 p-3 border-b border-white/10">Subscribers</td>
+                    {compareData.map(app => (
+                      <td key={app.id} className="text-center p-3 border-b border-white/10">
+                        <span className="text-white font-semibold">{((app.subscribers || 0) / 1000).toFixed(1)}K</span>
+                      </td>
+                    ))}
+                  </tr>
+                  <tr>
+                    <td className="text-slate-400 p-3 border-b border-white/10">Available Slots</td>
+                    {compareData.map(app => (
+                      <td key={app.id} className="text-center p-3 border-b border-white/10">
+                        <span className="text-emerald-400 font-semibold">{app.available_slots || '-'}</span>
+                        <span className="text-slate-500 text-xs"> / {app.total_slots || '-'}</span>
+                      </td>
+                    ))}
+                  </tr>
+                  <tr>
+                    <td className="text-slate-400 p-3 border-b border-white/10">Status</td>
+                    {compareData.map(app => (
+                      <td key={app.id} className="text-center p-3 border-b border-white/10">
+                        <div className="flex flex-wrap justify-center gap-1">
+                          {app.is_trending && (
+                            <Badge className="bg-cyan-500/20 text-cyan-400 text-xs">
+                              <TrendingUp className="w-3 h-3 mr-1" /> Hot
+                            </Badge>
+                          )}
+                          {app.is_new && (
+                            <Badge className="bg-purple-500/20 text-purple-400 text-xs">
+                              <Sparkles className="w-3 h-3 mr-1" /> New
+                            </Badge>
+                          )}
+                          {!app.is_trending && !app.is_new && (
+                            <span className="text-slate-500">-</span>
+                          )}
+                        </div>
+                      </td>
+                    ))}
+                  </tr>
+                  <tr>
+                    <td className="text-slate-400 p-3">Action</td>
+                    {compareData.map(app => (
+                      <td key={app.id} className="text-center p-3">
+                        <Button
+                          size="sm"
+                          className="bg-[#4865af] hover:bg-[#5a7ac4] text-white rounded-full"
+                          onClick={() => {
+                            setShowCompareDialog(false);
+                            setInstallDialog(app);
+                          }}
+                          disabled={app.is_installed}
+                          data-testid={`compare-install-${app.id}`}
+                        >
+                          {app.is_installed ? 'Installed' : (
+                            <>
+                              <Download className="w-3 h-3 mr-1" /> Install
+                            </>
+                          )}
+                        </Button>
+                      </td>
+                    ))}
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setShowCompareDialog(false)}>
+              Close
             </Button>
           </DialogFooter>
         </DialogContent>
