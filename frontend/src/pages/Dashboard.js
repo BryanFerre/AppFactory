@@ -3,9 +3,8 @@ import axios from 'axios';
 import { motion } from 'framer-motion';
 import {
   Activity, TrendingUp, Package, Zap, Cpu, HardDrive, Wifi,
-  Clock, CheckCircle2, AlertTriangle, ArrowUpRight, Sparkles,
-  DollarSign, Coins, Users, Copy, Twitter, Linkedin, Facebook,
-  Share2, MessageSquare, RefreshCw
+  Clock, CheckCircle2, AlertTriangle, ArrowUpRight,
+  DollarSign, Coins, Users
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -14,7 +13,6 @@ import {
   AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer
 } from 'recharts';
 import { NavLink } from 'react-router-dom';
-import { toast } from 'sonner';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -31,28 +29,13 @@ const item = {
   show: { opacity: 1, y: 0 }
 };
 
-const platformIcons = {
-  twitter: Twitter,
-  linkedin: Linkedin,
-  facebook: Facebook
-};
-
-const platformColors = {
-  twitter: 'text-sky-400 bg-sky-400/10 border-sky-400/30',
-  linkedin: 'text-blue-500 bg-blue-500/10 border-blue-500/30',
-  facebook: 'text-blue-600 bg-blue-600/10 border-blue-600/30'
-};
-
 export default function Dashboard() {
   const [nodeStats, setNodeStats] = useState(null);
   const [earnings, setEarnings] = useState(null);
   const [installedApps, setInstalledApps] = useState([]);
   const [availableApps, setAvailableApps] = useState([]);
   const [capacity, setCapacity] = useState(null);
-  const [recommendations, setRecommendations] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [recsLoading, setRecsLoading] = useState(false);
-  const [copiedId, setCopiedId] = useState(null);
 
   useEffect(() => {
     fetchDashboardData();
@@ -60,13 +43,12 @@ export default function Dashboard() {
 
   const fetchDashboardData = async () => {
     try {
-      const [nodeRes, earningsRes, installedRes, availableRes, capacityRes, recsRes] = await Promise.all([
+      const [nodeRes, earningsRes, installedRes, availableRes, capacityRes] = await Promise.all([
         axios.get(`${API}/node/stats`),
         axios.get(`${API}/earnings`),
         axios.get(`${API}/apps/installed`),
         axios.get(`${API}/apps/available?trending=true`),
-        axios.get(`${API}/capacity`),
-        axios.get(`${API}/ai/recommendations`)
+        axios.get(`${API}/capacity`)
       ]);
       
       setNodeStats(nodeRes.data);
@@ -74,45 +56,11 @@ export default function Dashboard() {
       setInstalledApps(installedRes.data);
       setAvailableApps(availableRes.data.slice(0, 3));
       setCapacity(capacityRes.data);
-      setRecommendations(recsRes.data);
     } catch (error) {
       console.error('Failed to fetch dashboard data');
     } finally {
       setLoading(false);
     }
-  };
-
-  const refreshRecommendations = async () => {
-    setRecsLoading(true);
-    try {
-      const response = await axios.get(`${API}/ai/recommendations`);
-      setRecommendations(response.data);
-      toast.success('Fresh promotional content generated!');
-    } catch (error) {
-      toast.error('Failed to refresh recommendations');
-    } finally {
-      setRecsLoading(false);
-    }
-  };
-
-  const copyPost = (content, id) => {
-    navigator.clipboard.writeText(content);
-    setCopiedId(id);
-    toast.success('Post copied to clipboard!');
-    setTimeout(() => setCopiedId(null), 2000);
-  };
-
-  const shareOnPlatform = (platform, content, hashtags = []) => {
-    const hashtagString = hashtags.map(t => `#${t}`).join(' ');
-    const fullContent = `${content} ${hashtagString}`;
-    
-    const urls = {
-      twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(fullContent)}`,
-      linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent('https://napp.io')}&summary=${encodeURIComponent(content)}`,
-      facebook: `https://www.facebook.com/sharer/sharer.php?quote=${encodeURIComponent(fullContent)}`
-    };
-    
-    window.open(urls[platform], '_blank', 'width=600,height=400');
   };
 
   const verifyNode = async () => {
