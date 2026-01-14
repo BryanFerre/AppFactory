@@ -141,6 +141,23 @@ Build a full-stack application called "AppCloud by Optio" (formerly NAPP Node Op
     - Automatic data refresh on tab switch
   - **Testing:** 26/26 backend tests + 11/11 frontend checks passed
 
+- ✅ **COMPLETED: OPT Points Explanation UI (January 14, 2026)**
+  - **New Page:** `/app/frontend/src/pages/HowToEarn.js` at route `/how-to-earn`
+  - **Features:**
+    - User's current tier status with progress to next tier
+    - Three tabs: Overview, All Actions, Tier System
+    - Quick Start section with 5 easy first actions to earn points
+    - "How It Works" 3-step explanation
+    - Point Categories overview (10 categories with point ranges)
+    - Login Streak Bonuses section (7/30/90/365 day milestones)
+    - All Actions accordion showing every point-earning action with cooldowns
+    - Tier Progression visual showing all 5 tiers with requirements
+    - Tier Benefits explanation section
+  - **Navigation:**
+    - Added to sidebar navigation with Lightbulb icon
+    - "How to Earn" button added to Proof of Impact page header
+    - CTAs linking to Leaderboard and Proof of Impact pages
+
 - ✅ **COMPLETED: Admin Accounting Executive Dashboard**
   - **Commission Management:**
     - Node sale commissions: 5% of $5,000 node price = $250 per referral
@@ -249,7 +266,6 @@ Build a full-stack application called "AppCloud by Optio" (formerly NAPP Node Op
 
 ## Upcoming Tasks (P1)
 - **PDF/CSV export** for Admin Reports
-- **OPT Point System** explanation UI - how points are earned
 
 ## Future Tasks (P2)
 - Real-time notifications via WebSockets
