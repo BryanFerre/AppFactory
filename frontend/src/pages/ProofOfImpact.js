@@ -201,14 +201,24 @@ export default function ProofOfImpact() {
           <p className="text-slate-400 mt-1">Track your contributions and achievements</p>
         </div>
         
-        <Button
-          variant="outline"
-          className="border-white/10 text-slate-300 hover:bg-white/10"
-          onClick={fetchData}
-        >
-          <Activity className="w-4 h-4 mr-2" />
-          Refresh
-        </Button>
+        <div className="flex items-center gap-3">
+          <Button
+            variant="outline"
+            className="border-amber-500/30 text-amber-400 hover:bg-amber-500/10"
+            onClick={() => navigate('/how-to-earn')}
+          >
+            <Gift className="w-4 h-4 mr-2" />
+            How to Earn
+          </Button>
+          <Button
+            variant="outline"
+            className="border-white/10 text-slate-300 hover:bg-white/10"
+            onClick={fetchData}
+          >
+            <Activity className="w-4 h-4 mr-2" />
+            Refresh
+          </Button>
+        </div>
       </div>
 
       {/* Main Stats Row */}
