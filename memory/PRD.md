@@ -142,7 +142,7 @@ Build a full-stack application called "AppCloud by Optio" (formerly NAPP Node Op
   - **Testing:** 26/26 backend tests + 11/11 frontend checks passed
 
 - ✅ **COMPLETED: OPT Points Explanation UI (January 14, 2026)**
-  - **New Page:** `/app/frontend/src/pages/HowToEarn.js` at route `/how-to-earn`
+  - **New Page:** `/app/frontend/src/pages/HowToEarn.js` at route `/dashboard/how-to-earn`
   - **Features:**
     - User's current tier status with progress to next tier
     - Three tabs: Overview, All Actions, Tier System
@@ -157,6 +157,70 @@ Build a full-stack application called "AppCloud by Optio" (formerly NAPP Node Op
     - Added to sidebar navigation with Lightbulb icon
     - "How to Earn" button added to Proof of Impact page header
     - CTAs linking to Leaderboard and Proof of Impact pages
+
+- ✅ **COMPLETED: Stripe Integration & Public Landing Page (January 14, 2026)**
+  - **Stripe Integration:**
+    - User-provided test keys configured in backend/.env
+    - `POST /api/purchase/create-checkout` - Creates Stripe checkout session
+    - `POST /api/purchase/verify` - Verifies purchase, creates user account + license
+    - `POST /api/purchase/webhook` - Handles Stripe webhook events
+    - Commission processing for referral purchases (5% = $250)
+  - **Public Landing Page** (`/app/frontend/src/pages/public/LandingPage.js`):
+    - Hero section with "Own a Piece of the Decentralized Cloud" headline
+    - Product price displayed: $5,000 with "Lifetime License, No monthly fees"
+    - Stats section (10,000+ Active Nodes, $2.5M+ Paid, 99.9% Uptime, 50+ Countries)
+    - 6 Feature cards (Passive Income, Lifetime License, Zero Technical Skills, etc.)
+    - "How It Works" section with 3 steps
+    - Product details section with features list
+    - Testimonials section
+    - CTA sections with "Get Your CloudNode" buttons
+    - Purchase modal with form (Name, Email, Referral Code)
+  - **Public Layout** (`/app/frontend/src/components/layout/PublicLayout.js`):
+    - Main navigation with Sign In and Get Started buttons
+    - Footer with brand, product links, and company links
+    - Mobile responsive with hamburger menu
+  - **Purchase Success Page** (`/app/frontend/src/pages/public/PurchaseSuccess.js`):
+    - Verifies purchase with Stripe session ID
+    - Auto-creates user account with random password
+    - Issues lifetime license
+    - Displays credentials and license key
+    - "Go to Dashboard" CTA
+  - **Product Management** (`/app/backend/api/products.py`):
+    - `GET /api/products` - List active products (public)
+    - `GET /api/products/{id}` - Get product by ID (public)
+    - `GET /api/products/slug/{slug}` - Get product by slug (public)
+    - `GET /api/admin/products` - List all products (admin)
+    - `POST /api/admin/products` - Create product (admin)
+    - `PUT /api/admin/products/{id}` - Update product (admin)
+    - `DELETE /api/admin/products/{id}` - Delete/deactivate product (admin)
+    - `GET /api/admin/products/stats/overview` - Product stats (admin)
+    - Default CloudNode product auto-seeded on startup at $5,000
+  - **License Management** (`/app/backend/api/licenses.py`):
+    - `GET /api/licenses` - User's licenses
+    - `GET /api/licenses/{id}` - License detail
+    - `GET /api/admin/licenses` - All licenses (admin)
+    - `PUT /api/admin/licenses/{id}/status` - Update license status (admin)
+    - `GET /api/admin/licenses/stats/overview` - License stats (admin)
+    - License key format: XXXX-XXXX-XXXX-XXXX
+    - License types: lifetime (never expires)
+  - **Admin Products Page** (`/app/frontend/src/pages/admin/AdminProducts.js`):
+    - Products table with name, category, price, sales, status
+    - Create product modal with full form
+    - Edit product with pre-filled form
+    - Delete confirmation with soft/hard delete logic
+    - Stats cards: Total, Active, Top Seller
+    - Search and category filter
+  - **Dashboard Licenses Section:**
+    - Licenses displayed at bottom of sidebar in DashboardLayout
+    - Card shows: Product name, status, license key, issue date
+    - Only visible when user has licenses
+  - **Route Changes:**
+    - `/` - Public landing page (was protected dashboard)
+    - `/dashboard` - Protected user dashboard
+    - `/dashboard/*` - All dashboard routes under /dashboard prefix
+    - `/purchase-success` - Post-purchase success page
+    - `/admin/products` - Admin products page
+  - **Testing:** 20/20 backend tests + 20/20 frontend checks passed
 
 - ✅ **COMPLETED: Admin Accounting Executive Dashboard**
   - **Commission Management:**
