@@ -95,6 +95,7 @@ const categoryConfig = {
 };
 
 export default function ProofOfImpact() {
+  const navigate = useNavigate();
   const [summary, setSummary] = useState(null);
   const [history, setHistory] = useState([]);
   const [streak, setStreak] = useState(null);
