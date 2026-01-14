@@ -147,12 +147,13 @@ async def login(user_data: UserLogin):
     token = create_token(user["id"])
     
     # Award daily login points
-    await award_user_points(user["id"], "daily_login")
+    points_result = await award_user_points(user["id"], "daily_login")
     
     return {
         "access_token": token,
         "token_type": "bearer",
         "requires_2fa": False,
+        "points_earned": points_result.get("points_awarded") if points_result and points_result.get("success") else None,
         "user": {
             "id": user["id"],
             "email": user["email"],
