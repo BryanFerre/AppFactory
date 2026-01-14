@@ -81,7 +81,7 @@ export default function AdminProducts() {
 
   const fetchProducts = async () => {
     try {
-      const token = localStorage.getItem('adminToken');
+      const token = localStorage.getItem('admin_token');
       const response = await axios.get(`${API}/admin/products`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -95,7 +95,7 @@ export default function AdminProducts() {
 
   const fetchStats = async () => {
     try {
-      const token = localStorage.getItem('adminToken');
+      const token = localStorage.getItem('admin_token');
       const response = await axios.get(`${API}/admin/products/stats/overview`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -183,7 +183,7 @@ export default function AdminProducts() {
     setSaving(true);
 
     try {
-      const token = localStorage.getItem('adminToken');
+      const token = localStorage.getItem('admin_token');
       const payload = {
         ...productForm,
         price: parseFloat(productForm.price),
@@ -216,7 +216,7 @@ export default function AdminProducts() {
     if (!deleteProduct) return;
 
     try {
-      const token = localStorage.getItem('adminToken');
+      const token = localStorage.getItem('admin_token');
       await axios.delete(`${API}/admin/products/${deleteProduct.id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
