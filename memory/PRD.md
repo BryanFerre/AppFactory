@@ -2,9 +2,9 @@
 
 ## Original Problem Statement
 Build a full-stack application called "AppCloud by Optio" (formerly NAPP Node Operator Dashboard) that serves three main purposes:
-1. **Node Operator Dashboard:** User-facing dashboard showing income, node health, and an "App Factory" for installing apps. Includes referral system, 2FA, and AI-powered promotional content generation.
-2. **App Developer Portal:** Section for developers to submit applications to the App Factory, with Stripe integration for "featured" listings.
-3. **Admin Control Panel:** Secure dashboard for Optio staff to manage users, nodes, app submissions, billing, and audit logs.
+1. **Node Operator Dashboard:** User-facing dashboard showing income, node health, and an "App Marketplace" for installing apps. Includes referral system, 2FA, and AI-powered promotional content generation.
+2. **App Developer Portal:** Section for developers to submit applications to the App Marketplace, with Stripe integration for "featured" listings.
+3. **Admin Control Panel:** Secure dashboard for Optio staff to manage users, nodes, app submissions, billing, accounting, and audit logs.
 
 ## Tech Stack
 - **Frontend:** React, React Router, Axios, TailwindCSS, lucide-react, Shadcn UI
@@ -12,7 +12,7 @@ Build a full-stack application called "AppCloud by Optio" (formerly NAPP Node Op
 - **Database:** MongoDB (persistent)
 - **Integrations:** Stripe, CoinMarketCap, OpenAI (via emergentintegrations), Resend
 
-## Architecture (Post-Refactor)
+## Architecture
 ```
 /app/
 ├── backend/
@@ -21,6 +21,7 @@ Build a full-stack application called "AppCloud by Optio" (formerly NAPP Node Op
 │   ├── api/                  # Modular route files
 │   │   ├── auth.py          # User auth & 2FA
 │   │   ├── admin.py         # Admin routes
+│   │   ├── accounting.py    # Commission approval & payouts (NEW)
 │   │   ├── apps.py          # Installed/available apps
 │   │   ├── ai.py            # AI recommendations
 │   │   ├── developer.py     # Developer portal
@@ -42,89 +43,126 @@ Build a full-stack application called "AppCloud by Optio" (formerly NAPP Node Op
 ├── frontend/
 │   └── src/
 │       ├── pages/           # React pages
+│       │   ├── admin/
+│       │   │   └── AdminAccounting.js  # Commission & payout management (NEW)
+│       │   ├── AppMarketplace.js
+│       │   ├── AppDetails.js
+│       │   └── InstalledApps.js
 │       └── components/      # Reusable components
 └── tests/
-    └── test_all_endpoints.py # Comprehensive API tests
+    ├── test_api.py
+    └── test_admin_accounting.py  # 22 tests (NEW)
 ```
 
 ## What's Been Implemented
 
 ### Date: January 14, 2026
-- ✅ **MAJOR: Backend Refactoring Complete**
-  - Migrated from monolithic 4000+ line server.py to modular architecture
-  - Created 11 separate route modules under `/app/backend/api/`
-  - Centralized utilities in `/app/backend/utils/`
-  - Business logic in `/app/backend/services/`
-  - All 33 API endpoint tests passing (100%)
+- ✅ **COMPLETED: Admin Accounting Feature**
+  - **Commission Management:**
+    - Node sale commissions: 5% of $5,000 node price = $250 per referral
+    - View pending/approved/paid/rejected commissions
+    - Single and bulk approve/reject actions
+    - Mark approved commissions as paid
+    - Audit logging for all commission actions
+  - **App Earnings Payouts:**
+    - View pending/processing/paid/rejected payouts
+    - App earnings breakdown per user
+    - Single and bulk process/reject actions
+    - Complete payout (mark as paid) workflow
+  - **Dashboard Stats:**
+    - Pending commissions count and amount
+    - Approved awaiting payment count
+    - Pending app payouts count and amount
+    - Paid this month total
+  - **UI Features:**
+    - Commissions tab with Node Sale (5%) badges
+    - App Earnings tab with app breakdown
+    - Status filter dropdown
+    - Search by user
+    - Bulk selection and actions
+    - Seed Demo Data button for testing
+  - **Testing:** 22/22 backend tests + 17/17 frontend checks passed
 
-- ✅ **App Factory Filtering & Comparison Features**
+- ✅ **Backend Refactoring Complete** (Previous session)
+  - Migrated from monolithic server.py to modular architecture
+  - Created 12 separate route modules under `/app/backend/api/`
+  - All API endpoint tests passing (100%)
+
+- ✅ **App Marketplace Enhancements** (Previous session)
   - Sort by: Revenue, Subscribers, Price, Popularity, Capacity
-  - Sort order: High to Low / Low to High
-  - Advanced filters: Minimum Revenue ($0-$200+), Maximum Capacity (1-10 GB)
+  - Advanced filters: Minimum Revenue, Maximum Capacity
   - App comparison: Select up to 3 apps for side-by-side comparison
-  - Active filter badges with quick remove
-  - New API endpoints: `/api/apps/compare`, `/api/apps/categories`
+  - Resource billing in install modal with net revenue calculation
 
-- ✅ **Renamed App Factory → App Marketplace**
-  - Updated navigation, page title, and all references
-  - Changed route from `/app-factory` to `/app-marketplace`
-
-- ✅ **Resource Billing in Install Modal**
-  - Shows capacity-based monthly resource fee
-  - Tiered pricing: Basic ($4.99/GB), Standard, Professional, Enterprise, Premium
-  - Automatic billing to card on file notification
-  - Net revenue calculation (Revenue - Resource Fee)
-  - Comparison table now includes Resource Fee and Net Revenue columns
-
-- ✅ **Share & Promote Feature for Installed Apps**
-  - Each installed app has "Share & Promote" button
-  - Share Link tab: Referral link to app marketplace with user's referral code
-  - Social Post tab: AI-generated promotional content with regenerate option
-  - One-click sharing to: X (Twitter), Facebook, LinkedIn, Parler
-  - Send via Email option
-  - Earn 2 OPT rewards for each signup through referral link
-  - Pro tips for effective social media promotion
+- ✅ **Share & Promote Feature** (Previous session)
+  - Share link and AI-generated social posts for installed apps
+  - One-click sharing to X, Facebook, LinkedIn, Parler
 
 ### Previously Completed
-- ✅ **Admin Control Panel:** All 10 admin modules fully implemented
+- ✅ **Admin Control Panel:** All 11 admin modules (including Accounting)
 - ✅ **Referral System:** Backend for tracking codes, clicks, signups, OPT rewards
 - ✅ **2FA Authentication:** TOTP-based 2FA for user and admin accounts
-- ✅ **Email Notifications:** Resend integration for welcome, referral, 2FA emails
+- ✅ **Email Notifications:** Resend integration
 - ✅ **AI Promotional Content:** LLM-powered social media post generation
-- ✅ **Full Rebranding:** NAPP → AppCloud across all components
-- ✅ **MongoDB Persistence:** All data persisted to MongoDB
+- ✅ **Full Rebranding:** NAPP → AppCloud
+- ✅ **MongoDB Persistence:** All data persisted
 
 ## Key API Endpoints
+
+### Admin Accounting (NEW)
+- `GET /api/admin/accounting/dashboard` - Accounting dashboard stats
+- `GET /api/admin/accounting/commissions` - List all commissions (with status filter)
+- `GET /api/admin/accounting/commissions/{id}` - Get commission detail
+- `POST /api/admin/accounting/commissions/{id}/action` - Approve/reject commission
+- `POST /api/admin/accounting/commissions/{id}/pay` - Mark commission as paid
+- `POST /api/admin/accounting/commissions/bulk-action` - Bulk approve/reject
+- `GET /api/admin/accounting/payouts` - List all payouts (with status filter)
+- `GET /api/admin/accounting/payouts/{id}` - Get payout detail
+- `POST /api/admin/accounting/payouts/{id}/action` - Process/reject payout
+- `POST /api/admin/accounting/payouts/bulk-action` - Bulk process/reject
+- `POST /api/admin/accounting/seed-demo-data` - Generate test data
+
+### Other Key Endpoints
 - `POST /api/auth/login` - User login with optional 2FA
 - `POST /api/auth/register` - User registration with referral tracking
-- `POST /api/auth/2fa/setup` - Initialize 2FA
 - `GET /api/node/stats` - Node health and performance
 - `GET /api/earnings` - USD earnings and OPT rewards
 - `GET /api/apps/installed` - User's installed apps
-- `GET /api/apps/available` - App Factory catalog
-- `GET /api/apps/featured` - Featured apps
-- `GET /api/referral/stats` - Referral statistics
-- `GET /api/ai/recommendations` - AI-powered recommendations
+- `GET /api/apps/available` - App Marketplace catalog
 - `POST /api/admin/auth/login` - Admin login
-- `GET /api/admin/dashboard/stats` - Admin dashboard overview
 
 ## Test Credentials
 - **User:** dev@test.io / devpass123
 - **Admin:** admin@optio.com / admin123
 
-## Mocked Data (By Design)
-- Admin node list (mock data)
-- OPT price (mock with realistic variation ~$0.85)
-- Admin revenue statistics
-- Some admin dashboard counts
+## Business Rules
+
+### Commission Types
+1. **Node Sale Commission:** 5% of node price ($5,000 × 5% = $250) when a referral buys a node
+2. **App Earnings:** Variable amounts from fees earned by installed apps
+
+### Commission Workflow
+1. Commission created → Status: `pending`
+2. Admin approves → Status: `approved` (awaiting payment)
+3. Admin marks paid → Status: `paid` (completed)
+4. OR Admin rejects → Status: `rejected` (closed)
+
+### Payout Workflow
+1. Payout request created → Status: `pending`
+2. Admin processes → Status: `processing`
+3. Admin completes → Status: `paid`
+4. OR Admin rejects → Status: `rejected`
 
 ## Known Issues
 - **P2:** Stripe account requires user to configure test business details
 
-## Upcoming Tasks
-- **P1:** PDF/CSV export for Admin Reports
-- **P2:** Real-time notifications via WebSockets
-- **P2:** Production blockchain integration
+## Upcoming Tasks (P1)
+- **PDF/CSV export** for Admin Reports
+- **OPT Point System** explanation UI and backend logic
+
+## Future Tasks (P2)
+- Real-time notifications via WebSockets
+- Production blockchain integration
 
 ## Preview URL
 https://appmarketplace-1.preview.emergentagent.com
