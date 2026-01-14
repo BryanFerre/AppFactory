@@ -22,6 +22,23 @@ from services.referral import process_referral_signup, initialize_user_node
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 
+async def award_user_points(user_id: str, action_id: str, source_entity_id: str = None, metadata: dict = None):
+    """Helper function to award points to a user"""
+    try:
+        from services.points_engine import PointsEngine
+        engine = PointsEngine(db)
+        await engine.award_points(
+            user_id=user_id,
+            action_id=action_id,
+            source_entity_id=source_entity_id,
+            metadata=metadata
+        )
+    except Exception as e:
+        # Don't fail the main operation if points fail
+        import logging
+        logging.error(f"Failed to award points: {e}")
+
+
 @router.post("/register", response_model=TokenResponse)
 async def register(user_data: UserCreate):
     """Register a new user account"""
@@ -124,6 +141,10 @@ async def login(user_data: UserLogin):
                 raise HTTPException(status_code=401, detail="Invalid 2FA code")
     
     token = create_token(user["id"])
+    
+    # Award daily login points
+    await award_user_points(user["id"], "daily_login")
+    
     return {
         "access_token": token,
         "token_type": "bearer",
