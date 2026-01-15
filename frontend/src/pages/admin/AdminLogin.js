@@ -60,7 +60,7 @@ export default function AdminLogin() {
         toast.success('Welcome back, Admin!');
       }
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Invalid 2FA code');
+      toast.error(getErrorMessage(error, 'Invalid 2FA code'));
     } finally {
       setSubmitting(false);
     }
