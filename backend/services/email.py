@@ -228,6 +228,125 @@ def _get_welcome_template(base_style: str, data: dict) -> tuple:
     """
     return subject, html
 
+
+def _get_purchase_confirmation_template(base_style: str, data: dict) -> tuple:
+    """Purchase confirmation email with order details and login credentials"""
+    subject = "🎉 Your Optio CloudNode Purchase is Complete!"
+    
+    # Format amount
+    amount = data.get('amount', 0)
+    original_amount = data.get('original_amount', amount)
+    discount = data.get('discount', 0)
+    currency = data.get('currency', 'USD')
+    
+    # Build credentials section for new users
+    credentials_html = ""
+    if data.get('is_new_user') and data.get('temp_password'):
+        credentials_html = f"""
+        <div class="credentials-box">
+            <h3 style="color: #10b981; margin: 0 0 16px 0;">🔐 Your Login Credentials</h3>
+            <div class="credential-item">
+                <div class="credential-label">Email</div>
+                <div class="credential-value">{data.get('email', '')}</div>
+            </div>
+            <div class="credential-item">
+                <div class="credential-label">Temporary Password</div>
+                <div class="credential-value">{data.get('temp_password', '')}</div>
+            </div>
+            <p style="color: #fbbf24; font-size: 14px; margin-top: 16px;">
+                ⚠️ Please change your password after logging in for the first time.
+            </p>
+        </div>
+        """
+    else:
+        credentials_html = """
+        <div class="info-box">
+            <p style="margin: 0; color: #94a3b8;">
+                ✓ Your existing account has been updated with your new license.
+            </p>
+        </div>
+        """
+    
+    # Build discount row if applicable
+    discount_html = ""
+    if discount > 0:
+        discount_html = f"""
+        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <span style="color: #64748b;">Original Price</span>
+            <span style="color: #94a3b8; text-decoration: line-through;">${original_amount:,.2f} {currency}</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <span style="color: #10b981;">Discount {f'({data.get("coupon_code")})' if data.get("coupon_code") else ''}</span>
+            <span style="color: #10b981;">-${discount:,.2f} {currency}</span>
+        </div>
+        """
+    
+    html = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>{base_style}</head>
+    <body>
+        <div class="container">
+            <div class="card">
+                <div class="logo">☁️ Optio CloudNode</div>
+                <h1>Thank You for Your Purchase! 🎉</h1>
+                <p>Hi <span class="highlight">{data.get('name', 'Valued Customer')}</span>,</p>
+                <p>Your Optio CloudNode purchase has been successfully completed. Welcome to the decentralized cloud revolution!</p>
+                
+                <div class="stat-box">
+                    <div class="stat-value">✓ Activated</div>
+                    <div class="stat-label">Your CloudNode License</div>
+                </div>
+                
+                <div class="info-box">
+                    <h3 style="color: #ffffff; margin: 0 0 16px 0;">📋 Order Details</h3>
+                    <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                        <span style="color: #64748b;">Order ID</span>
+                        <span style="color: #ffffff; font-family: monospace;">{data.get('order_id', 'N/A')[:8]}...</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                        <span style="color: #64748b;">Product</span>
+                        <span style="color: #ffffff;">{data.get('product_name', 'Optio CloudNode')}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                        <span style="color: #64748b;">License Key</span>
+                        <span style="color: #22d3ee; font-family: monospace; font-size: 14px;">{data.get('license_key', 'N/A')}</span>
+                    </div>
+                    {discount_html}
+                    <div style="display: flex; justify-content: space-between; padding: 12px 0; margin-top: 8px;">
+                        <span style="color: #ffffff; font-weight: bold;">Total Paid</span>
+                        <span style="color: #22d3ee; font-size: 20px; font-weight: bold;">${amount:,.2f} {currency}</span>
+                    </div>
+                </div>
+                
+                {credentials_html}
+                
+                <p><strong>What's Included:</strong></p>
+                <ul style="color: #94a3b8; padding-left: 20px;">
+                    <li>Lifetime CloudNode License</li>
+                    <li>Access to Node Operator Dashboard</li>
+                    <li>Automatic app hosting & earnings</li>
+                    <li>OPT rewards for network participation</li>
+                </ul>
+                
+                <a href="{data.get('dashboard_url', FRONTEND_URL)}/dashboard" class="btn">Go to Your Dashboard</a>
+                
+                <p style="margin-top: 24px; font-size: 14px; color: #64748b;">
+                    Questions? Reply to this email or visit our support center.
+                </p>
+                
+                <div class="footer">
+                    <p>This is a receipt for your purchase. Keep it for your records.</p>
+                    <p>© 2025 Optio CloudNode - Optio Blockchain Cloud</p>
+                </div>
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+    return subject, html
+
+
 async def send_notification_email(template_type: str, to_email: str, data: dict) -> bool:
     """Send a notification email using a template"""
     subject, html = get_email_template(template_type, data)
