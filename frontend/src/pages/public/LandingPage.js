@@ -687,17 +687,17 @@ export default function LandingPage() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mb-16"
+            className="text-center mb-8 sm:mb-16"
           >
-            <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-3 sm:mb-4">
               Trusted by Operators Worldwide
             </h2>
-            <p className="text-slate-400 max-w-2xl mx-auto">
+            <p className="text-slate-400 max-w-2xl mx-auto text-sm sm:text-base px-4">
               Join thousands of independent node operators earning passive income
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
             {testimonials.map((testimonial, i) => (
               <motion.div
                 key={i}
@@ -705,23 +705,23 @@ export default function LandingPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.1 }}
                 viewport={{ once: true }}
-                className="p-6 bg-white/[0.03] rounded-2xl border border-white/5"
+                className="p-4 sm:p-6 bg-white/[0.03] rounded-2xl border border-white/5"
               >
-                <div className="flex items-center gap-1 mb-4">
+                <div className="flex items-center gap-1 mb-3 sm:mb-4">
                   {[...Array(5)].map((_, j) => (
-                    <Star key={j} className="w-4 h-4 text-amber-400 fill-amber-400" />
+                    <Star key={j} className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400 fill-amber-400" />
                   ))}
                 </div>
-                <p className="text-slate-300 text-sm mb-6 leading-relaxed">
+                <p className="text-slate-300 text-xs sm:text-sm mb-4 sm:mb-6 leading-relaxed">
                   &ldquo;{testimonial.content}&rdquo;
                 </p>
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center text-white font-semibold">
+                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center text-white font-semibold text-sm">
                     {testimonial.avatar}
                   </div>
                   <div>
-                    <p className="text-white font-medium text-sm">{testimonial.name}</p>
-                    <p className="text-slate-500 text-xs">{testimonial.role}</p>
+                    <p className="text-white font-medium text-xs sm:text-sm">{testimonial.name}</p>
+                    <p className="text-slate-500 text-[10px] sm:text-xs">{testimonial.role}</p>
                   </div>
                 </div>
               </motion.div>
@@ -731,27 +731,27 @@ export default function LandingPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-24">
+      <section className="py-12 sm:py-24">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="p-12 rounded-3xl bg-gradient-to-br from-cyan-500/10 via-blue-500/10 to-purple-500/10 border border-white/10 relative overflow-hidden"
+            className="p-6 sm:p-12 rounded-2xl sm:rounded-3xl bg-gradient-to-br from-cyan-500/10 via-blue-500/10 to-purple-500/10 border border-white/10 relative overflow-hidden"
           >
             <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20viewBox%3D%220%200%2020%2020%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Ccircle%20cx%3D%2210%22%20cy%3D%2210%22%20r%3D%221%22%20fill%3D%22rgba(255%2C255%2C255%2C0.05)%22%2F%3E%3C%2Fsvg%3E')]" />
             
             <div className="relative">
-              <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-3 sm:mb-4">
                 Ready to Start Earning?
               </h2>
-              <p className="text-slate-400 mb-8 max-w-xl mx-auto">
+              <p className="text-slate-400 mb-6 sm:mb-8 max-w-xl mx-auto text-sm sm:text-base px-2">
                 Join the decentralized cloud revolution. Purchase your CloudNode today 
                 and start generating passive income.
               </p>
               <Button
                 size="lg"
-                className="bg-gradient-to-r from-cyan-500 to-blue-500 text-white text-lg px-10 py-6 hover:from-cyan-600 hover:to-blue-600 shadow-lg shadow-cyan-500/25"
+                className="w-full sm:w-auto bg-gradient-to-r from-cyan-500 to-blue-500 text-white text-base sm:text-lg px-6 sm:px-10 py-5 sm:py-6 hover:from-cyan-600 hover:to-blue-600 shadow-lg shadow-cyan-500/25"
                 onClick={() => setShowPurchaseModal(true)}
               >
                 Get Your CloudNode Now
@@ -764,14 +764,14 @@ export default function LandingPage() {
 
       {/* Purchase Modal */}
       <Dialog open={showPurchaseModal} onOpenChange={handleCloseModal}>
-        <DialogContent className="text-white max-w-md max-h-[90vh] overflow-y-auto">
+        <DialogContent className="text-white max-w-md max-h-[90vh] overflow-y-auto mx-4 sm:mx-auto">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold text-white">
+            <DialogTitle className="text-lg sm:text-xl font-bold text-white">
               {purchaseStep === 'success' ? 'Welcome to Optio!' : 
                purchaseStep === 'setPassword' ? 'Create Your Password' : 
                'Purchase CloudNode'}
             </DialogTitle>
-            <DialogDescription className="text-slate-400">
+            <DialogDescription className="text-slate-400 text-sm">
               {purchaseStep === 'details' && 'Enter your details to continue'}
               {purchaseStep === 'payment' && 'Complete your secure payment'}
               {purchaseStep === 'setPassword' && 'Set a password for your new account'}
