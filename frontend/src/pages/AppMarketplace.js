@@ -173,7 +173,7 @@ export default function AppMarketplace() {
       setInstallDialog(null);
       fetchApps();
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Installation failed');
+      toast.error(getErrorMessage(error, 'Installation failed'));
     } finally {
       setInstalling(false);
     }
