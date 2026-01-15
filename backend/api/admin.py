@@ -514,6 +514,135 @@ async def review_app_submission(submission_id: str, review: AppReviewRequest, ad
     return {"message": f"App {review.action}d successfully", "new_status": status_map[review.action]}
 
 
+@router.post("/apps/submissions/{submission_id}/feature")
+async def admin_feature_app(
+    submission_id: str, 
+    days: int = 30,
+    admin=Depends(get_current_admin), 
+    request: Request = None
+):
+    """Admin: Feature an approved app for specified number of days"""
+    if not check_admin_permission(admin, "apps:update"):
+        raise HTTPException(status_code=403, detail="Permission denied")
+    
+    submission = await db.app_submissions.find_one({"id": submission_id})
+    if not submission:
+        raise HTTPException(status_code=404, detail="Submission not found")
+    
+    if submission.get("status") != "approved":
+        raise HTTPException(status_code=400, detail="Only approved apps can be featured")
+    
+    now = datetime.now(timezone.utc)
+    from datetime import timedelta
+    featured_until = (now + timedelta(days=days)).isoformat()
+    
+    await db.app_submissions.update_one(
+        {"id": submission_id},
+        {"$set": {
+            "featured": True,
+            "featured_until": featured_until,
+            "featured_by_admin": admin["id"],
+            "updated_at": now.isoformat()
+        }}
+    )
+    
+    await log_admin_action(
+        admin, 
+        "feature_app", 
+        "app", 
+        submission_id, 
+        {"days": days, "featured_until": featured_until, "app_name": submission["app_name"]}, 
+        request
+    )
+    
+    return {
+        "message": f"App featured for {days} days",
+        "featured_until": featured_until
+    }
+
+
+@router.post("/apps/submissions/{submission_id}/unfeature")
+async def admin_unfeature_app(
+    submission_id: str,
+    admin=Depends(get_current_admin),
+    request: Request = None
+):
+    """Admin: Remove featured status from an app"""
+    if not check_admin_permission(admin, "apps:update"):
+        raise HTTPException(status_code=403, detail="Permission denied")
+    
+    submission = await db.app_submissions.find_one({"id": submission_id})
+    if not submission:
+        raise HTTPException(status_code=404, detail="Submission not found")
+    
+    await db.app_submissions.update_one(
+        {"id": submission_id},
+        {"$set": {
+            "featured": False,
+            "featured_until": None,
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    
+    await log_admin_action(
+        admin, 
+        "unfeature_app", 
+        "app", 
+        submission_id, 
+        {"app_name": submission["app_name"]}, 
+        request
+    )
+    
+    return {"message": "App unfeatured successfully"}
+
+
+@router.patch("/apps/submissions/{submission_id}/tags")
+async def admin_update_app_tags(
+    submission_id: str,
+    tags: List[str],
+    is_trending: Optional[bool] = None,
+    is_new: Optional[bool] = None,
+    staff_pick: Optional[bool] = None,
+    admin=Depends(get_current_admin),
+    request: Request = None
+):
+    """Admin: Update app tags and special flags"""
+    if not check_admin_permission(admin, "apps:update"):
+        raise HTTPException(status_code=403, detail="Permission denied")
+    
+    submission = await db.app_submissions.find_one({"id": submission_id})
+    if not submission:
+        raise HTTPException(status_code=404, detail="Submission not found")
+    
+    update_data = {
+        "tags": tags,
+        "updated_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    if is_trending is not None:
+        update_data["is_trending"] = is_trending
+    if is_new is not None:
+        update_data["is_new"] = is_new
+    if staff_pick is not None:
+        update_data["staff_pick"] = staff_pick
+    
+    await db.app_submissions.update_one(
+        {"id": submission_id},
+        {"$set": update_data}
+    )
+    
+    await log_admin_action(
+        admin, 
+        "update_app_tags", 
+        "app", 
+        submission_id, 
+        {"tags": tags, "is_trending": is_trending, "is_new": is_new, "staff_pick": staff_pick}, 
+        request
+    )
+    
+    return {"message": "App tags updated successfully"}
+
+
 # ==================== SUPPORT TICKETS ====================
 
 @router.get("/support/tickets")
