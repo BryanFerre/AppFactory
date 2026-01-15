@@ -41,6 +41,8 @@ export default function Settings() {
   const [backupCodes, setBackupCodes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showSecret, setShowSecret] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(false);
+  const [resettingTutorial, setResettingTutorial] = useState(false);
 
   useEffect(() => {
     fetchTwoFaStatus();
