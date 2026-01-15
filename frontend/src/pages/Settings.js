@@ -318,27 +318,6 @@ export default function Settings() {
         </div>
       </motion.div>
 
-      {/* Appearance Section */}
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
-        className="glass-card p-6"
-      >
-        <div className="flex items-center gap-3 mb-6">
-          <Moon className="w-5 h-5 text-cyan-400" />
-          <h2 className="text-lg font-semibold text-white font-['Outfit']">Appearance</h2>
-        </div>
-        
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-white">Dark Mode</p>
-            <p className="text-sm text-slate-400">Use dark theme (default)</p>
-          </div>
-          <Switch checked={true} disabled />
-        </div>
-      </motion.div>
-
       {/* Save Button */}
       <Button 
         onClick={saveSettings}
