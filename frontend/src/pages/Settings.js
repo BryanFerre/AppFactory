@@ -339,6 +339,48 @@ export default function Settings() {
         </div>
       </motion.div>
 
+      {/* Help & Tutorials Section */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+        className="glass-card p-6"
+      >
+        <div className="flex items-center gap-3 mb-6">
+          <HelpCircle className="w-5 h-5 text-cyan-400" />
+          <h2 className="text-lg font-semibold text-white font-['Outfit']">Help & Tutorials</h2>
+        </div>
+        
+        <div className="space-y-4">
+          {/* OPT Points Tutorial */}
+          <div className="flex items-center justify-between p-4 bg-gradient-to-r from-purple-500/10 to-cyan-500/10 rounded-xl border border-purple-500/20">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-cyan-500 flex items-center justify-center">
+                <Coins className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <p className="text-white font-medium">OPT Points Tutorial</p>
+                <p className="text-sm text-slate-400">Learn how to earn and maximize your rewards</p>
+              </div>
+            </div>
+            <Button
+              onClick={replayTutorial}
+              disabled={resettingTutorial}
+              variant="outline"
+              className="border-purple-500/30 text-purple-300 hover:bg-purple-500/10 hover:text-purple-200"
+              data-testid="replay-tutorial-btn"
+            >
+              {resettingTutorial ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <PlayCircle className="w-4 h-4 mr-2" />
+              )}
+              Replay Tutorial
+            </Button>
+          </div>
+        </div>
+      </motion.div>
+
       {/* Save Button */}
       <Button 
         onClick={saveSettings}
