@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Package, Plus, Edit2, Trash2, Search, Filter, DollarSign,
   Eye, EyeOff, Star, Loader2, Save, X, ChevronDown, Check,
-  ShoppingBag, TrendingUp, AlertCircle
+  ShoppingBag, TrendingUp, AlertCircle, Tag, Percent, Calendar,
+  Copy, ChevronRight, Gift
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -36,6 +37,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { toast } from 'sonner';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -58,6 +65,14 @@ export default function AdminProducts() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
+  // Coupon states
+  const [productCoupons, setProductCoupons] = useState([]);
+  const [loadingCoupons, setLoadingCoupons] = useState(false);
+  const [showCouponSection, setShowCouponSection] = useState(false);
+  const [editingCoupon, setEditingCoupon] = useState(null);
+  const [deleteCoupon, setDeleteCoupon] = useState(null);
+  const [copied, setCopied] = useState(null);
+
   const [productForm, setProductForm] = useState({
     name: '',
     slug: '',
@@ -73,6 +88,20 @@ export default function AdminProducts() {
     stock: -1,
   });
   const [featureInput, setFeatureInput] = useState('');
+
+  // Coupon form
+  const [couponForm, setCouponForm] = useState({
+    code: '',
+    name: '',
+    description: '',
+    discount_type: 'percentage',
+    discount_value: '',
+    usage_limit: '-1',
+    usage_per_user: '1',
+    start_date: '',
+    end_date: '',
+    is_active: true,
+  });
 
   useEffect(() => {
     fetchProducts();
@@ -105,6 +134,22 @@ export default function AdminProducts() {
     }
   };
 
+  const fetchProductCoupons = async (productId) => {
+    setLoadingCoupons(true);
+    try {
+      const token = localStorage.getItem('admin_token');
+      const response = await axios.get(`${API}/admin/coupons?product_id=${productId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setProductCoupons(response.data.coupons);
+    } catch (err) {
+      console.error('Failed to fetch coupons:', err);
+      setProductCoupons([]);
+    } finally {
+      setLoadingCoupons(false);
+    }
+  };
+
   const openCreateModal = () => {
     setEditingProduct(null);
     setProductForm({
@@ -121,11 +166,13 @@ export default function AdminProducts() {
       is_featured: false,
       stock: -1,
     });
+    setProductCoupons([]);
+    setShowCouponSection(false);
     setError('');
     setShowProductModal(true);
   };
 
-  const openEditModal = (product) => {
+  const openEditModal = async (product) => {
     setEditingProduct(product);
     setProductForm({
       name: product.name,
@@ -142,7 +189,11 @@ export default function AdminProducts() {
       stock: product.stock || -1,
     });
     setError('');
+    setShowCouponSection(false);
     setShowProductModal(true);
+    
+    // Fetch coupons for this product
+    await fetchProductCoupons(product.id);
   };
 
   const generateSlug = (name) => {
@@ -195,11 +246,13 @@ export default function AdminProducts() {
         await axios.put(`${API}/admin/products/${editingProduct.id}`, payload, {
           headers: { Authorization: `Bearer ${token}` }
         });
+        toast.success('Product updated successfully');
       } else {
         // Create new product
         await axios.post(`${API}/admin/products`, payload, {
           headers: { Authorization: `Bearer ${token}` }
         });
+        toast.success('Product created successfully');
       }
 
       setShowProductModal(false);
@@ -223,9 +276,118 @@ export default function AdminProducts() {
       setDeleteProduct(null);
       fetchProducts();
       fetchStats();
+      toast.success('Product deleted successfully');
     } catch (err) {
       console.error('Failed to delete product:', err);
+      toast.error('Failed to delete product');
     }
+  };
+
+  // Coupon handlers
+  const resetCouponForm = () => {
+    setCouponForm({
+      code: '',
+      name: '',
+      description: '',
+      discount_type: 'percentage',
+      discount_value: '',
+      usage_limit: '-1',
+      usage_per_user: '1',
+      start_date: '',
+      end_date: '',
+      is_active: true,
+    });
+    setEditingCoupon(null);
+  };
+
+  const openEditCoupon = (coupon) => {
+    setEditingCoupon(coupon);
+    setCouponForm({
+      code: coupon.code,
+      name: coupon.name,
+      description: coupon.description || '',
+      discount_type: coupon.discount_type,
+      discount_value: coupon.discount_value.toString(),
+      usage_limit: (coupon.usage_limit || -1).toString(),
+      usage_per_user: (coupon.usage_per_user || 1).toString(),
+      start_date: coupon.start_date?.split('T')[0] || '',
+      end_date: coupon.end_date?.split('T')[0] || '',
+      is_active: coupon.is_active,
+    });
+  };
+
+  const handleSaveCoupon = async (e) => {
+    e.preventDefault();
+    if (!editingProduct) return;
+
+    setSaving(true);
+    try {
+      const token = localStorage.getItem('admin_token');
+      const payload = {
+        ...couponForm,
+        code: couponForm.code || null,
+        discount_value: parseFloat(couponForm.discount_value),
+        usage_limit: parseInt(couponForm.usage_limit) || -1,
+        usage_per_user: parseInt(couponForm.usage_per_user) || 1,
+        start_date: couponForm.start_date ? `${couponForm.start_date}T00:00:00Z` : null,
+        end_date: couponForm.end_date ? `${couponForm.end_date}T23:59:59Z` : null,
+        applicable_products: [editingProduct.id], // Tie coupon to this product
+      };
+
+      if (editingCoupon) {
+        await axios.put(`${API}/admin/coupons/${editingCoupon.id}`, payload, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        toast.success('Coupon updated successfully');
+      } else {
+        await axios.post(`${API}/admin/coupons`, payload, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        toast.success('Coupon created successfully');
+      }
+
+      resetCouponForm();
+      await fetchProductCoupons(editingProduct.id);
+    } catch (err) {
+      toast.error(err.response?.data?.detail || 'Failed to save coupon');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDeleteCoupon = async () => {
+    if (!deleteCoupon || !editingProduct) return;
+
+    try {
+      const token = localStorage.getItem('admin_token');
+      await axios.delete(`${API}/admin/coupons/${deleteCoupon.id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setDeleteCoupon(null);
+      await fetchProductCoupons(editingProduct.id);
+      toast.success('Coupon deleted successfully');
+    } catch (err) {
+      console.error('Failed to delete coupon:', err);
+      toast.error('Failed to delete coupon');
+    }
+  };
+
+  const copyCode = (code) => {
+    navigator.clipboard.writeText(code);
+    setCopied(code);
+    setTimeout(() => setCopied(null), 2000);
+  };
+
+  const formatDiscount = (coupon) => {
+    if (coupon.discount_type === 'percentage') {
+      return `${coupon.discount_value}% off`;
+    }
+    return `$${coupon.discount_value} off`;
+  };
+
+  const isExpired = (coupon) => {
+    if (!coupon.end_date) return false;
+    return new Date(coupon.end_date) < new Date();
   };
 
   const filteredProducts = products.filter(product => {
@@ -260,7 +422,7 @@ export default function AdminProducts() {
             <Package className="w-7 h-7 text-cyan-400" />
             Product Management
           </h1>
-          <p className="text-slate-400 mt-1">Manage your products and pricing</p>
+          <p className="text-slate-400 mt-1">Manage your products, pricing, and discount coupons</p>
         </div>
 
         <Button
@@ -436,7 +598,7 @@ export default function AdminProducts() {
               {editingProduct ? 'Edit Product' : 'Create New Product'}
             </DialogTitle>
             <DialogDescription className="text-slate-400">
-              {editingProduct ? 'Update product details and pricing' : 'Add a new product to your catalog'}
+              {editingProduct ? 'Update product details, pricing, and manage coupons' : 'Add a new product to your catalog'}
             </DialogDescription>
           </DialogHeader>
 
@@ -613,6 +775,280 @@ export default function AdminProducts() {
               </div>
             </div>
 
+            {/* Coupon Section - Only show when editing */}
+            {editingProduct && (
+              <Collapsible
+                open={showCouponSection}
+                onOpenChange={setShowCouponSection}
+                className="border border-white/10 rounded-lg overflow-hidden"
+              >
+                <CollapsibleTrigger className="flex items-center justify-between w-full p-4 bg-white/5 hover:bg-white/10 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center">
+                      <Tag className="w-4 h-4 text-purple-400" />
+                    </div>
+                    <div className="text-left">
+                      <p className="text-white font-medium">Product Coupons</p>
+                      <p className="text-xs text-slate-400">
+                        {productCoupons.length} coupon{productCoupons.length !== 1 ? 's' : ''} active
+                      </p>
+                    </div>
+                  </div>
+                  <ChevronRight className={`w-5 h-5 text-slate-400 transition-transform ${showCouponSection ? 'rotate-90' : ''}`} />
+                </CollapsibleTrigger>
+
+                <CollapsibleContent className="border-t border-white/10">
+                  <div className="p-4 space-y-4">
+                    {/* Existing Coupons */}
+                    {loadingCoupons ? (
+                      <div className="flex items-center justify-center py-6">
+                        <Loader2 className="w-6 h-6 animate-spin text-purple-500" />
+                      </div>
+                    ) : productCoupons.length > 0 ? (
+                      <div className="space-y-2">
+                        {productCoupons.map((coupon) => (
+                          <div
+                            key={coupon.id}
+                            className="flex items-center justify-between p-3 bg-white/5 rounded-lg"
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className="flex items-center gap-2">
+                                <code className="px-2 py-0.5 bg-purple-500/20 text-purple-400 rounded font-mono text-sm">
+                                  {coupon.code}
+                                </code>
+                                <button
+                                  type="button"
+                                  onClick={() => copyCode(coupon.code)}
+                                  className="text-slate-500 hover:text-white transition-colors"
+                                >
+                                  {copied === coupon.code ? (
+                                    <Check className="w-3.5 h-3.5 text-emerald-400" />
+                                  ) : (
+                                    <Copy className="w-3.5 h-3.5" />
+                                  )}
+                                </button>
+                              </div>
+                              <Badge className={`border-0 ${
+                                coupon.discount_type === 'percentage' 
+                                  ? 'bg-cyan-500/20 text-cyan-400'
+                                  : 'bg-emerald-500/20 text-emerald-400'
+                              }`}>
+                                {formatDiscount(coupon)}
+                              </Badge>
+                              {!coupon.is_active || isExpired(coupon) ? (
+                                <Badge className="bg-red-500/20 text-red-400 border-0 text-xs">
+                                  {isExpired(coupon) ? 'Expired' : 'Inactive'}
+                                </Badge>
+                              ) : (
+                                <Badge className="bg-emerald-500/20 text-emerald-400 border-0 text-xs">Active</Badge>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="ghost"
+                                className="h-8 w-8 p-0 text-slate-400 hover:text-white"
+                                onClick={() => openEditCoupon(coupon)}
+                              >
+                                <Edit2 className="w-3.5 h-3.5" />
+                              </Button>
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="ghost"
+                                className="h-8 w-8 p-0 text-slate-400 hover:text-red-400"
+                                onClick={() => setDeleteCoupon(coupon)}
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-slate-500 text-sm text-center py-2">No coupons for this product yet</p>
+                    )}
+
+                    {/* Coupon Form */}
+                    <div className="border-t border-white/10 pt-4">
+                      <p className="text-sm font-medium text-white mb-3 flex items-center gap-2">
+                        <Gift className="w-4 h-4 text-purple-400" />
+                        {editingCoupon ? 'Edit Coupon' : 'Create New Coupon'}
+                      </p>
+
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs font-medium text-slate-400 mb-1">
+                            Coupon Code
+                          </label>
+                          <Input
+                            value={couponForm.code}
+                            onChange={(e) => setCouponForm({ ...couponForm, code: e.target.value.toUpperCase() })}
+                            className="bg-white/5 border-white/10 h-9 text-sm font-mono"
+                            placeholder="AUTO-GENERATED"
+                            disabled={!!editingCoupon}
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-medium text-slate-400 mb-1">
+                            Name *
+                          </label>
+                          <Input
+                            required
+                            value={couponForm.name}
+                            onChange={(e) => setCouponForm({ ...couponForm, name: e.target.value })}
+                            className="bg-white/5 border-white/10 h-9 text-sm"
+                            placeholder="Launch Discount"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3 mt-3">
+                        <div>
+                          <label className="block text-xs font-medium text-slate-400 mb-1">
+                            Discount Type *
+                          </label>
+                          <Select
+                            value={couponForm.discount_type}
+                            onValueChange={(val) => setCouponForm({ ...couponForm, discount_type: val })}
+                          >
+                            <SelectTrigger className="bg-white/5 border-white/10 h-9 text-sm">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent className="glass-card border-white/10">
+                              <SelectItem value="percentage">Percentage (%)</SelectItem>
+                              <SelectItem value="fixed">Fixed Amount ($)</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-medium text-slate-400 mb-1">
+                            Discount Value *
+                          </label>
+                          <div className="relative">
+                            {couponForm.discount_type === 'percentage' ? (
+                              <Percent className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" />
+                            ) : (
+                              <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" />
+                            )}
+                            <Input
+                              required
+                              type="number"
+                              step="0.01"
+                              min="0"
+                              max={couponForm.discount_type === 'percentage' ? '100' : undefined}
+                              value={couponForm.discount_value}
+                              onChange={(e) => setCouponForm({ ...couponForm, discount_value: e.target.value })}
+                              className={`bg-white/5 border-white/10 h-9 text-sm ${couponForm.discount_type === 'fixed' ? 'pl-8' : ''}`}
+                              placeholder={couponForm.discount_type === 'percentage' ? '20' : '500'}
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3 mt-3">
+                        <div>
+                          <label className="block text-xs font-medium text-slate-400 mb-1">
+                            Usage Limit
+                          </label>
+                          <Input
+                            type="number"
+                            value={couponForm.usage_limit}
+                            onChange={(e) => setCouponForm({ ...couponForm, usage_limit: e.target.value })}
+                            className="bg-white/5 border-white/10 h-9 text-sm"
+                            placeholder="-1 = unlimited"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-medium text-slate-400 mb-1">
+                            Uses Per Customer
+                          </label>
+                          <Input
+                            type="number"
+                            min="1"
+                            value={couponForm.usage_per_user}
+                            onChange={(e) => setCouponForm({ ...couponForm, usage_per_user: e.target.value })}
+                            className="bg-white/5 border-white/10 h-9 text-sm"
+                            placeholder="1"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3 mt-3">
+                        <div>
+                          <label className="block text-xs font-medium text-slate-400 mb-1">
+                            Start Date
+                          </label>
+                          <Input
+                            type="date"
+                            value={couponForm.start_date}
+                            onChange={(e) => setCouponForm({ ...couponForm, start_date: e.target.value })}
+                            className="bg-white/5 border-white/10 h-9 text-sm"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-medium text-slate-400 mb-1">
+                            End Date
+                          </label>
+                          <Input
+                            type="date"
+                            value={couponForm.end_date}
+                            onChange={(e) => setCouponForm({ ...couponForm, end_date: e.target.value })}
+                            className="bg-white/5 border-white/10 h-9 text-sm"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between mt-4">
+                        <div className="flex items-center gap-2">
+                          <Switch
+                            checked={couponForm.is_active}
+                            onCheckedChange={(checked) => setCouponForm({ ...couponForm, is_active: checked })}
+                          />
+                          <label className="text-sm text-slate-300">Active</label>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          {editingCoupon && (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={resetCouponForm}
+                              className="text-slate-400"
+                            >
+                              Cancel
+                            </Button>
+                          )}
+                          <Button
+                            type="button"
+                            onClick={handleSaveCoupon}
+                            size="sm"
+                            disabled={saving || !couponForm.name || !couponForm.discount_value}
+                            className="bg-purple-500 hover:bg-purple-600 text-white"
+                          >
+                            {saving ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <>
+                                <Save className="w-3.5 h-3.5 mr-1.5" />
+                                {editingCoupon ? 'Update' : 'Create'} Coupon
+                              </>
+                            )}
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
+            )}
+
             <DialogFooter className="pt-4">
               <Button
                 type="button"
@@ -644,7 +1080,7 @@ export default function AdminProducts() {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation */}
+      {/* Delete Product Confirmation */}
       <AlertDialog open={!!deleteProduct} onOpenChange={() => setDeleteProduct(null)}>
         <AlertDialogContent className="bg-[#0F1420] border-white/10">
           <AlertDialogHeader>
@@ -662,6 +1098,32 @@ export default function AdminProducts() {
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteProduct}
+              className="bg-red-500 text-white hover:bg-red-600"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Coupon Confirmation */}
+      <AlertDialog open={!!deleteCoupon} onOpenChange={() => setDeleteCoupon(null)}>
+        <AlertDialogContent className="bg-[#0F1420] border-white/10">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-white">Delete Coupon</AlertDialogTitle>
+            <AlertDialogDescription className="text-slate-400">
+              Are you sure you want to delete coupon &ldquo;{deleteCoupon?.code}&rdquo;?
+              {deleteCoupon?.usage_count > 0 
+                ? ' This coupon has been used and will be deactivated instead of deleted.'
+                : ' This action cannot be undone.'}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="bg-white/5 border-white/10 text-slate-300 hover:bg-white/10">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteCoupon}
               className="bg-red-500 text-white hover:bg-red-600"
             >
               Delete
