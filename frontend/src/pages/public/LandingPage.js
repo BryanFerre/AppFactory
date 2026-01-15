@@ -480,12 +480,17 @@ export default function LandingPage() {
   return (
     <div className="bg-[#0B0F1A] min-h-screen">
       {/* Hero Section */}
-      <section className="relative overflow-hidden pt-20 pb-32">
-        {/* Background Effects */}
-        <div className="absolute inset-0">
+      <section className="relative overflow-hidden pt-12 sm:pt-20 pb-16 sm:pb-32">
+        {/* Background Effects - hidden on mobile for performance */}
+        <div className="absolute inset-0 hidden sm:block">
           <div className="absolute top-20 left-1/4 w-96 h-96 bg-cyan-500/20 rounded-full blur-[128px]" />
           <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-500/20 rounded-full blur-[128px]" />
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-purple-500/10 rounded-full blur-[150px]" />
+        </div>
+        {/* Simplified background for mobile */}
+        <div className="absolute inset-0 sm:hidden">
+          <div className="absolute top-10 left-0 w-64 h-64 bg-cyan-500/10 rounded-full blur-[80px]" />
+          <div className="absolute bottom-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-[80px]" />
         </div>
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -495,27 +500,27 @@ export default function LandingPage() {
             transition={{ duration: 0.6 }}
             className="text-center"
           >
-            <Badge className="mb-6 bg-cyan-500/10 text-cyan-400 border-cyan-500/20 px-4 py-1.5">
-              <Rocket className="w-3.5 h-3.5 mr-2" />
+            <Badge className="mb-4 sm:mb-6 bg-cyan-500/10 text-cyan-400 border-cyan-500/20 px-3 sm:px-4 py-1 sm:py-1.5 text-xs sm:text-sm">
+              <Rocket className="w-3 h-3 sm:w-3.5 sm:h-3.5 mr-1.5 sm:mr-2" />
               Next-Gen Cloud Infrastructure
             </Badge>
 
-            <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold text-white font-['Outfit'] leading-tight mb-6">
+            <h1 className="text-3xl sm:text-5xl lg:text-7xl font-bold text-white font-['Outfit'] leading-tight mb-4 sm:mb-6">
               Own a Piece of the
               <span className="block bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">
                 Decentralized Cloud
               </span>
             </h1>
 
-            <p className="text-lg sm:text-xl text-slate-400 max-w-3xl mx-auto mb-10 leading-relaxed">
+            <p className="text-base sm:text-xl text-slate-400 max-w-3xl mx-auto mb-6 sm:mb-10 leading-relaxed px-2">
               The Optio CloudNode turns you into a cloud infrastructure owner. 
               Earn passive income by powering the apps of tomorrow—no technical skills required.
             </p>
 
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mb-8 sm:mb-12 px-4 sm:px-0">
               <Button
                 size="lg"
-                className="bg-gradient-to-r from-cyan-500 to-blue-500 text-white text-lg px-8 py-6 hover:from-cyan-600 hover:to-blue-600 shadow-lg shadow-cyan-500/25"
+                className="w-full sm:w-auto bg-gradient-to-r from-cyan-500 to-blue-500 text-white text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 hover:from-cyan-600 hover:to-blue-600 shadow-lg shadow-cyan-500/25"
                 onClick={() => setShowPurchaseModal(true)}
               >
                 Get Your CloudNode
@@ -524,7 +529,7 @@ export default function LandingPage() {
               <Button
                 size="lg"
                 variant="outline"
-                className="border-white/10 text-slate-300 text-lg px-8 py-6 hover:bg-white/5"
+                className="w-full sm:w-auto border-white/10 text-slate-300 text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 hover:bg-white/5"
                 onClick={() => document.getElementById('how-it-works').scrollIntoView({ behavior: 'smooth' })}
               >
                 <Play className="w-5 h-5 mr-2" />
@@ -538,20 +543,20 @@ export default function LandingPage() {
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.3 }}
-                className="flex flex-col items-center gap-3"
+                className="flex flex-col items-center gap-2 sm:gap-3 px-4 sm:px-0"
               >
-                <div className="inline-flex items-center gap-4 px-8 py-4 bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl">
-                  <div className="text-left">
-                    <p className="text-sm text-slate-400">License (one-time)</p>
-                    <p className="text-3xl font-bold text-white">{formatPrice(product.price)}</p>
+                <div className="w-full sm:w-auto inline-flex flex-col sm:flex-row items-center gap-3 sm:gap-4 px-4 sm:px-8 py-4 bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl">
+                  <div className="text-center sm:text-left w-full sm:w-auto">
+                    <p className="text-xs sm:text-sm text-slate-400">License (one-time)</p>
+                    <p className="text-2xl sm:text-3xl font-bold text-white">{formatPrice(product.price)}</p>
                   </div>
-                  <div className="h-12 w-px bg-white/10" />
-                  <div className="text-left">
-                    <p className="text-sm text-slate-400">Monthly service</p>
-                    <p className="text-2xl font-bold text-cyan-400">{formatPrice(product.monthly_fee)}<span className="text-sm font-normal text-slate-400">/mo</span></p>
+                  <div className="w-full h-px sm:w-px sm:h-12 bg-white/10" />
+                  <div className="text-center sm:text-left w-full sm:w-auto">
+                    <p className="text-xs sm:text-sm text-slate-400">Monthly service</p>
+                    <p className="text-xl sm:text-2xl font-bold text-cyan-400">{formatPrice(product.monthly_fee)}<span className="text-xs sm:text-sm font-normal text-slate-400">/mo</span></p>
                   </div>
                 </div>
-                <p className="text-sm text-slate-500">
+                <p className="text-xs sm:text-sm text-slate-500 text-center">
                   First payment: {formatPrice(product.price + (product.monthly_fee || 0))} (includes first month)
                 </p>
               </motion.div>
