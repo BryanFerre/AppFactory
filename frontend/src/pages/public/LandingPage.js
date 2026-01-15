@@ -377,8 +377,49 @@ export default function LandingPage() {
 
   const handlePaymentSuccess = (result) => {
     setPurchaseResult(result);
-    setPurchaseStep('success');
+    // If new user, go to password creation step
+    if (result.is_new_user) {
+      setPurchaseStep('setPassword');
+    } else {
+      // Existing user - go straight to dashboard
+      localStorage.setItem('token', result.token);
+      setPurchaseStep('success');
+    }
     toast.success('Payment successful!');
+  };
+
+  const handleSetPassword = async (e) => {
+    e.preventDefault();
+    setPasswordError('');
+    
+    if (newPassword.length < 8) {
+      setPasswordError('Password must be at least 8 characters');
+      return;
+    }
+    
+    if (newPassword !== confirmPassword) {
+      setPasswordError('Passwords do not match');
+      return;
+    }
+    
+    setSettingPassword(true);
+    
+    try {
+      await axios.put(
+        `${API}/api/auth/change-password`,
+        { new_password: newPassword },
+        { headers: { Authorization: `Bearer ${purchaseResult.token}` } }
+      );
+      
+      // Store token and go to success
+      localStorage.setItem('token', purchaseResult.token);
+      toast.success('Password created successfully!');
+      setPurchaseStep('success');
+    } catch (err) {
+      setPasswordError(err.response?.data?.detail || 'Failed to set password');
+    } finally {
+      setSettingPassword(false);
+    }
   };
 
   const handleCloseModal = () => {
