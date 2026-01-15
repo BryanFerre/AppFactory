@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { 
   Settings as SettingsIcon, User, Bell, Shield, 
   Smartphone, Key, CheckCircle, XCircle, Copy, AlertTriangle,
-  RefreshCw, Loader2, Eye, EyeOff
+  RefreshCw, Loader2, Eye, EyeOff, HelpCircle, Coins, PlayCircle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { getErrorMessage } from '@/utils/errorUtils';
+import OnboardingModal from '@/components/OnboardingModal';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
