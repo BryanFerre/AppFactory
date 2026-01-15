@@ -12,7 +12,7 @@ from utils.database import db, client, init_indexes
 from api.admin import init_super_admin
 
 # Import all route modules
-from api import auth, node, earnings, apps, referral, promotion, ai, developer, notifications, webhooks, admin, accounting, activity, products, licenses, purchase, coupons, reports
+from api import auth, node, earnings, apps, referral, promotion, ai, developer, notifications, webhooks, admin, accounting, activity, products, licenses, purchase, coupons, reports, support
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
