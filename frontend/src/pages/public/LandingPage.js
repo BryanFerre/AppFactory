@@ -314,7 +314,23 @@ export default function LandingPage() {
   useEffect(() => {
     fetchProduct();
     fetchStripeConfig();
-  }, []);
+    
+    // Check if we should open purchase modal from query param
+    if (searchParams.get('purchase') === 'true') {
+      setShowPurchaseModal(true);
+    }
+    
+    // Listen for custom event from header "Get Started" button
+    const handleOpenPurchaseModal = () => {
+      setShowPurchaseModal(true);
+    };
+    
+    window.addEventListener('openPurchaseModal', handleOpenPurchaseModal);
+    
+    return () => {
+      window.removeEventListener('openPurchaseModal', handleOpenPurchaseModal);
+    };
+  }, [searchParams]);
 
   const fetchProduct = async () => {
     try {
