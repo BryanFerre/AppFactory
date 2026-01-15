@@ -54,11 +54,11 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-white font-['Outfit']">Admin Dashboard</h1>
-        <p className="text-slate-400 mt-1">System overview and quick actions</p>
+        <h1 className="text-xl sm:text-2xl font-bold text-white font-['Outfit']">Admin Dashboard</h1>
+        <p className="text-sm sm:text-base text-slate-400 mt-1">System overview and quick actions</p>
       </div>
 
       {/* Stats Grid */}
@@ -66,17 +66,17 @@ export default function AdminDashboard() {
         variants={container}
         initial="hidden"
         animate="show"
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
+        className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4"
       >
         {/* Users */}
         <motion.div variants={item}>
           <Card className="bg-[rgba(15,17,26,0.6)] border-white/10 hover:border-cyan-500/30 transition-colors cursor-pointer" onClick={() => navigate('/admin/users')}>
-            <CardContent className="pt-6">
+            <CardContent className="p-3 sm:pt-6 sm:px-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-slate-400">Total Users</p>
-                  <p className="text-3xl font-bold text-white mt-1">{stats?.users?.total || 0}</p>
-                  <div className="flex items-center gap-2 mt-2">
+                  <p className="text-xs sm:text-sm text-slate-400">Total Users</p>
+                  <p className="text-xl sm:text-3xl font-bold text-white mt-1">{stats?.users?.total || 0}</p>
+                  <div className="hidden sm:flex items-center gap-2 mt-2">
                     <Badge className="bg-emerald-500/20 text-emerald-400 text-xs">
                       {stats?.users?.active || 0} active
                     </Badge>
