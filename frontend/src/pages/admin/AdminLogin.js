@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { Shield, Mail, Lock, ArrowRight, Smartphone, ArrowLeft } from 'lucide-react';
 import { ReactComponent as CloudNodeLogo } from '@/assets/CloudNode.svg';
+import { getErrorMessage } from '@/utils/errorUtils';
 
 export default function AdminLogin() {
   const { admin, login, loading, pending2FA, verify2FA, cancel2FA } = useAdminAuth();
