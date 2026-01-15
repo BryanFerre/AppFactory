@@ -45,6 +45,7 @@ import {
 } from '@/components/ui/sheet';
 import { Slider } from '@/components/ui/slider';
 import { toast } from 'sonner';
+import { getErrorMessage } from '@/utils/errorUtils';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
