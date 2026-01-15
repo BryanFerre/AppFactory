@@ -163,7 +163,7 @@ export default function AppDetails() {
       <Button
         variant="ghost"
         className="text-slate-400 hover:text-white -ml-2"
-        onClick={() => navigate('/installed-apps')}
+        onClick={() => navigate('/dashboard/installed-apps')}
       >
         <ArrowLeft className="w-4 h-4 mr-2" />
         Back to Installed Apps
