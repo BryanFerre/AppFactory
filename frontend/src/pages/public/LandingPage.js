@@ -139,6 +139,12 @@ export default function LandingPage() {
     referralCode: searchParams.get('ref') || ''
   });
   const [error, setError] = useState('');
+  
+  // Coupon states
+  const [couponCode, setCouponCode] = useState('');
+  const [couponLoading, setCouponLoading] = useState(false);
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const [couponError, setCouponError] = useState('');
 
   useEffect(() => {
     fetchProduct();
