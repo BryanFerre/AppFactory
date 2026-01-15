@@ -71,7 +71,7 @@ def get_email_template(template_type: str, data: dict) -> tuple:
     return templates.get(template_type, ("AppCloud Notification", "<p>You have a notification from AppCloud.</p>"))
 
 def _get_referral_signup_template(base_style: str, data: dict) -> tuple:
-    subject = f"🎉 You earned {data.get('opt_reward', 50)} OPT! New referral signup"
+    subject = f"You earned {data.get('opt_reward', 50)} OPT! New referral signup"
     html = f"""
     <!DOCTYPE html>
     <html>
@@ -80,7 +80,7 @@ def _get_referral_signup_template(base_style: str, data: dict) -> tuple:
         <div class="container">
             <div class="card">
                 <div class="logo">AppCloud</div>
-                <h1>New Referral Signup! 🎉</h1>
+                <h1>New Referral Signup!</h1>
                 <p>Great news! Someone just signed up using your referral link.</p>
                 
                 <div class="stat-box">
@@ -109,7 +109,7 @@ def _get_referral_signup_template(base_style: str, data: dict) -> tuple:
     return subject, html
 
 def _get_2fa_enabled_template(base_style: str, data: dict) -> tuple:
-    subject = "🔐 Two-Factor Authentication Enabled"
+    subject = "Two-Factor Authentication Enabled"
     html = f"""
     <!DOCTYPE html>
     <html>
