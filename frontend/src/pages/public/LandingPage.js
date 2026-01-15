@@ -512,7 +512,7 @@ export default function LandingPage() {
                 className="flex flex-col items-center gap-3"
               >
                 <Badge className="bg-orange-500/20 text-orange-400 border-orange-500/30 px-3 py-1">
-                  🚀 Pre-Launch Sale
+                  Pre-Launch Sale
                 </Badge>
                 <div className="inline-flex items-center gap-4 px-8 py-4 bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl">
                   <div className="text-left">

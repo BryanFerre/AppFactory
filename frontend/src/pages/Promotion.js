@@ -53,7 +53,7 @@ export default function Promotion() {
   };
 
   const shareOnSocial = (platform, link) => {
-    const text = "Join me on NAPP and start earning as a node operator! 🚀";
+    const text = "Join me on NAPP and start earning as a node operator!";
     const urls = {
       twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(link)}`,
       facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(link)}`,

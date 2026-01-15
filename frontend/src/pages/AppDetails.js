@@ -105,7 +105,7 @@ export default function AppDetails() {
       if (response.data.social_posts && response.data.social_posts.length > 0) {
         setGeneratedPost(response.data.social_posts[0].content);
       } else {
-        setGeneratedPost(`🚀 Check out ${targetApp.name} on AppCloud! I'm hosting this amazing app on the decentralized cloud. Join the future of distributed computing! #AppCloud #Web3 #DecentralizedCloud`);
+        setGeneratedPost(`Check out ${targetApp.name} on AppCloud! I'm hosting this amazing app on the decentralized cloud. Join the future of distributed computing! #AppCloud #Web3 #DecentralizedCloud`);
       }
     } catch (error) {
       setGeneratedPost(`🚀 Check out ${targetApp.name} on AppCloud! I'm hosting this amazing app on the decentralized cloud. Join the future of distributed computing! #AppCloud #Web3 #DecentralizedCloud`);
