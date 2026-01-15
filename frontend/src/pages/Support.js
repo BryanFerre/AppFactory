@@ -452,7 +452,7 @@ export default function Support() {
               <div className="bg-black/40 rounded-lg p-4 border border-white/10">
                 <div className="flex items-center gap-2 mb-2">
                   <Badge className="bg-amber-500/20 text-amber-400">POST</Badge>
-                  <code className="text-cyan-400 text-sm">/api/auth/token</code>
+                  <code className="text-cyan-400 text-sm">/api/auth/login</code>
                 </div>
                 <p className="text-sm text-slate-400 mb-3">Obtain an authentication token.</p>
                 
