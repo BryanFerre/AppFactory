@@ -366,3 +366,66 @@ async def test_send_email(request: TestEmailRequest, user=Depends(get_current_us
         return {"message": f"Test email sent to {request.to_email}", "template": request.template}
     else:
         raise HTTPException(status_code=500, detail="Failed to send email. Check if Resend API key is configured.")
+
+
+# ==================== ONBOARDING TUTORIAL ENDPOINTS ====================
+
+@router.get("/onboarding/status")
+async def get_onboarding_status(user=Depends(get_current_user)):
+    """Get the onboarding tutorial status for the current user"""
+    return {
+        "tutorial_completed": user.get("tutorial_completed", False),
+        "tutorial_completed_at": user.get("tutorial_completed_at"),
+        "show_tutorial": not user.get("tutorial_completed", False)
+    }
+
+
+@router.post("/onboarding/complete")
+async def complete_onboarding_tutorial(user=Depends(get_current_user)):
+    """Mark the onboarding tutorial as completed and award bonus points"""
+    now = datetime.now(timezone.utc).isoformat()
+    
+    # Only award points if not already completed
+    if not user.get("tutorial_completed"):
+        await db.users.update_one(
+            {"id": user["id"]},
+            {"$set": {
+                "tutorial_completed": True,
+                "tutorial_completed_at": now
+            }}
+        )
+        
+        # Award 200 OPT for completing the tutorial
+        await award_user_points(
+            user["id"], 
+            "complete_tutorial",
+            metadata={"bonus": 200, "type": "onboarding_tutorial"}
+        )
+        
+        return {
+            "success": True,
+            "message": "Tutorial completed! You earned 200 OPT bonus points!",
+            "points_awarded": 200
+        }
+    
+    return {
+        "success": True,
+        "message": "Tutorial already completed",
+        "points_awarded": 0
+    }
+
+
+@router.post("/onboarding/reset")
+async def reset_onboarding_tutorial(user=Depends(get_current_user)):
+    """Reset the tutorial status (for replay from settings)"""
+    await db.users.update_one(
+        {"id": user["id"]},
+        {"$set": {"tutorial_completed": False},
+         "$unset": {"tutorial_completed_at": ""}}
+    )
+    
+    return {
+        "success": True,
+        "message": "Tutorial reset. It will show on your next dashboard visit."
+    }
+
