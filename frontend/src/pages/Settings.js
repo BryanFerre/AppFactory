@@ -128,6 +128,23 @@ export default function Settings() {
     toast.success('Settings saved successfully!');
   };
 
+  const replayTutorial = async () => {
+    setResettingTutorial(true);
+    try {
+      await axios.post(`${API}/auth/onboarding/reset`);
+      setShowTutorial(true);
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Failed to reset tutorial'));
+    } finally {
+      setResettingTutorial(false);
+    }
+  };
+
+  const handleTutorialComplete = () => {
+    setShowTutorial(false);
+    toast.success('Tutorial completed!');
+  };
+
   return (
     <div className="space-y-6 max-w-3xl">
       {/* Header */}
