@@ -730,7 +730,7 @@ export default function LandingPage() {
 
       {/* Purchase Modal */}
       <Dialog open={showPurchaseModal} onOpenChange={handleCloseModal}>
-        <DialogContent className="bg-[#0F1420] border-white/10 text-white max-w-md max-h-[90vh] overflow-y-auto [&>button]:text-white [&>button]:opacity-70 [&>button:hover]:opacity-100">
+        <DialogContent className="bg-[#0F1420] border border-white/10 text-white max-w-md max-h-[90vh] overflow-y-auto [&>button]:text-white [&>button]:opacity-70 [&>button:hover]:opacity-100 !border-white/10">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold">
               {purchaseStep === 'success' ? 'Welcome to Optio!' : 
