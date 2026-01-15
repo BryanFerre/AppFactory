@@ -91,6 +91,9 @@ app.include_router(purchase.admin_router, prefix="/api")
 app.include_router(coupons.router, prefix="/api")
 app.include_router(coupons.admin_router, prefix="/api")
 
+# Reports
+app.include_router(reports.router, prefix="/api")
+
 
 # Root endpoints
 @app.get("/api/")
