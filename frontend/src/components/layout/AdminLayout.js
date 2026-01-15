@@ -24,7 +24,7 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api/admin`;
 const navItems = [
   { path: '/admin', icon: LayoutDashboard, label: 'Dashboard', exact: true },
   { path: '/admin/users', icon: Users, label: 'Users & Accounts' },
-  { path: '/admin/nodes', icon: Server, label: 'NAPP Nodes' },
+  { path: '/admin/nodes', icon: Server, label: 'Licensed Nodes' },
   { path: '/admin/products', icon: ShoppingBag, label: 'Products' },
   { path: '/admin/coupons', icon: Tag, label: 'Coupons & Sales' },
   { path: '/admin/apps', icon: Package, label: 'App Submissions' },
