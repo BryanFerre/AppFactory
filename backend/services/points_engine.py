@@ -105,6 +105,7 @@ DEFAULT_ACTIONS = [
     {"id": "login_streak_90", "name": "90-Day Login Streak", "category": "engagement", "base_points": 750, "cooldown": COOLDOWN_ONCE, "description": "Log in for 90 consecutive days"},
     {"id": "login_streak_365", "name": "365-Day Login Streak", "category": "engagement", "base_points": 2000, "cooldown": COOLDOWN_ONCE, "description": "Log in for 365 consecutive days"},
     {"id": "complete_onboarding", "name": "Complete Onboarding", "category": "engagement", "base_points": 200, "cooldown": COOLDOWN_ONCE, "description": "Complete the onboarding process"},
+    {"id": "complete_tutorial", "name": "Complete OPT Tutorial", "category": "engagement", "base_points": 200, "cooldown": COOLDOWN_ONCE, "description": "Complete the OPT Points tutorial walkthrough"},
     {"id": "weekly_active", "name": "Weekly Active", "category": "engagement", "base_points": 50, "cooldown": COOLDOWN_WEEKLY, "description": "Be active for a full week"},
     
     # Tier 9 – Milestones & Achievements (300–2,000 pts)
