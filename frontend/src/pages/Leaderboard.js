@@ -217,27 +217,27 @@ export default function Leaderboard() {
       variants={container}
       initial="hidden"
       animate="show"
-      className="space-y-6"
+      className="space-y-4 sm:space-y-6"
     >
       {/* Header */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+      <div className="flex flex-col gap-3 sm:gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white font-['Outfit'] flex items-center gap-3">
-            <Trophy className="w-7 h-7 text-amber-400" />
+          <h1 className="text-xl sm:text-2xl font-bold text-white font-['Outfit'] flex items-center gap-2 sm:gap-3">
+            <Trophy className="w-6 h-6 sm:w-7 sm:h-7 text-amber-400" />
             Leaderboard
           </h1>
-          <p className="text-slate-400 mt-1">Compete with the community and climb the ranks</p>
+          <p className="text-sm sm:text-base text-slate-400 mt-1">Compete with the community and climb the ranks</p>
         </div>
         
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           {/* Search */}
-          <div className="relative">
+          <div className="relative flex-1 sm:flex-none">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
             <Input
-              placeholder="Search users..."
+              placeholder="Search..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 w-48 bg-white/5 border-white/10"
+              className="pl-9 w-full sm:w-48 bg-white/5 border-white/10 text-sm"
             />
           </div>
         </div>
@@ -245,7 +245,7 @@ export default function Leaderboard() {
 
       {/* Timeframe Tabs */}
       <Tabs value={timeframe} onValueChange={setTimeframe} className="w-full">
-        <TabsList className="bg-white/5 p-1 w-full md:w-auto">
+        <TabsList className="bg-white/5 p-1 w-full grid grid-cols-3 sm:w-auto sm:inline-flex">
           <TabsTrigger 
             value="all-time" 
             className="data-[state=active]:bg-amber-500/20 data-[state=active]:text-amber-400 flex items-center gap-2"
