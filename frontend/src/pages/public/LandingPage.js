@@ -730,11 +730,11 @@ export default function LandingPage() {
 
       {/* Purchase Modal */}
       <Dialog open={showPurchaseModal} onOpenChange={handleCloseModal}>
-        <DialogContent className="bg-[#0F1420] border-white/10 text-white max-w-md max-h-[90vh] overflow-y-auto">
+        <DialogContent className="bg-[#0F1420] border-white/10 text-white max-w-md max-h-[90vh] overflow-y-auto [&>button]:text-white [&>button]:opacity-70 [&>button:hover]:opacity-100">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold">
-              {purchaseStep === 'success' ? '🎉 Welcome to Optio!' : 
-               purchaseStep === 'setPassword' ? '🔐 Create Your Password' : 
+              {purchaseStep === 'success' ? 'Welcome to Optio!' : 
+               purchaseStep === 'setPassword' ? 'Create Your Password' : 
                'Purchase CloudNode'}
             </DialogTitle>
             <DialogDescription className="text-slate-400">
