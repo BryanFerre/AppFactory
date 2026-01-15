@@ -71,32 +71,32 @@ export default function Promotion() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl lg:text-3xl font-bold text-white font-['Outfit'] flex items-center gap-3">
-          <Megaphone className="w-8 h-8 text-cyan-400" />
+        <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white font-['Outfit'] flex items-center gap-2 sm:gap-3">
+          <Megaphone className="w-6 h-6 sm:w-8 sm:h-8 text-cyan-400" />
           Promotion Tools
         </h1>
-        <p className="text-slate-400 mt-1">Earn OPT rewards by growing the network</p>
+        <p className="text-sm sm:text-base text-slate-400 mt-1">Earn OPT rewards by growing the network</p>
       </div>
 
       {/* How It Works */}
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="glass-card p-6"
+        className="glass-card p-4 sm:p-6"
       >
-        <h2 className="text-lg font-semibold text-white font-['Outfit'] mb-4">How to Earn OPT Rewards</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="bg-cyan-500/10 border border-cyan-500/30 rounded-xl p-4">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-lg icon-bg-cyan flex items-center justify-center">
-                <UserPlus className="w-5 h-5 text-black" />
+        <h2 className="text-base sm:text-lg font-semibold text-white font-['Outfit'] mb-3 sm:mb-4">How to Earn OPT Rewards</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+          <div className="bg-cyan-500/10 border border-cyan-500/30 rounded-xl p-3 sm:p-4">
+            <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg icon-bg-cyan flex items-center justify-center">
+                <UserPlus className="w-4 h-4 sm:w-5 sm:h-5 text-black" />
               </div>
               <div>
-                <p className="font-semibold text-white">Refer Node Operators</p>
-                <p className="text-cyan-400 font-bold">50 OPT per signup</p>
+                <p className="text-sm sm:text-base font-semibold text-white">Refer Node Operators</p>
+                <p className="text-cyan-400 font-bold text-sm sm:text-base">50 OPT per signup</p>
               </div>
             </div>
             <p className="text-sm text-slate-400">
