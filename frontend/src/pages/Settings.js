@@ -61,7 +61,7 @@ export default function Settings() {
       setSetupData(response.data);
       setSetupDialog(true);
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Failed to start 2FA setup');
+      toast.error(getErrorMessage(error, 'Failed to start 2FA setup'));
     } finally {
       setLoading(false);
     }
