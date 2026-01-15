@@ -40,6 +40,21 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 const categories = ['Productivity', 'Communication', 'Wellness'];
 
+// Helper to extract error message from various error response formats
+const getErrorMessage = (error, fallback = 'An error occurred') => {
+  const detail = error.response?.data?.detail;
+  if (!detail) return fallback;
+  if (typeof detail === 'string') return detail;
+  if (Array.isArray(detail) && detail.length > 0) {
+    // Pydantic validation error format
+    const firstError = detail[0];
+    if (firstError.msg) return firstError.msg;
+    return JSON.stringify(firstError);
+  }
+  if (typeof detail === 'object' && detail.msg) return detail.msg;
+  return fallback;
+};
+
 const container = {
   hidden: { opacity: 0 },
   show: { opacity: 1, transition: { staggerChildren: 0.1 } }
