@@ -851,9 +851,9 @@ export default function AppDeveloper() {
                   <Badge className="bg-amber-500 text-black text-xs">Best Value</Badge>
                 </div>
                 <CardContent className="pt-6 text-center">
-                  <p className="text-3xl font-bold text-white">$59</p>
+                  <p className="text-3xl font-bold text-white">$49</p>
                   <p className="text-slate-400 mt-1">60 Days</p>
-                  <p className="text-xs text-emerald-400 mt-2">Save $0.49/day</p>
+                  <p className="text-xs text-emerald-400 mt-2">Save 16%</p>
                 </CardContent>
               </Card>
             </div>
