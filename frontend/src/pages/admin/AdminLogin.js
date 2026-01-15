@@ -40,7 +40,7 @@ export default function AdminLogin() {
         toast.success('Welcome back, Admin!');
       }
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Invalid credentials');
+      toast.error(getErrorMessage(error, 'Invalid credentials'));
     } finally {
       setSubmitting(false);
     }
