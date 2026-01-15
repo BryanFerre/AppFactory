@@ -5,7 +5,7 @@ import axios from 'axios';
 import {
   LayoutDashboard, Users, Server, Package, CreditCard, HeadphonesIcon,
   TrendingUp, FileText, ScrollText, Settings, Search, Bell,
-  LogOut, ChevronDown, AlertTriangle, Menu, X, Calculator, Zap, ShoppingBag, Tag
+  LogOut, ChevronDown, AlertTriangle, Menu, X, Calculator, Zap, ShoppingBag
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,7 +26,6 @@ const navItems = [
   { path: '/admin/users', icon: Users, label: 'Users & Accounts' },
   { path: '/admin/nodes', icon: Server, label: 'Licensed Nodes' },
   { path: '/admin/products', icon: ShoppingBag, label: 'Products' },
-  { path: '/admin/coupons', icon: Tag, label: 'Coupons & Sales' },
   { path: '/admin/apps', icon: Package, label: 'App Submissions' },
   { path: '/admin/billing', icon: CreditCard, label: 'Billing & Payments' },
   { path: '/admin/accounting', icon: Calculator, label: 'Accounting' },
