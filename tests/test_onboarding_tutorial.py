@@ -241,16 +241,22 @@ class TestPointsEngineIntegration:
         response = self.session.get(f"{BASE_URL}/api/activity/actions")
         
         if response.status_code == 200:
-            actions = response.json()
+            data = response.json()
             
-            # Find complete_tutorial action
+            # Response format is grouped by category
+            # Look in actions_by_category -> engagement -> actions
             tutorial_action = None
-            for action in actions:
+            
+            actions_by_category = data.get("actions_by_category", {})
+            engagement_category = actions_by_category.get("engagement", {})
+            engagement_actions = engagement_category.get("actions", [])
+            
+            for action in engagement_actions:
                 if action.get("id") == "complete_tutorial":
                     tutorial_action = action
                     break
             
-            assert tutorial_action is not None, "complete_tutorial action should exist"
+            assert tutorial_action is not None, "complete_tutorial action should exist in engagement category"
             assert tutorial_action.get("base_points") == 200, "Should award 200 base points"
             assert tutorial_action.get("cooldown") == "once", "Should have 'once' cooldown"
             
