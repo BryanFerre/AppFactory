@@ -259,10 +259,60 @@ export default function AdminLayout() {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 p-4 lg:p-6">
+        <main className="flex-1 p-3 sm:p-4 lg:p-6 pb-20 lg:pb-6">
           <Outlet />
         </main>
       </div>
+      
+      {/* Mobile Bottom Navigation for Admin */}
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-[rgba(10,12,20,0.98)] backdrop-blur-xl border-t border-white/5 z-40">
+        <div className="flex items-center justify-around py-2">
+          <NavLink
+            to="/admin"
+            end
+            className={({ isActive }) => `flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-colors ${
+              isActive ? 'text-cyan-400' : 'text-slate-500 hover:text-slate-300'
+            }`}
+          >
+            <LayoutDashboard className="w-5 h-5" />
+            <span className="text-[10px]">Dashboard</span>
+          </NavLink>
+          <NavLink
+            to="/admin/users"
+            className={({ isActive }) => `flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-colors ${
+              isActive ? 'text-cyan-400' : 'text-slate-500 hover:text-slate-300'
+            }`}
+          >
+            <Users className="w-5 h-5" />
+            <span className="text-[10px]">Users</span>
+          </NavLink>
+          <NavLink
+            to="/admin/products"
+            className={({ isActive }) => `flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-colors ${
+              isActive ? 'text-cyan-400' : 'text-slate-500 hover:text-slate-300'
+            }`}
+          >
+            <ShoppingBag className="w-5 h-5" />
+            <span className="text-[10px]">Products</span>
+          </NavLink>
+          <NavLink
+            to="/admin/support"
+            className={({ isActive }) => `flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-colors ${
+              isActive ? 'text-cyan-400' : 'text-slate-500 hover:text-slate-300'
+            }`}
+          >
+            <HeadphonesIcon className="w-5 h-5" />
+            <span className="text-[10px]">Support</span>
+          </NavLink>
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="flex flex-col items-center gap-1 px-3 py-2 rounded-lg text-slate-500 hover:text-slate-300 transition-colors"
+          >
+            <Menu className="w-5 h-5" />
+            <span className="text-[10px]">More</span>
+          </button>
+        </div>
+      </nav>
     </div>
   );
 }
