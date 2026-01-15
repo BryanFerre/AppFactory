@@ -620,7 +620,16 @@ export default function LandingPage() {
       </section>
 
       {/* Purchase Modal */}
-      <Dialog open={showPurchaseModal} onOpenChange={setShowPurchaseModal}>
+      <Dialog open={showPurchaseModal} onOpenChange={(open) => {
+        setShowPurchaseModal(open);
+        if (!open) {
+          // Reset coupon state when modal closes
+          setAppliedCoupon(null);
+          setCouponCode('');
+          setCouponError('');
+          setError('');
+        }
+      }}>
         <DialogContent className="bg-[#0F1420] border-white/10 text-white max-w-md">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold">Purchase CloudNode</DialogTitle>
@@ -680,15 +689,99 @@ export default function LandingPage() {
               />
             </div>
 
+            {/* Coupon Code Section */}
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-1.5">
+                <Tag className="w-3.5 h-3.5 inline mr-1.5" />
+                Coupon Code (Optional)
+              </label>
+              
+              {appliedCoupon ? (
+                <div className="p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                      <div>
+                        <span className="text-emerald-400 font-medium text-sm">
+                          {appliedCoupon.coupon.code}
+                        </span>
+                        <span className="text-emerald-400/70 text-xs ml-2">
+                          ({appliedCoupon.coupon.discount_type === 'percentage' 
+                            ? `${appliedCoupon.coupon.discount_value}% off`
+                            : `$${appliedCoupon.coupon.discount_value} off`})
+                        </span>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={removeCoupon}
+                      className="text-slate-400 hover:text-white transition-colors"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                  <p className="text-emerald-400/70 text-xs mt-1">
+                    You save {formatPrice(appliedCoupon.discount_amount)}!
+                  </p>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <Input
+                    type="text"
+                    value={couponCode}
+                    onChange={(e) => {
+                      setCouponCode(e.target.value.toUpperCase());
+                      setCouponError('');
+                    }}
+                    className="bg-white/5 border-white/10 text-white font-mono"
+                    placeholder="Enter code"
+                  />
+                  <Button
+                    type="button"
+                    onClick={handleApplyCoupon}
+                    disabled={couponLoading || !couponCode.trim()}
+                    variant="outline"
+                    className="border-white/10 text-slate-300 hover:bg-white/10 px-4"
+                  >
+                    {couponLoading ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      'Apply'
+                    )}
+                  </Button>
+                </div>
+              )}
+              
+              {couponError && (
+                <p className="text-red-400 text-xs mt-1.5">{couponError}</p>
+              )}
+            </div>
+
+            {/* Price Summary */}
             {product && (
-              <div className="p-4 bg-white/5 rounded-lg border border-white/10">
+              <div className="p-4 bg-white/5 rounded-lg border border-white/10 space-y-2">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-white font-medium">{product.name}</p>
                     <p className="text-xs text-slate-500">Lifetime License</p>
                   </div>
-                  <p className="text-xl font-bold text-white">{formatPrice(product.price)}</p>
+                  <p className={`font-bold ${appliedCoupon ? 'text-slate-400 line-through text-base' : 'text-white text-xl'}`}>
+                    {formatPrice(product.price)}
+                  </p>
                 </div>
+                
+                {appliedCoupon && (
+                  <>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-emerald-400">Discount ({appliedCoupon.coupon.code})</span>
+                      <span className="text-emerald-400">-{formatPrice(appliedCoupon.discount_amount)}</span>
+                    </div>
+                    <div className="pt-2 border-t border-white/10 flex items-center justify-between">
+                      <span className="text-white font-medium">Total</span>
+                      <span className="text-xl font-bold text-white">{formatPrice(appliedCoupon.final_price)}</span>
+                    </div>
+                  </>
+                )}
               </div>
             )}
 
