@@ -82,8 +82,8 @@ export default function AdminDashboard() {
                     </Badge>
                   </div>
                 </div>
-                <div className="w-12 h-12 rounded-xl bg-cyan-500/20 flex items-center justify-center">
-                  <Users className="w-6 h-6 text-cyan-400" />
+                <div className="w-9 h-9 sm:w-12 sm:h-12 rounded-xl bg-cyan-500/20 flex items-center justify-center">
+                  <Users className="w-5 h-5 sm:w-6 sm:h-6 text-cyan-400" />
                 </div>
               </div>
             </CardContent>
@@ -93,12 +93,12 @@ export default function AdminDashboard() {
         {/* Nodes */}
         <motion.div variants={item}>
           <Card className="bg-[rgba(15,17,26,0.6)] border-white/10 hover:border-emerald-500/30 transition-colors cursor-pointer" onClick={() => navigate('/admin/nodes')}>
-            <CardContent className="pt-6">
+            <CardContent className="p-3 sm:pt-6 sm:px-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-slate-400">Active Nodes</p>
-                  <p className="text-3xl font-bold text-white mt-1">{stats?.nodes?.total?.toLocaleString() || 0}</p>
-                  <div className="flex items-center gap-2 mt-2">
+                  <p className="text-xs sm:text-sm text-slate-400">Active Nodes</p>
+                  <p className="text-xl sm:text-3xl font-bold text-white mt-1">{stats?.nodes?.total?.toLocaleString() || 0}</p>
+                  <div className="hidden sm:flex items-center gap-2 mt-2">
                     <Badge className="bg-emerald-500/20 text-emerald-400 text-xs">
                       {stats?.nodes?.healthy || 0} healthy
                     </Badge>
@@ -109,8 +109,8 @@ export default function AdminDashboard() {
                     )}
                   </div>
                 </div>
-                <div className="w-12 h-12 rounded-xl bg-emerald-500/20 flex items-center justify-center">
-                  <Server className="w-6 h-6 text-emerald-400" />
+                <div className="w-9 h-9 sm:w-12 sm:h-12 rounded-xl bg-emerald-500/20 flex items-center justify-center">
+                  <Server className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-400" />
                 </div>
               </div>
             </CardContent>
@@ -120,12 +120,12 @@ export default function AdminDashboard() {
         {/* Apps */}
         <motion.div variants={item}>
           <Card className="bg-[rgba(15,17,26,0.6)] border-white/10 hover:border-purple-500/30 transition-colors cursor-pointer" onClick={() => navigate('/admin/apps')}>
-            <CardContent className="pt-6">
+            <CardContent className="p-3 sm:pt-6 sm:px-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-slate-400">App Submissions</p>
-                  <p className="text-3xl font-bold text-white mt-1">{stats?.apps?.total || 0}</p>
-                  <div className="flex items-center gap-2 mt-2">
+                  <p className="text-xs sm:text-sm text-slate-400">App Submissions</p>
+                  <p className="text-xl sm:text-3xl font-bold text-white mt-1">{stats?.apps?.total || 0}</p>
+                  <div className="hidden sm:flex items-center gap-2 mt-2">
                     {stats?.apps?.pending > 0 && (
                       <Badge className="bg-amber-500/20 text-amber-400 text-xs">
                         {stats?.apps?.pending} pending
@@ -133,8 +133,8 @@ export default function AdminDashboard() {
                     )}
                   </div>
                 </div>
-                <div className="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center">
-                  <Package className="w-6 h-6 text-purple-400" />
+                <div className="w-9 h-9 sm:w-12 sm:h-12 rounded-xl bg-purple-500/20 flex items-center justify-center">
+                  <Package className="w-5 h-5 sm:w-6 sm:h-6 text-purple-400" />
                 </div>
               </div>
             </CardContent>
@@ -144,19 +144,19 @@ export default function AdminDashboard() {
         {/* Support */}
         <motion.div variants={item}>
           <Card className="bg-[rgba(15,17,26,0.6)] border-white/10 hover:border-blue-500/30 transition-colors cursor-pointer" onClick={() => navigate('/admin/support')}>
-            <CardContent className="pt-6">
+            <CardContent className="p-3 sm:pt-6 sm:px-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-slate-400">Open Tickets</p>
-                  <p className="text-3xl font-bold text-white mt-1">{stats?.support?.open_tickets || 0}</p>
-                  <div className="flex items-center gap-2 mt-2">
+                  <p className="text-xs sm:text-sm text-slate-400">Open Tickets</p>
+                  <p className="text-xl sm:text-3xl font-bold text-white mt-1">{stats?.support?.open_tickets || 0}</p>
+                  <div className="hidden sm:flex items-center gap-2 mt-2">
                     <Badge className="bg-blue-500/20 text-blue-400 text-xs">
                       Support queue
                     </Badge>
                   </div>
                 </div>
-                <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center">
-                  <HeadphonesIcon className="w-6 h-6 text-blue-400" />
+                <div className="w-9 h-9 sm:w-12 sm:h-12 rounded-xl bg-blue-500/20 flex items-center justify-center">
+                  <HeadphonesIcon className="w-5 h-5 sm:w-6 sm:h-6 text-blue-400" />
                 </div>
               </div>
             </CardContent>
