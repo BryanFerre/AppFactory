@@ -411,10 +411,12 @@ export default function LandingPage() {
         { headers: { Authorization: `Bearer ${purchaseResult.token}` } }
       );
       
-      // Store token and go to success
+      // Store token and auto-login - navigate directly to dashboard
       localStorage.setItem('token', purchaseResult.token);
-      toast.success('Password created successfully!');
-      setPurchaseStep('success');
+      toast.success('Account created! Redirecting to dashboard...');
+      
+      // Auto-redirect to dashboard after password is set
+      navigate('/dashboard');
     } catch (err) {
       setPasswordError(err.response?.data?.detail || 'Failed to set password');
     } finally {
