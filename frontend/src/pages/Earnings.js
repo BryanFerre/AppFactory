@@ -46,58 +46,58 @@ export default function Earnings() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-2xl lg:text-3xl font-bold text-white font-['Outfit'] flex items-center gap-3">
-            <TrendingUp className="w-8 h-8 text-cyan-400" />
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white font-['Outfit'] flex items-center gap-2 sm:gap-3">
+            <TrendingUp className="w-6 h-6 sm:w-8 sm:h-8 text-cyan-400" />
             Earnings
           </h1>
-          <p className="text-slate-400 mt-1">Track your revenue and OPT rewards</p>
+          <p className="text-sm sm:text-base text-slate-400 mt-1">Track your revenue and OPT rewards</p>
         </div>
-        <Button variant="outline" className="border-white/10 text-white hover:bg-white/5">
-          <Download className="w-4 h-4 mr-2" />
+        <Button variant="outline" size="sm" className="border-white/10 text-white hover:bg-white/5 text-xs sm:text-sm w-full sm:w-auto">
+          <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-2" />
           Export CSV
         </Button>
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="glass-card p-6"
+          className="glass-card p-3 sm:p-6"
           data-testid="today-usd-card"
         >
-          <div className="flex items-center gap-2 mb-2">
-            <DollarSign className="w-5 h-5 text-emerald-400" />
-            <p className="text-sm text-slate-400">Today's Revenue</p>
+          <div className="flex items-center gap-1.5 sm:gap-2 mb-1 sm:mb-2">
+            <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-400" />
+            <p className="text-[10px] sm:text-sm text-slate-400">Today's Revenue</p>
           </div>
-          <p className="text-3xl font-bold text-emerald-400">${earnings?.today_usd?.toFixed(2)}</p>
-          <p className="text-sm text-slate-500">from subscriptions</p>
+          <p className="text-xl sm:text-3xl font-bold text-emerald-400">${earnings?.today_usd?.toFixed(2)}</p>
+          <p className="text-[10px] sm:text-sm text-slate-500 hidden sm:block">from subscriptions</p>
         </motion.div>
 
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="glass-card p-6"
+          className="glass-card p-3 sm:p-6"
           data-testid="today-opt-card"
         >
-          <div className="flex items-center gap-2 mb-2">
-            <Coins className="w-5 h-5 text-cyan-400" />
-            <p className="text-sm text-slate-400">Today's OPT Rewards</p>
+          <div className="flex items-center gap-1.5 sm:gap-2 mb-1 sm:mb-2">
+            <Coins className="w-4 h-4 sm:w-5 sm:h-5 text-cyan-400" />
+            <p className="text-[10px] sm:text-sm text-slate-400">Today's OPT</p>
           </div>
-          <p className="text-3xl font-bold text-cyan-400">{earnings?.today_opt_rewards?.toFixed(2)} <span className="text-lg">OPT</span></p>
-          <p className="text-sm text-slate-500">from referrals</p>
+          <p className="text-xl sm:text-3xl font-bold text-cyan-400">{earnings?.today_opt_rewards?.toFixed(2)} <span className="text-sm sm:text-lg">OPT</span></p>
+          <p className="text-[10px] sm:text-sm text-slate-500 hidden sm:block">from referrals</p>
         </motion.div>
 
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="glass-card p-6"
+          className="glass-card p-3 sm:p-6"
           data-testid="month-usd-card"
         >
           <div className="flex items-center gap-2 mb-2">
