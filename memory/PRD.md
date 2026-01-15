@@ -150,6 +150,14 @@ Build a full-stack e-commerce and cloud platform named "AppCloud by Optio" with:
 - `/app/backend/api/purchase.py` - Hybrid payment flow
 - `/app/backend/api/support.py` - Support ticket API
 
+### Session 3 - New/Modified Files
+- `/app/backend/api/categories.py` - NEW: Full taxonomy with 19 categories, subcategories, tags, collections APIs
+- `/app/frontend/src/pages/AppMarketplace.js` - REWRITTEN: Category tiles grid, drill-down view, search, filtering
+- `/app/frontend/src/pages/AppDeveloper.js` - Updated category/subcategory/tags selection in form
+- `/app/backend/api/admin.py` - Added feature/unfeature/update-tags endpoints
+- `/app/backend/api/developer.py` - Updated submit endpoint for categories/tags, featured pricing $29/$49
+- `/app/tests/test_categories_taxonomy.py` - NEW: 15 API tests for category system
+
 ---
 
 ## Prioritized Backlog
