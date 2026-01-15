@@ -90,99 +90,99 @@ export default function Dashboard() {
       variants={container}
       initial="hidden"
       animate="show"
-      className="space-y-6"
+      className="space-y-4 sm:space-y-6"
     >
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4">
         <div>
-          <h1 className="text-2xl lg:text-3xl font-bold text-white font-['Outfit']">Dashboard</h1>
-          <p className="text-slate-400">Your node is earning for you</p>
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white font-['Outfit']">Dashboard</h1>
+          <p className="text-sm sm:text-base text-slate-400">Your node is earning for you</p>
         </div>
       </div>
 
       {/* Bento Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         
         {/* Node Health Widget - Spans 2 cols */}
-        <motion.div variants={item} className="md:col-span-2 glass-card glass-card-hover p-6" data-testid="node-health-widget">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-white font-['Outfit']">Node Health</h2>
-            <Badge className={`${nodeStats?.status === 'healthy' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'}`}>
+        <motion.div variants={item} className="sm:col-span-2 glass-card glass-card-hover p-4 sm:p-6" data-testid="node-health-widget">
+          <div className="flex items-center justify-between mb-3 sm:mb-4">
+            <h2 className="text-base sm:text-lg font-semibold text-white font-['Outfit']">Node Health</h2>
+            <Badge className={`text-xs sm:text-sm ${nodeStats?.status === 'healthy' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'}`}>
               {nodeStats?.status}
             </Badge>
           </div>
           
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
             <div>
-              <p className="text-xs text-slate-400 mb-1">Uptime</p>
-              <p className="text-xl font-bold text-white">{nodeStats?.uptime_percent}%</p>
+              <p className="text-[10px] sm:text-xs text-slate-400 mb-1">Uptime</p>
+              <p className="text-lg sm:text-xl font-bold text-white">{nodeStats?.uptime_percent}%</p>
             </div>
             <div>
-              <p className="text-xs text-slate-400 mb-1">CPU</p>
-              <div className="flex items-center gap-2">
-                <Progress value={nodeStats?.cpu_usage} className="h-2 flex-1" />
-                <span className="text-sm text-slate-300">{nodeStats?.cpu_usage}%</span>
+              <p className="text-[10px] sm:text-xs text-slate-400 mb-1">CPU</p>
+              <div className="flex items-center gap-1 sm:gap-2">
+                <Progress value={nodeStats?.cpu_usage} className="h-1.5 sm:h-2 flex-1" />
+                <span className="text-xs sm:text-sm text-slate-300">{nodeStats?.cpu_usage}%</span>
               </div>
             </div>
             <div>
-              <p className="text-xs text-slate-400 mb-1">Memory</p>
-              <div className="flex items-center gap-2">
-                <Progress value={nodeStats?.memory_usage} className="h-2 flex-1" />
-                <span className="text-sm text-slate-300">{nodeStats?.memory_usage}%</span>
+              <p className="text-[10px] sm:text-xs text-slate-400 mb-1">Memory</p>
+              <div className="flex items-center gap-1 sm:gap-2">
+                <Progress value={nodeStats?.memory_usage} className="h-1.5 sm:h-2 flex-1" />
+                <span className="text-xs sm:text-sm text-slate-300">{nodeStats?.memory_usage}%</span>
               </div>
             </div>
             <div>
-              <p className="text-xs text-slate-400 mb-1">Latency</p>
-              <p className="text-xl font-bold text-cyan-400">{nodeStats?.latency_ms}ms</p>
+              <p className="text-[10px] sm:text-xs text-slate-400 mb-1">Latency</p>
+              <p className="text-lg sm:text-xl font-bold text-cyan-400">{nodeStats?.latency_ms}ms</p>
             </div>
           </div>
           
-          <div className="mt-4 pt-4 border-t border-white/5 flex items-center gap-4">
-            <div className="flex items-center gap-2 text-sm">
-              <Clock className="w-4 h-4 text-slate-400" />
+          <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-white/5 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+            <div className="flex items-center gap-2 text-xs sm:text-sm">
+              <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-400" />
               <span className="text-slate-400">Last heartbeat:</span>
               <span className="text-slate-300">{new Date(nodeStats?.last_heartbeat).toLocaleTimeString()}</span>
             </div>
-            <div className="ml-auto flex items-center gap-2">
-              <span className="text-sm text-slate-400">Reliability:</span>
-              <span className="text-sm font-semibold text-emerald-400">{nodeStats?.reliability_score}%</span>
+            <div className="sm:ml-auto flex items-center gap-2">
+              <span className="text-xs sm:text-sm text-slate-400">Reliability:</span>
+              <span className="text-xs sm:text-sm font-semibold text-emerald-400">{nodeStats?.reliability_score}%</span>
             </div>
           </div>
         </motion.div>
 
         {/* Today's USD Earnings */}
-        <motion.div variants={item} className="glass-card glass-card-hover p-6" data-testid="today-usd-widget">
-          <div className="flex items-center gap-2 mb-4">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center">
-              <DollarSign className="w-4 h-4 text-white" />
+        <motion.div variants={item} className="glass-card glass-card-hover p-4 sm:p-6" data-testid="today-usd-widget">
+          <div className="flex items-center gap-2 mb-3 sm:mb-4">
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center">
+              <DollarSign className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
             </div>
-            <h2 className="text-lg font-semibold text-white font-['Outfit']">Today's Revenue</h2>
+            <h2 className="text-sm sm:text-lg font-semibold text-white font-['Outfit']">Today's Revenue</h2>
           </div>
-          <p className="text-3xl font-bold text-emerald-400">${earnings?.today_usd?.toFixed(2)}</p>
-          <p className="text-slate-400 text-sm">from app subscriptions</p>
+          <p className="text-2xl sm:text-3xl font-bold text-emerald-400">${earnings?.today_usd?.toFixed(2)}</p>
+          <p className="text-slate-400 text-xs sm:text-sm">from app subscriptions</p>
         </motion.div>
 
         {/* Today's OPT Rewards */}
-        <motion.div variants={item} className="glass-card glass-card-hover p-6" data-testid="today-opt-widget">
-          <div className="flex items-center gap-2 mb-4">
-            <div className="w-8 h-8 rounded-lg icon-bg-cyan flex items-center justify-center">
-              <Coins className="w-4 h-4 text-black" />
+        <motion.div variants={item} className="glass-card glass-card-hover p-4 sm:p-6" data-testid="today-opt-widget">
+          <div className="flex items-center gap-2 mb-3 sm:mb-4">
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg icon-bg-cyan flex items-center justify-center">
+              <Coins className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-black" />
             </div>
-            <h2 className="text-lg font-semibold text-white font-['Outfit']">OPT Rewards</h2>
+            <h2 className="text-sm sm:text-lg font-semibold text-white font-['Outfit']">OPT Rewards</h2>
           </div>
-          <p className="text-3xl font-bold text-cyan-400">{earnings?.today_opt_rewards?.toFixed(2)} <span className="text-lg">OPT</span></p>
-          <p className="text-slate-400 text-sm">from referrals & signups</p>
+          <p className="text-2xl sm:text-3xl font-bold text-cyan-400">{earnings?.today_opt_rewards?.toFixed(2)} <span className="text-base sm:text-lg">OPT</span></p>
+          <p className="text-slate-400 text-xs sm:text-sm">from referrals & signups</p>
         </motion.div>
 
         {/* Earnings Chart - Spans 2 cols */}
-        <motion.div variants={item} className="md:col-span-2 glass-card glass-card-hover p-6" data-testid="earnings-chart-widget">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-white font-['Outfit']">Revenue Trend (USD)</h2>
-            <NavLink to="/earnings" className="text-sm text-cyan-400 hover:text-cyan-300 flex items-center gap-1">
-              View Details <ArrowUpRight className="w-4 h-4" />
+        <motion.div variants={item} className="sm:col-span-2 glass-card glass-card-hover p-4 sm:p-6" data-testid="earnings-chart-widget">
+          <div className="flex items-center justify-between mb-3 sm:mb-4">
+            <h2 className="text-sm sm:text-lg font-semibold text-white font-['Outfit']">Revenue Trend (USD)</h2>
+            <NavLink to="/earnings" className="text-xs sm:text-sm text-cyan-400 hover:text-cyan-300 flex items-center gap-1">
+              View Details <ArrowUpRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </NavLink>
           </div>
-          <div className="h-48">
+          <div className="h-40 sm:h-48">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={earnings?.daily_history || []}>
                 <defs>
@@ -195,20 +195,22 @@ export default function Dashboard() {
                   dataKey="date" 
                   axisLine={false} 
                   tickLine={false}
-                  tick={{ fill: '#64748B', fontSize: 10 }}
+                  tick={{ fill: '#64748B', fontSize: 9 }}
                   tickFormatter={(value) => new Date(value).getDate()}
                 />
                 <YAxis 
                   axisLine={false} 
                   tickLine={false}
-                  tick={{ fill: '#64748B', fontSize: 10 }}
+                  tick={{ fill: '#64748B', fontSize: 9 }}
                   tickFormatter={(value) => `$${value}`}
+                  width={35}
                 />
                 <Tooltip 
                   contentStyle={{ 
                     backgroundColor: '#0F111A', 
                     border: '1px solid rgba(255,255,255,0.1)',
-                    borderRadius: '8px'
+                    borderRadius: '8px',
+                    fontSize: '12px'
                   }}
                   labelStyle={{ color: '#94A3B8' }}
                   formatter={(value) => [`$${value}`, 'Revenue']}
@@ -227,33 +229,44 @@ export default function Dashboard() {
         </motion.div>
 
         {/* Monthly Summary */}
-        <motion.div variants={item} className="glass-card glass-card-hover p-6" data-testid="month-summary-widget">
-          <h2 className="text-lg font-semibold text-white font-['Outfit'] mb-4">This Month</h2>
-          <div className="space-y-3">
+        <motion.div variants={item} className="glass-card glass-card-hover p-4 sm:p-6" data-testid="month-summary-widget">
+          <h2 className="text-sm sm:text-lg font-semibold text-white font-['Outfit'] mb-3 sm:mb-4">This Month</h2>
+          <div className="space-y-2 sm:space-y-3">
             <div className="flex justify-between items-center">
-              <span className="text-slate-400">Revenue</span>
-              <span className="text-emerald-400 font-semibold">${earnings?.month_usd?.toFixed(2)}</span>
+              <span className="text-xs sm:text-sm text-slate-400">Revenue</span>
+              <span className="text-emerald-400 font-semibold text-sm sm:text-base">${earnings?.month_usd?.toFixed(2)}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-slate-400">OPT Rewards</span>
-              <span className="text-cyan-400 font-semibold">{earnings?.month_opt_rewards?.toFixed(2)} OPT</span>
+              <span className="text-xs sm:text-sm text-slate-400">OPT Rewards</span>
+              <span className="text-cyan-400 font-semibold text-sm sm:text-base">{earnings?.month_opt_rewards?.toFixed(2)} OPT</span>
             </div>
             <div className="flex justify-between items-center pt-2 border-t border-white/5">
-              <span className="text-slate-400">Total OPT Earned</span>
-              <span className="text-purple-400 font-semibold">{earnings?.total_opt_rewards?.toFixed(2)} OPT</span>
+              <span className="text-xs sm:text-sm text-slate-400">Total OPT Earned</span>
+              <span className="text-purple-400 font-semibold text-sm sm:text-base">{earnings?.total_opt_rewards?.toFixed(2)} OPT</span>
             </div>
           </div>
         </motion.div>
 
         {/* Network Score */}
-        <motion.div variants={item} className="glass-card glass-card-hover p-6" data-testid="network-score-widget">
-          <h2 className="text-lg font-semibold text-white font-['Outfit'] mb-4">Network Score</h2>
-          <div className="flex items-center gap-4">
-            <div className="relative w-20 h-20">
-              <svg className="w-20 h-20 transform -rotate-90">
-                <circle cx="40" cy="40" r="32" stroke="#1E2235" strokeWidth="8" fill="none" />
+        <motion.div variants={item} className="glass-card glass-card-hover p-4 sm:p-6" data-testid="network-score-widget">
+          <h2 className="text-sm sm:text-lg font-semibold text-white font-['Outfit'] mb-3 sm:mb-4">Network Score</h2>
+          <div className="flex items-center gap-3 sm:gap-4">
+            <div className="relative w-16 h-16 sm:w-20 sm:h-20">
+              <svg className="w-16 h-16 sm:w-20 sm:h-20 transform -rotate-90">
+                <circle cx="50%" cy="50%" r="28" className="sm:hidden" stroke="#1E2235" strokeWidth="6" fill="none" />
+                <circle cx="50%" cy="50%" r="32" className="hidden sm:block" stroke="#1E2235" strokeWidth="8" fill="none" />
                 <circle 
-                  cx="40" cy="40" r="32" 
+                  cx="50%" cy="50%" r="28" 
+                  className="sm:hidden"
+                  stroke="url(#scoreGradient)" 
+                  strokeWidth="6" 
+                  fill="none"
+                  strokeLinecap="round"
+                  strokeDasharray={`${(nodeStats?.reputation_score / 1000) * 176} 176`}
+                />
+                <circle 
+                  cx="50%" cy="50%" r="32" 
+                  className="hidden sm:block"
                   stroke="url(#scoreGradient)" 
                   strokeWidth="8" 
                   fill="none"
@@ -268,45 +281,45 @@ export default function Dashboard() {
                 </defs>
               </svg>
               <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-xl font-bold text-white">{nodeStats?.reputation_score}</span>
+                <span className="text-lg sm:text-xl font-bold text-white">{nodeStats?.reputation_score}</span>
               </div>
             </div>
             <div>
-              <p className="text-sm text-slate-400">Reputation</p>
-              <p className="text-xs text-slate-500">Top 15% of operators</p>
+              <p className="text-xs sm:text-sm text-slate-400">Reputation</p>
+              <p className="text-[10px] sm:text-xs text-slate-500">Top 15% of operators</p>
             </div>
           </div>
         </motion.div>
 
         {/* Installed Apps - Full Width */}
-        <motion.div variants={item} className="md:col-span-2 lg:col-span-4 glass-card glass-card-hover p-6" data-testid="installed-apps-widget">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-white font-['Outfit']">Installed Apps</h2>
-            <NavLink to="/installed-apps" className="text-sm text-cyan-400 hover:text-cyan-300 flex items-center gap-1">
-              Manage <ArrowUpRight className="w-4 h-4" />
+        <motion.div variants={item} className="sm:col-span-2 lg:col-span-4 glass-card glass-card-hover p-4 sm:p-6" data-testid="installed-apps-widget">
+          <div className="flex items-center justify-between mb-3 sm:mb-4">
+            <h2 className="text-sm sm:text-lg font-semibold text-white font-['Outfit']">Installed Apps</h2>
+            <NavLink to="/installed-apps" className="text-xs sm:text-sm text-cyan-400 hover:text-cyan-300 flex items-center gap-1">
+              Manage <ArrowUpRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </NavLink>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             {installedApps.map((app) => (
-              <div key={app.id} className="bg-white/5 rounded-xl p-4 border border-white/5">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className={`w-10 h-10 rounded-lg ${
+              <div key={app.id} className="bg-white/5 rounded-xl p-3 sm:p-4 border border-white/5">
+                <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
+                  <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg ${
                     app.health === 'healthy' ? 'icon-bg-cyan' : 'icon-bg-magenta'
                   } flex items-center justify-center`}>
                     {getAppIcon(app.icon)}
                   </div>
-                  <div>
-                    <p className="font-medium text-white">{app.name}</p>
-                    <p className="text-xs text-slate-400">{app.subscribers_served?.toLocaleString()} subscribers</p>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-white text-sm sm:text-base truncate">{app.name}</p>
+                    <p className="text-[10px] sm:text-xs text-slate-400">{app.subscribers_served?.toLocaleString()} subscribers</p>
                   </div>
                 </div>
                 <div className="space-y-1">
-                  <div className="flex items-center justify-between text-sm">
+                  <div className="flex items-center justify-between text-xs sm:text-sm">
                     <span className="text-slate-400">Revenue</span>
                     <span className="font-semibold text-emerald-400">${app.revenue_usd?.toFixed(2)}</span>
                   </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-slate-400">Signups driven</span>
+                  <div className="flex items-center justify-between text-xs sm:text-sm">
+                    <span className="text-slate-400">Signups</span>
                     <span className="font-semibold text-cyan-400">{app.signups_driven} (+{app.opt_rewards_earned} OPT)</span>
                   </div>
                 </div>
@@ -316,37 +329,37 @@ export default function Dashboard() {
         </motion.div>
 
         {/* Promotion Overview */}
-        <motion.div variants={item} className="md:col-span-2 glass-card glass-card-hover p-6" data-testid="promotion-widget">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-white font-['Outfit']">Grow Your OPT Rewards</h2>
-            <NavLink to="/promotion" className="text-sm text-cyan-400 hover:text-cyan-300 flex items-center gap-1">
-              Promotion Tools <ArrowUpRight className="w-4 h-4" />
+        <motion.div variants={item} className="sm:col-span-2 glass-card glass-card-hover p-4 sm:p-6" data-testid="promotion-widget">
+          <div className="flex items-center justify-between mb-3 sm:mb-4">
+            <h2 className="text-sm sm:text-lg font-semibold text-white font-['Outfit']">Grow Your OPT Rewards</h2>
+            <NavLink to="/promotion" className="text-xs sm:text-sm text-cyan-400 hover:text-cyan-300 flex items-center gap-1">
+              Tools <ArrowUpRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </NavLink>
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="bg-white/5 rounded-xl p-4 border border-cyan-500/20">
-              <Users className="w-6 h-6 text-cyan-400 mb-2" />
-              <p className="text-sm text-slate-400">Refer Node Operators</p>
-              <p className="text-lg font-semibold text-white">Earn 50 OPT per signup</p>
+          <div className="grid grid-cols-2 gap-3 sm:gap-4">
+            <div className="bg-white/5 rounded-xl p-3 sm:p-4 border border-cyan-500/20">
+              <Users className="w-5 h-5 sm:w-6 sm:h-6 text-cyan-400 mb-2" />
+              <p className="text-[10px] sm:text-sm text-slate-400">Refer Node Operators</p>
+              <p className="text-sm sm:text-lg font-semibold text-white">Earn 50 OPT per signup</p>
             </div>
-            <div className="bg-white/5 rounded-xl p-4 border border-purple-500/20">
-              <TrendingUp className="w-6 h-6 text-purple-400 mb-2" />
-              <p className="text-sm text-slate-400">Drive App Signups</p>
-              <p className="text-lg font-semibold text-white">Earn 2 OPT per user</p>
+            <div className="bg-white/5 rounded-xl p-3 sm:p-4 border border-purple-500/20">
+              <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-purple-400 mb-2" />
+              <p className="text-[10px] sm:text-sm text-slate-400">Drive App Signups</p>
+              <p className="text-sm sm:text-lg font-semibold text-white">Earn 2 OPT per user</p>
             </div>
           </div>
         </motion.div>
 
         {/* Capacity Widget */}
-        <motion.div variants={item} className="md:col-span-2 glass-card glass-card-hover p-6" data-testid="capacity-widget">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-white font-['Outfit']">Capacity</h2>
-            <span className="text-sm text-slate-400">{capacity?.used_capacity}/{capacity?.total_capacity} GB</span>
+        <motion.div variants={item} className="sm:col-span-2 glass-card glass-card-hover p-4 sm:p-6" data-testid="capacity-widget">
+          <div className="flex items-center justify-between mb-3 sm:mb-4">
+            <h2 className="text-sm sm:text-lg font-semibold text-white font-['Outfit']">Capacity</h2>
+            <span className="text-xs sm:text-sm text-slate-400">{capacity?.used_capacity}/{capacity?.total_capacity} GB</span>
           </div>
-          <Progress value={(capacity?.used_capacity / capacity?.total_capacity) * 100} className="h-3 mb-4" />
-          <div className="space-y-2">
+          <Progress value={(capacity?.used_capacity / capacity?.total_capacity) * 100} className="h-2 sm:h-3 mb-3 sm:mb-4" />
+          <div className="space-y-1.5 sm:space-y-2">
             {capacity?.app_usage.slice(0, 3).map((app, i) => (
-              <div key={i} className="flex items-center justify-between text-sm">
+              <div key={i} className="flex items-center justify-between text-xs sm:text-sm">
                 <span className="text-slate-400">{app.name}</span>
                 <span className="text-slate-300">{app.capacity} GB</span>
               </div>
