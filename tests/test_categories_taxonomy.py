@@ -229,7 +229,7 @@ class TestFeaturedPricing:
         # Try to checkout with a non-existent submission
         response = requests.post(
             f"{BASE_URL}/api/developer/featured/checkout",
-            json={
+            params={
                 "submission_id": "non-existent-id",
                 "plan": "30_days",
                 "origin_url": "https://example.com"
