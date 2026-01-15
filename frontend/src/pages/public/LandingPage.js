@@ -164,8 +164,8 @@ function PaymentForm({ product, purchaseForm, appliedCoupon, onSuccess, onCancel
         coupon_code: appliedCoupon?.coupon?.code || null
       });
 
-      const { client_secret, order_id, amount } = intentResponse.data;
-      setPaymentDetails({ order_id, amount });
+      const { client_secret, order_id, total_first_payment } = intentResponse.data;
+      setPaymentDetails({ order_id, amount: total_first_payment });
 
       // Step 2: Confirm payment with Stripe
       const { error: stripeError, paymentIntent } = await stripe.confirmCardPayment(client_secret, {
@@ -209,7 +209,9 @@ function PaymentForm({ product, purchaseForm, appliedCoupon, onSuccess, onCancel
     }).format(price);
   };
 
-  const finalAmount = appliedCoupon ? appliedCoupon.final_price : product.price;
+  const licenseAmount = appliedCoupon ? appliedCoupon.final_price : product.price;
+  const monthlyFee = product.monthly_fee || 0;
+  const totalDueToday = licenseAmount + monthlyFee;
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -232,29 +234,38 @@ function PaymentForm({ product, purchaseForm, appliedCoupon, onSuccess, onCancel
       </div>
 
       {/* Order Summary */}
-      <div className="p-4 bg-white/5 rounded-lg border border-white/10 space-y-2">
+      <div className="p-4 bg-white/5 rounded-lg border border-white/10 space-y-3">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-white font-medium">{product.name}</p>
             <p className="text-xs text-slate-500">Lifetime License</p>
           </div>
-          <p className={`font-bold ${appliedCoupon ? 'text-slate-400 line-through text-base' : 'text-white text-xl'}`}>
+          <p className={`font-bold ${appliedCoupon ? 'text-slate-400 line-through text-base' : 'text-white text-lg'}`}>
             {formatPrice(product.price)}
           </p>
         </div>
         
         {appliedCoupon && (
-          <>
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-emerald-400">Discount ({appliedCoupon.coupon.code})</span>
-              <span className="text-emerald-400">-{formatPrice(appliedCoupon.discount_amount)}</span>
-            </div>
-            <div className="pt-2 border-t border-white/10 flex items-center justify-between">
-              <span className="text-white font-medium">Total</span>
-              <span className="text-xl font-bold text-white">{formatPrice(appliedCoupon.final_price)}</span>
-            </div>
-          </>
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-emerald-400">Discount ({appliedCoupon.coupon.code})</span>
+            <span className="text-emerald-400">-{formatPrice(appliedCoupon.discount_amount)}</span>
+          </div>
         )}
+        
+        {monthlyFee > 0 && (
+          <div className="flex items-center justify-between text-sm">
+            <div>
+              <span className="text-slate-300">First month service</span>
+              <p className="text-xs text-slate-500">Then {formatPrice(monthlyFee)}/month</p>
+            </div>
+            <span className="text-white">{formatPrice(monthlyFee)}</span>
+          </div>
+        )}
+        
+        <div className="pt-3 border-t border-white/10 flex items-center justify-between">
+          <span className="text-white font-medium">Total Due Today</span>
+          <span className="text-2xl font-bold text-white">{formatPrice(totalDueToday)}</span>
+        </div>
       </div>
 
       {/* Submit Button */}
@@ -271,7 +282,7 @@ function PaymentForm({ product, purchaseForm, appliedCoupon, onSuccess, onCancel
         ) : (
           <>
             <Lock className="w-4 h-4 mr-2" />
-            Pay {formatPrice(finalAmount)}
+            Pay {formatPrice(totalDueToday)}
           </>
         )}
       </Button>
