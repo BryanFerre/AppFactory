@@ -135,7 +135,7 @@ export default function InstalledApps() {
           <p className="text-slate-400 mb-6">Visit the App Marketplace to discover and install revenue-generating apps</p>
           <Button 
             className="bg-cyan-500 hover:bg-cyan-400 text-black font-semibold rounded-full"
-            onClick={() => navigate('/app-marketplace')}
+            onClick={() => navigate('/apps')}
           >
             Browse App Marketplace
           </Button>
