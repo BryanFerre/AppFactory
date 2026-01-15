@@ -733,12 +733,15 @@ export default function LandingPage() {
         <DialogContent className="bg-[#0F1420] border-white/10 text-white max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold">
-              {purchaseStep === 'success' ? '🎉 Purchase Complete!' : 'Purchase CloudNode'}
+              {purchaseStep === 'success' ? '🎉 Welcome to Optio!' : 
+               purchaseStep === 'setPassword' ? '🔐 Create Your Password' : 
+               'Purchase CloudNode'}
             </DialogTitle>
             <DialogDescription className="text-slate-400">
               {purchaseStep === 'details' && 'Enter your details to continue'}
               {purchaseStep === 'payment' && 'Complete your secure payment'}
-              {purchaseStep === 'success' && 'Welcome to the Optio network!'}
+              {purchaseStep === 'setPassword' && 'Set a password for your new account'}
+              {purchaseStep === 'success' && 'Your CloudNode is ready!'}
             </DialogDescription>
           </DialogHeader>
 
