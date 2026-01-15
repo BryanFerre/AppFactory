@@ -39,8 +39,6 @@ import { getErrorMessage } from '@/utils/errorUtils';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
-const categories = ['Productivity', 'Communication', 'Wellness'];
-
 const container = {
   hidden: { opacity: 0 },
   show: { opacity: 1, transition: { staggerChildren: 0.1 } }
@@ -51,6 +49,20 @@ const item = {
   show: { opacity: 1, y: 0 }
 };
 
+// Available tags for selection
+const availableTags = [
+  { id: 'ai', name: 'AI' },
+  { id: 'web3', name: 'Web3' },
+  { id: 'no-code', name: 'No-Code' },
+  { id: 'privacy-first', name: 'Privacy-First' },
+  { id: 'rewards-enabled', name: 'Rewards-Enabled' },
+  { id: 'open-source', name: 'Open Source' },
+  { id: 'enterprise', name: 'Enterprise' },
+  { id: 'free-tier', name: 'Free Tier' },
+  { id: 'mobile-first', name: 'Mobile-First' },
+  { id: 'api-available', name: 'API Available' }
+];
+
 export default function AppDeveloper() {
   const [submissions, setSubmissions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -59,6 +71,10 @@ export default function AppDeveloper() {
   const [featuredDialog, setFeaturedDialog] = useState(null);
   const [processingPayment, setProcessingPayment] = useState(false);
   
+  // New: Categories from API
+  const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  
   const iconInputRef = useRef(null);
   const codeInputRef = useRef(null);
   
@@ -66,6 +82,9 @@ export default function AppDeveloper() {
     app_name: '',
     description: '',
     category: '',
+    category_id: '',
+    subcategory_id: '',
+    tags: [],
     resources_required: '',
     monthly_subscription_fee: '',
     revenue_sharing: '',
