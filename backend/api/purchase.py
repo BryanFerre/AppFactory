@@ -27,6 +27,15 @@ router = APIRouter(prefix="/purchase", tags=["purchase"])
 
 # Initialize Stripe
 stripe.api_key = os.environ.get("STRIPE_SECRET_KEY")
+STRIPE_PUBLISHABLE_KEY = os.environ.get("STRIPE_PUBLISHABLE_KEY", "")
+
+
+@router.get("/config")
+async def get_stripe_config():
+    """Get Stripe publishable key for frontend"""
+    return {
+        "publishable_key": STRIPE_PUBLISHABLE_KEY
+    }
 
 
 # ==================== MODELS ====================
