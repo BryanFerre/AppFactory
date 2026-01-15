@@ -423,17 +423,21 @@ export default function LandingPage() {
   };
 
   const handleCloseModal = () => {
+    // If in password step or success step with a purchase, redirect to dashboard
+    if ((purchaseStep === 'setPassword' || purchaseStep === 'success') && purchaseResult) {
+      localStorage.setItem('token', purchaseResult.token);
+      navigate('/dashboard');
+      return;
+    }
+    
     setShowPurchaseModal(false);
     setPurchaseStep('details');
     setAppliedCoupon(null);
     setCouponCode('');
     setCouponError('');
-    
-    // If purchase was successful, redirect to dashboard
-    if (purchaseResult) {
-      localStorage.setItem('token', purchaseResult.token);
-      navigate('/dashboard');
-    }
+    setNewPassword('');
+    setConfirmPassword('');
+    setPasswordError('');
   };
 
   const formatPrice = (price) => {
