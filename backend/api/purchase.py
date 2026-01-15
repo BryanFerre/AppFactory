@@ -41,13 +41,370 @@ class CreateCheckoutRequest(BaseModel):
     cancel_url: str
 
 
+class CreatePaymentIntentRequest(BaseModel):
+    product_id: str
+    email: EmailStr
+    name: str = Field(..., min_length=1)
+    referral_code: Optional[str] = None
+    coupon_code: Optional[str] = None
+
+
+class ConfirmPaymentRequest(BaseModel):
+    payment_intent_id: str
+    order_id: str
+
+
 class VerifyPurchaseRequest(BaseModel):
     session_id: str
 
 
 # ==================== ENDPOINTS ====================
 
-@router.post("/create-checkout")
+@router.post("/create-payment-intent")
+async def create_payment_intent(request: CreatePaymentIntentRequest):
+    """Create a Stripe PaymentIntent for inline checkout"""
+    
+    # Get product
+    product = await db.products.find_one({"id": request.product_id, "is_active": True})
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+    
+    # Check stock
+    if product.get("stock", -1) != -1:
+        sold_count = await db.orders.count_documents({
+            "product_id": request.product_id,
+            "status": "completed"
+        })
+        if sold_count >= product["stock"]:
+            raise HTTPException(status_code=400, detail="Product is out of stock")
+    
+    # Check if email already has this product
+    existing_user = await db.users.find_one({"email": request.email.lower()})
+    if existing_user:
+        existing_license = await db.licenses.find_one({
+            "user_id": existing_user["id"],
+            "product_id": request.product_id,
+            "status": "active"
+        })
+        if existing_license:
+            raise HTTPException(
+                status_code=400, 
+                detail="You already own this product. Please log in to access your dashboard."
+            )
+    
+    # Calculate final price (apply coupon if provided)
+    final_price = product["price"]
+    discount_amount = 0
+    coupon_id = None
+    
+    if request.coupon_code:
+        coupon = await db.coupons.find_one(
+            {"code": request.coupon_code.upper(), "is_active": True},
+            {"_id": 0}
+        )
+        
+        if coupon:
+            now_check = datetime.now(timezone.utc)
+            is_valid = True
+            
+            # Check date validity
+            if coupon.get("start_date"):
+                start = datetime.fromisoformat(coupon["start_date"].replace("Z", "+00:00"))
+                if now_check < start:
+                    is_valid = False
+            
+            if coupon.get("end_date"):
+                end = datetime.fromisoformat(coupon["end_date"].replace("Z", "+00:00"))
+                if now_check > end:
+                    is_valid = False
+            
+            # Check product applicability
+            applicable_products = coupon.get("applicable_products", [])
+            if applicable_products and request.product_id not in applicable_products:
+                is_valid = False
+            
+            # Check usage limit
+            if coupon.get("usage_limit", -1) != -1:
+                usage_count = await db.coupon_usages.count_documents({"coupon_id": coupon["id"]})
+                if usage_count >= coupon["usage_limit"]:
+                    is_valid = False
+            
+            if is_valid:
+                # Calculate discount
+                if coupon["discount_type"] == "percentage":
+                    discount_amount = product["price"] * (coupon["discount_value"] / 100)
+                    if coupon.get("max_discount_amount"):
+                        discount_amount = min(discount_amount, coupon["max_discount_amount"])
+                else:  # fixed
+                    discount_amount = min(coupon["discount_value"], product["price"])
+                
+                final_price = product["price"] - discount_amount
+                coupon_id = coupon["id"]
+    
+    # Create pending order
+    now = datetime.now(timezone.utc)
+    order_id = str(uuid.uuid4())
+    
+    order_doc = {
+        "id": order_id,
+        "product_id": request.product_id,
+        "product_name": product.get("name"),
+        "customer_email": request.email.lower(),
+        "customer_name": request.name,
+        "original_amount": product["price"],
+        "discount_amount": round(discount_amount, 2),
+        "amount": round(final_price, 2),
+        "currency": product.get("currency", "USD"),
+        "status": "pending",
+        "referral_code": request.referral_code,
+        "coupon_code": request.coupon_code,
+        "coupon_id": coupon_id,
+        "created_at": now.isoformat(),
+        "updated_at": now.isoformat()
+    }
+    
+    await db.orders.insert_one(order_doc)
+    
+    try:
+        # Create Stripe PaymentIntent
+        payment_intent = stripe.PaymentIntent.create(
+            amount=int(final_price * 100),  # Stripe uses cents
+            currency=product.get("currency", "usd").lower(),
+            metadata={
+                "order_id": order_id,
+                "product_id": request.product_id,
+                "customer_name": request.name,
+                "customer_email": request.email,
+                "referral_code": request.referral_code or "",
+                "coupon_code": request.coupon_code or "",
+                "discount_amount": str(discount_amount)
+            },
+            receipt_email=request.email,
+            description=f"Purchase: {product['name']}"
+        )
+        
+        # Update order with PaymentIntent ID
+        await db.orders.update_one(
+            {"id": order_id},
+            {"$set": {"stripe_payment_intent_id": payment_intent.id}}
+        )
+        
+        return {
+            "client_secret": payment_intent.client_secret,
+            "payment_intent_id": payment_intent.id,
+            "order_id": order_id,
+            "amount": round(final_price, 2),
+            "original_amount": product["price"],
+            "discount_amount": round(discount_amount, 2),
+            "currency": product.get("currency", "USD")
+        }
+        
+    except stripe.error.StripeError as e:
+        # Clean up failed order
+        await db.orders.delete_one({"id": order_id})
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.post("/confirm-payment")
+async def confirm_payment(request: ConfirmPaymentRequest):
+    """Confirm payment completion and create user account + license"""
+    
+    try:
+        # Retrieve the PaymentIntent from Stripe
+        payment_intent = stripe.PaymentIntent.retrieve(request.payment_intent_id)
+    except stripe.error.StripeError as e:
+        raise HTTPException(status_code=400, detail=f"Invalid payment: {str(e)}")
+    
+    if payment_intent.status != "succeeded":
+        raise HTTPException(status_code=400, detail="Payment not completed")
+    
+    # Get order
+    order = await db.orders.find_one({"id": request.order_id})
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    
+    # Verify payment intent matches order
+    if order.get("stripe_payment_intent_id") != request.payment_intent_id:
+        raise HTTPException(status_code=400, detail="Payment verification failed")
+    
+    # Check if already processed
+    if order.get("status") == "completed":
+        # Return existing user credentials
+        user = await db.users.find_one({"id": order.get("user_id")})
+        license_doc = await db.licenses.find_one({"order_id": order["id"]})
+        
+        if user and license_doc:
+            token = create_token(user["id"])
+            return {
+                "success": True,
+                "already_processed": True,
+                "token": token,
+                "user": {
+                    "id": user["id"],
+                    "name": user.get("name"),
+                    "email": user.get("email")
+                },
+                "license": {
+                    "id": license_doc["id"],
+                    "license_key": license_doc["license_key"],
+                    "status": license_doc["status"]
+                }
+            }
+    
+    now = datetime.now(timezone.utc)
+    customer_email = order["customer_email"]
+    customer_name = order["customer_name"]
+    
+    # Check if user exists
+    existing_user = await db.users.find_one({"email": customer_email})
+    
+    if existing_user:
+        user_id = existing_user["id"]
+        is_new_user = False
+    else:
+        # Create new user account
+        user_id = str(uuid.uuid4())
+        
+        # Generate random password
+        password = ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(12))
+        hashed_password = hash_password(password)
+        
+        # Generate referral code
+        referral_code = ''.join(secrets.choice(string.ascii_uppercase + string.digits) for _ in range(8))
+        
+        user_doc = {
+            "id": user_id,
+            "email": customer_email,
+            "name": customer_name,
+            "password": hashed_password,
+            "temp_password": password,  # Store temporarily for display
+            "referral_code": referral_code,
+            "referred_by": order.get("referral_code"),
+            "role": "operator",
+            "wallet_address": None,
+            "two_factor_enabled": False,
+            "two_factor_secret": None,
+            "created_at": now.isoformat(),
+            "updated_at": now.isoformat()
+        }
+        
+        await db.users.insert_one(user_doc)
+        is_new_user = True
+        
+        # Award registration points
+        try:
+            points_engine = PointsEngine(db)
+            await points_engine.initialize()
+            await points_engine.award_points(
+                user_id=user_id,
+                action_id="complete_onboarding",
+                metadata={"source": "purchase_registration"}
+            )
+        except Exception as e:
+            print(f"Failed to award registration points: {e}")
+    
+    # Issue license
+    license_doc = await issue_license(
+        user_id=user_id,
+        product_id=order["product_id"],
+        order_id=order["id"]
+    )
+    
+    # Update order status
+    await db.orders.update_one(
+        {"id": order["id"]},
+        {"$set": {
+            "status": "completed",
+            "user_id": user_id,
+            "license_id": license_doc["id"],
+            "completed_at": now.isoformat(),
+            "updated_at": now.isoformat()
+        }}
+    )
+    
+    # Record coupon usage if applicable
+    if order.get("coupon_id"):
+        await db.coupon_usages.insert_one({
+            "id": str(uuid.uuid4()),
+            "coupon_id": order["coupon_id"],
+            "order_id": order["id"],
+            "user_id": user_id,
+            "email": customer_email,
+            "created_at": now.isoformat()
+        })
+    
+    # Process referral commission if applicable
+    if order.get("referral_code"):
+        await process_referral_commission(order, user_id)
+    
+    # Award purchase points
+    try:
+        points_engine = PointsEngine(db)
+        await points_engine.initialize()
+        await points_engine.award_points(
+            user_id=user_id,
+            action_id="purchase_node",
+            source_entity_id=order["id"],
+            metadata={"product_id": order["product_id"]}
+        )
+    except Exception as e:
+        print(f"Failed to award purchase points: {e}")
+    
+    # Generate auth token
+    token = create_token(user_id)
+    
+    # Get user for response
+    user = await db.users.find_one({"id": user_id})
+    
+    # Get product details for email
+    product = await db.products.find_one({"id": order["product_id"]})
+    
+    response = {
+        "success": True,
+        "is_new_user": is_new_user,
+        "token": token,
+        "user": {
+            "id": user_id,
+            "name": customer_name,
+            "email": customer_email
+        },
+        "license": license_doc,
+        "order_id": order["id"]
+    }
+    
+    # Include temp password for new users
+    temp_password = None
+    if is_new_user and user.get("temp_password"):
+        temp_password = user["temp_password"]
+        response["temp_password"] = temp_password
+        # Clear temp password after returning
+        await db.users.update_one(
+            {"id": user_id},
+            {"$unset": {"temp_password": ""}}
+        )
+    
+    # Send purchase confirmation email
+    try:
+        email_data = {
+            "name": customer_name,
+            "email": customer_email,
+            "order_id": order["id"],
+            "product_name": product.get("name", "Optio CloudNode") if product else "Optio CloudNode",
+            "license_key": license_doc.get("license_key", ""),
+            "amount": order.get("amount", 0),
+            "original_amount": order.get("original_amount", order.get("amount", 0)),
+            "discount": order.get("discount_amount", 0),
+            "coupon_code": order.get("coupon_code"),
+            "currency": order.get("currency", "USD"),
+            "is_new_user": is_new_user,
+            "temp_password": temp_password,
+            "dashboard_url": FRONTEND_URL
+        }
+        await send_notification_email("purchase_confirmation", customer_email, email_data)
+    except Exception as e:
+        print(f"Failed to send purchase confirmation email: {e}")
+    
+    return response
 async def create_checkout_session(request: CreateCheckoutRequest):
     """Create a Stripe checkout session for purchasing a product"""
     
