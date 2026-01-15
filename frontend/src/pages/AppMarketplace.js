@@ -350,104 +350,103 @@ export default function AppMarketplace() {
               </SelectItem>
             </SelectContent>
           </Select>
-        
-        {/* Sort Dropdown */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="border-white/10 text-slate-300 hover:text-white hover:bg-white/10 w-full lg:w-auto" data-testid="sort-dropdown">
-              <ArrowUpDown className="w-4 h-4 mr-2" />
-              Sort: {sortOptions.find(s => s.value === sortBy)?.label}
-              <ChevronDown className="w-4 h-4 ml-2" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="glass-card border-white/10 w-48">
-            <DropdownMenuLabel className="text-slate-400 text-xs">Sort By</DropdownMenuLabel>
-            <DropdownMenuSeparator className="bg-white/10" />
-            {sortOptions.map(option => (
+          
+          {/* Sort Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="border-white/10 text-slate-300 hover:text-white hover:bg-white/10 text-xs sm:text-sm" data-testid="sort-dropdown">
+                <ArrowUpDown className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Sort: </span>{sortOptions.find(s => s.value === sortBy)?.label}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="glass-card border-white/10 w-48">
+              <DropdownMenuLabel className="text-slate-400 text-xs">Sort By</DropdownMenuLabel>
+              <DropdownMenuSeparator className="bg-white/10" />
+              {sortOptions.map(option => (
+                <DropdownMenuItem
+                  key={option.value}
+                  onClick={() => setSortBy(option.value)}
+                  className={`flex items-center gap-2 text-xs sm:text-sm ${sortBy === option.value ? 'text-cyan-400' : 'text-slate-300'}`}
+                >
+                  <option.icon className="w-4 h-4" />
+                  {option.label}
+                  {sortBy === option.value && <Check className="w-4 h-4 ml-auto" />}
+                </DropdownMenuItem>
+              ))}
+              <DropdownMenuSeparator className="bg-white/10" />
+              <DropdownMenuLabel className="text-slate-400 text-xs">Order</DropdownMenuLabel>
               <DropdownMenuItem
-                key={option.value}
-                onClick={() => setSortBy(option.value)}
-                className={`flex items-center gap-2 ${sortBy === option.value ? 'text-cyan-400' : 'text-slate-300'}`}
+                onClick={() => setSortOrder('desc')}
+                className={`text-xs sm:text-sm ${sortOrder === 'desc' ? 'text-cyan-400' : 'text-slate-300'}`}
               >
-                <option.icon className="w-4 h-4" />
-                {option.label}
-                {sortBy === option.value && <Check className="w-4 h-4 ml-auto" />}
+                High to Low {sortOrder === 'desc' && <Check className="w-4 h-4 ml-auto" />}
               </DropdownMenuItem>
-            ))}
-            <DropdownMenuSeparator className="bg-white/10" />
-            <DropdownMenuLabel className="text-slate-400 text-xs">Order</DropdownMenuLabel>
-            <DropdownMenuItem
-              onClick={() => setSortOrder('desc')}
-              className={sortOrder === 'desc' ? 'text-cyan-400' : 'text-slate-300'}
-            >
-              High to Low {sortOrder === 'desc' && <Check className="w-4 h-4 ml-auto" />}
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => setSortOrder('asc')}
-              className={sortOrder === 'asc' ? 'text-cyan-400' : 'text-slate-300'}
-            >
-              Low to High {sortOrder === 'asc' && <Check className="w-4 h-4 ml-auto" />}
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-        
-        {/* Advanced Filters Sheet */}
-        <Sheet>
-          <SheetTrigger asChild>
-            <Button variant="outline" className="border-white/10 text-slate-300 hover:text-white hover:bg-white/10" data-testid="advanced-filters-btn">
-              <SlidersHorizontal className="w-4 h-4 mr-2" />
-              Filters
-              {(minRevenue > 0 || maxCapacity < 10) && (
-                <Badge className="ml-2 bg-cyan-500/20 text-cyan-400 text-xs">Active</Badge>
-              )}
-            </Button>
-          </SheetTrigger>
-          <SheetContent className="glass-card border-l-white/10">
-            <SheetHeader>
-              <SheetTitle className="text-white font-['Outfit']">Advanced Filters</SheetTitle>
-              <SheetDescription className="text-slate-400">
-                Fine-tune your app search
-              </SheetDescription>
-            </SheetHeader>
-            <div className="space-y-6 mt-6">
-              {/* Min Revenue Filter */}
-              <div className="space-y-3">
-                <label className="text-sm text-slate-300 flex items-center justify-between">
-                  <span className="flex items-center gap-2">
-                    <DollarSign className="w-4 h-4 text-emerald-400" />
-                    Minimum Revenue
-                  </span>
-                  <span className="text-emerald-400 font-semibold">${minRevenue}/mo</span>
-                </label>
-                <Slider
-                  value={[minRevenue]}
-                  onValueChange={(v) => setMinRevenue(v[0])}
-                  max={200}
-                  step={10}
-                  className="w-full"
-                />
-                <div className="flex justify-between text-xs text-slate-500">
-                  <span>$0</span>
-                  <span>$200+</span>
+              <DropdownMenuItem
+                onClick={() => setSortOrder('asc')}
+                className={`text-xs sm:text-sm ${sortOrder === 'asc' ? 'text-cyan-400' : 'text-slate-300'}`}
+              >
+                Low to High {sortOrder === 'asc' && <Check className="w-4 h-4 ml-auto" />}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          
+          {/* Advanced Filters Sheet */}
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="outline" size="sm" className="border-white/10 text-slate-300 hover:text-white hover:bg-white/10 text-xs sm:text-sm" data-testid="advanced-filters-btn">
+                <SlidersHorizontal className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                <span className="hidden xs:inline">Filters</span>
+                {(minRevenue > 0 || maxCapacity < 10) && (
+                  <Badge className="ml-1 sm:ml-2 bg-cyan-500/20 text-cyan-400 text-[10px] sm:text-xs">Active</Badge>
+                )}
+              </Button>
+            </SheetTrigger>
+            <SheetContent className="glass-card border-l-white/10 w-[85vw] sm:w-[400px]">
+              <SheetHeader>
+                <SheetTitle className="text-white font-['Outfit']">Advanced Filters</SheetTitle>
+                <SheetDescription className="text-slate-400 text-sm">
+                  Fine-tune your app search
+                </SheetDescription>
+              </SheetHeader>
+              <div className="space-y-6 mt-6">
+                {/* Min Revenue Filter */}
+                <div className="space-y-3">
+                  <label className="text-sm text-slate-300 flex items-center justify-between">
+                    <span className="flex items-center gap-2">
+                      <DollarSign className="w-4 h-4 text-emerald-400" />
+                      Minimum Revenue
+                    </span>
+                    <span className="text-emerald-400 font-semibold">${minRevenue}/mo</span>
+                  </label>
+                  <Slider
+                    value={[minRevenue]}
+                    onValueChange={(v) => setMinRevenue(v[0])}
+                    max={200}
+                    step={10}
+                    className="w-full"
+                  />
+                  <div className="flex justify-between text-xs text-slate-500">
+                    <span>$0</span>
+                    <span>$200+</span>
+                  </div>
                 </div>
-              </div>
-              
-              {/* Max Capacity Filter */}
-              <div className="space-y-3">
-                <label className="text-sm text-slate-300 flex items-center justify-between">
-                  <span className="flex items-center gap-2">
-                    <Server className="w-4 h-4 text-blue-400" />
-                    Maximum Capacity
-                  </span>
-                  <span className="text-blue-400 font-semibold">{maxCapacity} GB</span>
-                </label>
-                <Slider
-                  value={[maxCapacity]}
-                  onValueChange={(v) => setMaxCapacity(v[0])}
-                  min={1}
-                  max={10}
-                  step={1}
-                  className="w-full"
+                
+                {/* Max Capacity Filter */}
+                <div className="space-y-3">
+                  <label className="text-sm text-slate-300 flex items-center justify-between">
+                    <span className="flex items-center gap-2">
+                      <Server className="w-4 h-4 text-blue-400" />
+                      Maximum Capacity
+                    </span>
+                    <span className="text-blue-400 font-semibold">{maxCapacity} GB</span>
+                  </label>
+                  <Slider
+                    value={[maxCapacity]}
+                    onValueChange={(v) => setMaxCapacity(v[0])}
+                    min={1}
+                    max={10}
+                    step={1}
+                    className="w-full"
                 />
                 <div className="flex justify-between text-xs text-slate-500">
                   <span>1 GB</span>
