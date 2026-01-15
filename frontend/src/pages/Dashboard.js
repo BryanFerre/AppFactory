@@ -107,14 +107,6 @@ export default function Dashboard() {
           <h1 className="text-2xl lg:text-3xl font-bold text-white font-['Outfit']">Dashboard</h1>
           <p className="text-slate-400">Your node is earning for you</p>
         </div>
-        <Button 
-          onClick={verifyNode}
-          className="bg-cyan-500 hover:bg-cyan-400 text-black font-semibold rounded-full"
-          data-testid="verify-node-btn"
-        >
-          <CheckCircle2 className="w-4 h-4 mr-2" />
-          Daily Verification
-        </Button>
       </div>
 
       {/* Bento Grid */}
