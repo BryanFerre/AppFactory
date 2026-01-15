@@ -210,7 +210,7 @@ export default function ProofOfImpact() {
           <Button
             variant="outline"
             className="border-amber-500/30 text-amber-400 hover:bg-amber-500/10"
-            onClick={() => navigate('/how-to-earn')}
+            onClick={() => navigate('/dashboard/how-to-earn')}
           >
             <Gift className="w-4 h-4 mr-2" />
             How to Earn
