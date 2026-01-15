@@ -13,6 +13,8 @@ import {
   AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer
 } from 'recharts';
 import { NavLink } from 'react-router-dom';
+import OnboardingModal from '@/components/OnboardingModal';
+import { toast } from 'sonner';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
