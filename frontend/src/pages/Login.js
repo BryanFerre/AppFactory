@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { Mail, Lock, ArrowRight, Smartphone, ArrowLeft, Shield, Zap } from 'lucide-react';
-import { ReactComponent as AppCloudLogo } from '@/assets/AppCloudLogo.svg';
+import { ReactComponent as CloudNodeLogo } from '@/assets/CloudNode.svg';
 
 export default function Login() {
   const { login, verify2FA, cancel2FA, pending2FA } = useAuth();

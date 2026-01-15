@@ -3,7 +3,7 @@ import { Link, Outlet, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Menu, X } from 'lucide-react';
-import { ReactComponent as AppCloudLogo } from '@/assets/AppCloudLogo.svg';
+import { ReactComponent as CloudNodeLogo } from '@/assets/CloudNode.svg';
 
 export default function PublicLayout() {
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
