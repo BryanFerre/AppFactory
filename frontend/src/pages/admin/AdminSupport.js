@@ -103,7 +103,7 @@ export default function AdminSupport() {
       setResponseMessage('');
       fetchTickets();
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Failed to update ticket');
+      toast.error(getErrorMessage(error, 'Failed to update ticket'));
     } finally {
       setSubmitting(false);
     }
