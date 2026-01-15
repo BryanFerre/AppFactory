@@ -80,7 +80,7 @@ export default function AppDetails() {
       }
     } catch (error) {
       toast.error('Failed to fetch app details');
-      navigate('/installed-apps');
+      navigate('/dashboard/installed-apps');
     } finally {
       setLoading(false);
     }
