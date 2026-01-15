@@ -336,6 +336,9 @@ async def verify_purchase(request: VerifyPurchaseRequest):
     # Get user for response
     user = await db.users.find_one({"id": user_id})
     
+    # Get product details for email
+    product = await db.products.find_one({"id": order["product_id"]})
+    
     response = {
         "success": True,
         "is_new_user": is_new_user,
@@ -350,13 +353,36 @@ async def verify_purchase(request: VerifyPurchaseRequest):
     }
     
     # Include temp password for new users
+    temp_password = None
     if is_new_user and user.get("temp_password"):
-        response["temp_password"] = user["temp_password"]
+        temp_password = user["temp_password"]
+        response["temp_password"] = temp_password
         # Clear temp password after returning
         await db.users.update_one(
             {"id": user_id},
             {"$unset": {"temp_password": ""}}
         )
+    
+    # Send purchase confirmation email
+    try:
+        email_data = {
+            "name": customer_name,
+            "email": customer_email,
+            "order_id": order["id"],
+            "product_name": product.get("name", "Optio CloudNode") if product else "Optio CloudNode",
+            "license_key": license.get("license_key", ""),
+            "amount": order.get("amount", 0),
+            "original_amount": order.get("original_amount", order.get("amount", 0)),
+            "discount": order.get("discount_amount", 0),
+            "coupon_code": order.get("coupon_code"),
+            "currency": order.get("currency", "USD"),
+            "is_new_user": is_new_user,
+            "temp_password": temp_password,
+            "dashboard_url": FRONTEND_URL
+        }
+        await send_notification_email("purchase_confirmation", customer_email, email_data)
+    except Exception as e:
+        print(f"Failed to send purchase confirmation email: {e}")
     
     return response
 
