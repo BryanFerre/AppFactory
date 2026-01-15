@@ -105,7 +105,7 @@ function AppRoutes() {
       
       {/* Auth Routes */}
       <Route path="/login" element={<AuthRoute><Login /></AuthRoute>} />
-      <Route path="/register" element={<AuthRoute><Register /></AuthRoute>} />
+      <Route path="/register" element={<Navigate to="/?purchase=true" replace />} />
       
       {/* Protected Dashboard Routes */}
       <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
