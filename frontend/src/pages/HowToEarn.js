@@ -680,14 +680,14 @@ export default function HowToEarn() {
           <div className="flex items-center gap-3">
             <Button
               variant="outline"
-              onClick={() => navigate('/leaderboard')}
+              onClick={() => navigate('/dashboard/leaderboard')}
               className="border-white/10 text-slate-300 hover:bg-white/10"
             >
               <Medal className="w-4 h-4 mr-2" />
               Leaderboard
             </Button>
             <Button
-              onClick={() => navigate('/proof-of-impact')}
+              onClick={() => navigate('/dashboard/proof-of-impact')}
               className="bg-gradient-to-r from-cyan-500 to-blue-500 text-white"
             >
               <Trophy className="w-4 h-4 mr-2" />
