@@ -568,7 +568,7 @@ export default function LandingPage() {
       {/* Stats Section */}
       <section className="py-16 border-y border-white/5">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-8">
             {stats.map((stat, i) => (
               <motion.div
                 key={i}
@@ -578,10 +578,10 @@ export default function LandingPage() {
                 viewport={{ once: true }}
                 className="text-center"
               >
-                <p className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
+                <p className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
                   {stat.value}
                 </p>
-                <p className="text-slate-500 mt-2">{stat.label}</p>
+                <p className="text-slate-500 mt-1 sm:mt-2 text-xs sm:text-sm">{stat.label}</p>
               </motion.div>
             ))}
           </div>
@@ -589,23 +589,23 @@ export default function LandingPage() {
       </section>
 
       {/* Features Section */}
-      <section className="py-24">
+      <section className="py-12 sm:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mb-16"
+            className="text-center mb-8 sm:mb-16"
           >
-            <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-3 sm:mb-4">
               Why Own a CloudNode?
             </h2>
-            <p className="text-slate-400 max-w-2xl mx-auto">
+            <p className="text-slate-400 max-w-2xl mx-auto text-sm sm:text-base px-4">
               Join the next generation of cloud infrastructure and earn passive income while contributing to a decentralized future.
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {features.map((feature, i) => {
               const IconComponent = feature.icon;
               return (
@@ -615,16 +615,16 @@ export default function LandingPage() {
                   whileInView={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.1 }}
                   viewport={{ once: true }}
-                  className="p-6 bg-white/[0.03] rounded-2xl border border-white/5 hover:border-white/10 transition-colors group"
+                  className="p-4 sm:p-6 bg-white/[0.03] rounded-2xl border border-white/5 hover:border-white/10 transition-colors group"
                 >
                   <div
-                    className="w-12 h-12 rounded-xl flex items-center justify-center mb-4"
+                    className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center mb-3 sm:mb-4"
                     style={{ backgroundColor: `${feature.color}20` }}
                   >
-                    <IconComponent className="w-6 h-6" style={{ color: feature.color }} />
+                    <IconComponent className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: feature.color }} />
                   </div>
-                  <h3 className="text-lg font-semibold text-white mb-2">{feature.title}</h3>
-                  <p className="text-slate-400 text-sm leading-relaxed">{feature.description}</p>
+                  <h3 className="text-base sm:text-lg font-semibold text-white mb-2">{feature.title}</h3>
+                  <p className="text-slate-400 text-xs sm:text-sm leading-relaxed">{feature.description}</p>
                 </motion.div>
               );
             })}
@@ -633,23 +633,23 @@ export default function LandingPage() {
       </section>
 
       {/* How It Works */}
-      <section id="how-it-works" className="py-24 bg-gradient-to-b from-transparent via-cyan-500/5 to-transparent">
+      <section id="how-it-works" className="py-12 sm:py-24 bg-gradient-to-b from-transparent via-cyan-500/5 to-transparent">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mb-16"
+            className="text-center mb-8 sm:mb-16"
           >
-            <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-3 sm:mb-4">
               Get Started in 3 Simple Steps
             </h2>
-            <p className="text-slate-400 max-w-2xl mx-auto">
+            <p className="text-slate-400 max-w-2xl mx-auto text-sm sm:text-base px-4">
               From purchase to earning, the entire process takes just minutes
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
             {howItWorks.map((step, i) => {
               const Icon = step.icon;
               return (
@@ -661,18 +661,18 @@ export default function LandingPage() {
                   viewport={{ once: true }}
                   className="text-center"
                 >
-                  <div className="relative inline-block mb-6">
-                    <div className="w-24 h-24 rounded-full bg-gradient-to-br from-cyan-500/20 to-blue-500/20 flex items-center justify-center">
-                      <div className="w-24 h-24 rounded-full bg-[#0B0F1A] flex items-center justify-center">
-                        <Icon className="w-10 h-10 text-cyan-400" />
+                  <div className="relative inline-block mb-4 sm:mb-6">
+                    <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gradient-to-br from-cyan-500/20 to-blue-500/20 flex items-center justify-center">
+                      <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-[#0B0F1A] flex items-center justify-center">
+                        <Icon className="w-8 h-8 sm:w-10 sm:h-10 text-cyan-400" />
                       </div>
-                      <div className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-cyan-500 flex items-center justify-center text-white font-bold">
+                      <div className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-cyan-500 flex items-center justify-center text-white font-bold text-sm sm:text-base">
                         {step.step}
                       </div>
                     </div>
                   </div>
-                  <h3 className="text-xl font-semibold text-white mb-2">{step.title}</h3>
-                  <p className="text-slate-400 text-sm">{step.description}</p>
+                  <h3 className="text-lg sm:text-xl font-semibold text-white mb-2">{step.title}</h3>
+                  <p className="text-slate-400 text-xs sm:text-sm px-4 md:px-0">{step.description}</p>
                 </motion.div>
               );
             })}
