@@ -91,9 +91,63 @@ async def create_checkout_session(request: CreateCheckoutRequest):
         "currency": product.get("currency", "USD"),
         "status": "pending",
         "referral_code": request.referral_code,
+        "coupon_code": request.coupon_code,
         "created_at": now.isoformat(),
         "updated_at": now.isoformat()
     }
+    
+    # Calculate final price (apply coupon if provided)
+    final_price = product["price"]
+    discount_amount = 0
+    
+    if request.coupon_code:
+        coupon = await db.coupons.find_one(
+            {"code": request.coupon_code.upper(), "is_active": True},
+            {"_id": 0}
+        )
+        
+        if coupon:
+            now_check = datetime.now(timezone.utc)
+            is_valid = True
+            
+            # Check date validity
+            if coupon.get("start_date"):
+                start = datetime.fromisoformat(coupon["start_date"].replace("Z", "+00:00"))
+                if now_check < start:
+                    is_valid = False
+            
+            if coupon.get("end_date"):
+                end = datetime.fromisoformat(coupon["end_date"].replace("Z", "+00:00"))
+                if now_check > end:
+                    is_valid = False
+            
+            # Check product applicability
+            applicable_products = coupon.get("applicable_products", [])
+            if applicable_products and request.product_id not in applicable_products:
+                is_valid = False
+            
+            # Check usage limit
+            if coupon.get("usage_limit", -1) != -1:
+                usage_count = await db.coupon_usages.count_documents({"coupon_id": coupon["id"]})
+                if usage_count >= coupon["usage_limit"]:
+                    is_valid = False
+            
+            if is_valid:
+                # Calculate discount
+                if coupon["discount_type"] == "percentage":
+                    discount_amount = product["price"] * (coupon["discount_value"] / 100)
+                    if coupon.get("max_discount_amount"):
+                        discount_amount = min(discount_amount, coupon["max_discount_amount"])
+                else:  # fixed
+                    discount_amount = min(coupon["discount_value"], product["price"])
+                
+                final_price = product["price"] - discount_amount
+                
+                # Update order with coupon details
+                order_doc["coupon_id"] = coupon["id"]
+                order_doc["original_amount"] = product["price"]
+                order_doc["discount_amount"] = round(discount_amount, 2)
+                order_doc["amount"] = round(final_price, 2)
     
     await db.orders.insert_one(order_doc)
     
