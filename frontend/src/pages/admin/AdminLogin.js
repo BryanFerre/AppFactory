@@ -151,8 +151,8 @@ export default function AdminLogin() {
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-600 mb-4">
-            <Shield className="w-8 h-8 text-white" />
+          <div className="flex justify-center mb-4">
+            <CloudNodeLogo className="h-14 w-auto" />
           </div>
           <h1 className="text-2xl font-bold text-white font-['Outfit']">Optio Admin</h1>
           <p className="text-slate-400 mt-2">Internal Control Panel</p>
