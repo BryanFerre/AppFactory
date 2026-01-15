@@ -26,7 +26,7 @@ export default function PublicLayout() {
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <Link to="/" className="flex items-center gap-2">
-              <AppCloudLogo className="h-10 w-auto" />
+              <CloudNodeLogo className="h-10 w-auto" />
             </Link>
 
             {/* Desktop Navigation */}
@@ -136,7 +136,7 @@ export default function PublicLayout() {
             {/* Brand */}
             <div className="col-span-1 md:col-span-2">
               <div className="flex items-center gap-2 mb-4">
-                <AppCloudLogo className="h-10 w-auto" />
+                <CloudNodeLogo className="h-10 w-auto" />
               </div>
               <p className="text-slate-500 text-sm max-w-md">
                 Decentralized cloud infrastructure powered by independent node operators. 

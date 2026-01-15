@@ -100,7 +100,7 @@ export default function AdminLayout() {
         <div className="flex flex-col h-full p-4">
           {/* Logo */}
           <div className="flex items-center justify-between px-3 py-4 mb-4">
-            <AppCloudLogo className="w-32 h-auto" />
+            <CloudNodeLogo className="w-32 h-auto" />
             <button 
               className="lg:hidden text-slate-400 hover:text-white"
               onClick={() => setSidebarOpen(false)}

@@ -42,7 +42,7 @@ export default function Register() {
         <div className="w-full max-w-md">
           {/* Mobile Logo */}
           <div className="lg:hidden flex items-center justify-center mb-10">
-            <AppCloudLogo className="h-10 w-auto" />
+            <CloudNodeLogo className="h-10 w-auto" />
           </div>
 
           <div className="glass-card p-8">
@@ -139,7 +139,7 @@ export default function Register() {
         
         <div className="relative z-10 flex flex-col justify-center px-16">
           <div className="mb-8">
-            <AppCloudLogo className="h-12 w-auto" />
+            <CloudNodeLogo className="h-12 w-auto" />
           </div>
           
           <h2 className="text-4xl font-bold text-white font-['Outfit'] mb-4">
