@@ -630,7 +630,7 @@ export default function LandingPage() {
           setError('');
         }
       }}>
-        <DialogContent className="bg-[#0F1420] border-white/10 text-white max-w-md">
+        <DialogContent className="bg-[#0F1420] border-white/10 text-white max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold">Purchase CloudNode</DialogTitle>
             <DialogDescription className="text-slate-400">
