@@ -87,7 +87,7 @@ export default function Settings() {
       fetchTwoFaStatus();
       toast.success('Two-factor authentication enabled!');
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Invalid verification code');
+      toast.error(getErrorMessage(error, 'Invalid verification code'));
     } finally {
       setLoading(false);
     }
