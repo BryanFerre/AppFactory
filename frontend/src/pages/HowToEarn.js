@@ -234,7 +234,7 @@ export default function HowToEarn() {
         
         <div className="flex items-center gap-3">
           <Button
-            onClick={() => navigate('/proof-of-impact')}
+            onClick={() => navigate('/dashboard/proof-of-impact')}
             className="bg-gradient-to-r from-cyan-500 to-blue-500 text-white"
           >
             <Trophy className="w-4 h-4 mr-2" />
