@@ -291,13 +291,19 @@ export default function LandingPage() {
   const [loading, setLoading] = useState(true);
   const [stripePromise, setStripePromise] = useState(null);
   const [showPurchaseModal, setShowPurchaseModal] = useState(false);
-  const [purchaseStep, setPurchaseStep] = useState('details'); // 'details' | 'payment' | 'success'
+  const [purchaseStep, setPurchaseStep] = useState('details'); // 'details' | 'payment' | 'success' | 'setPassword'
   const [purchaseForm, setPurchaseForm] = useState({
     name: '',
     email: '',
     referralCode: searchParams.get('ref') || ''
   });
   const [purchaseResult, setPurchaseResult] = useState(null);
+  
+  // Password creation states
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [settingPassword, setSettingPassword] = useState(false);
   
   // Coupon states
   const [couponCode, setCouponCode] = useState('');
