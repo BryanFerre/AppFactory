@@ -127,6 +127,17 @@ Build a full-stack e-commerce and cloud platform named "AppCloud by Optio" with:
     - Featured apps appear in "Featured Apps" section of marketplace
     - Admin endpoints: POST /api/admin/apps/submissions/{id}/feature, /unfeature
 
+17. **OPT Points Tutorial/Onboarding** ✅
+    - 5-step interactive modal explaining OPT points system
+    - Step 1: Welcome introduction to OPT Points
+    - Step 2: How to earn points (Daily Login, Referrals, App Installs, etc.)
+    - Step 3: Streak bonuses (7/30/90/365 day milestones)
+    - Step 4: Tier system (Starter → Legend)
+    - Step 5: Completion with +200 OPT bonus
+    - Automatically shows on first login (tracked per user)
+    - "Replay Tutorial" button in Settings page
+    - Backend endpoints: /api/auth/onboarding/status, /complete, /reset
+
 ---
 
 ## Pricing Structure
