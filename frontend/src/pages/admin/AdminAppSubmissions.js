@@ -116,7 +116,7 @@ export default function AdminAppSubmissions() {
       setSelectedApp(null);
       fetchSubmissions();
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Review failed');
+      toast.error(getErrorMessage(error, 'Review failed'));
     } finally {
       setSubmitting(false);
     }
