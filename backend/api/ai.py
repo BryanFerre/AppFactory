@@ -188,7 +188,7 @@ async def get_app_promotions(app_id: str, user=Depends(get_current_user)):
         social_posts = [
             {
                 "platform": "twitter",
-                "content": f"Check out {app['name']} - now available on AppCloud! 🚀 #AppCloud #DecentralizedCloud",
+                "content": f"Check out {app['name']} - now available on AppCloud! #AppCloud #DecentralizedCloud",
                 "hashtags": ["#AppCloud", "#DecentralizedCloud"]
             },
             {
