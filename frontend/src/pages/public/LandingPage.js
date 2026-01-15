@@ -1018,7 +1018,6 @@ export default function LandingPage() {
                   <span className="text-white text-sm">{purchaseResult.user?.email}</span>
                 </div>
               </div>
-              </div>
 
               <p className="text-sm text-slate-400 text-center">
                 A confirmation email has been sent to your address.
