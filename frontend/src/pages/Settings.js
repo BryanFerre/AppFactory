@@ -3,7 +3,7 @@ import axios from 'axios';
 import { useAuth } from '@/context/AuthContext';
 import { motion } from 'framer-motion';
 import { 
-  Settings as SettingsIcon, User, Bell, Shield, Moon, 
+  Settings as SettingsIcon, User, Bell, Shield, 
   Smartphone, Key, CheckCircle, XCircle, Copy, AlertTriangle,
   RefreshCw, Loader2, Eye, EyeOff
 } from 'lucide-react';
