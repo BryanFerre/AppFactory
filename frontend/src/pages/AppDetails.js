@@ -76,7 +76,7 @@ export default function AppDetails() {
         generateAIPost(foundApp);
       } else {
         toast.error('App not found');
-        navigate('/installed-apps');
+        navigate('/dashboard/installed-apps');
       }
     } catch (error) {
       toast.error('Failed to fetch app details');
