@@ -188,7 +188,7 @@ def _get_2fa_disabled_template(base_style: str, data: dict) -> tuple:
     return subject, html
 
 def _get_welcome_template(base_style: str, data: dict) -> tuple:
-    subject = "🚀 Welcome to AppCloud - Start Earning Today!"
+    subject = "Welcome to AppCloud - Start Earning Today!"
     html = f"""
     <!DOCTYPE html>
     <html>
@@ -197,7 +197,7 @@ def _get_welcome_template(base_style: str, data: dict) -> tuple:
         <div class="container">
             <div class="card">
                 <div class="logo">AppCloud</div>
-                <h1>Welcome to AppCloud! 🚀</h1>
+                <h1>Welcome to AppCloud!</h1>
                 <p>Hi <span class="highlight">{data.get('name', 'Node Operator')}</span>,</p>
                 <p>Your node operator account has been created successfully. You're now part of the Optio Blockchain Cloud network!</p>
                 
@@ -231,7 +231,7 @@ def _get_welcome_template(base_style: str, data: dict) -> tuple:
 
 def _get_purchase_confirmation_template(base_style: str, data: dict) -> tuple:
     """Purchase confirmation email with order details and login credentials"""
-    subject = "🎉 Your Optio CloudNode Purchase is Complete!"
+    subject = "Your Optio CloudNode Purchase is Complete!"
     
     # Format amount
     amount = data.get('amount', 0)
@@ -244,7 +244,7 @@ def _get_purchase_confirmation_template(base_style: str, data: dict) -> tuple:
     if data.get('is_new_user') and data.get('temp_password'):
         credentials_html = f"""
         <div class="credentials-box">
-            <h3 style="color: #10b981; margin: 0 0 16px 0;">🔐 Your Login Credentials</h3>
+            <h3 style="color: #10b981; margin: 0 0 16px 0;">Your Login Credentials</h3>
             <div class="credential-item">
                 <div class="credential-label">Email</div>
                 <div class="credential-value">{data.get('email', '')}</div>
@@ -254,7 +254,7 @@ def _get_purchase_confirmation_template(base_style: str, data: dict) -> tuple:
                 <div class="credential-value">{data.get('temp_password', '')}</div>
             </div>
             <p style="color: #fbbf24; font-size: 14px; margin-top: 16px;">
-                ⚠️ Please change your password after logging in for the first time.
+                Please change your password after logging in for the first time.
             </p>
         </div>
         """
