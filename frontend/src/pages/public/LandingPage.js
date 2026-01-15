@@ -6,7 +6,7 @@ import {
   Cloud, Server, Zap, Shield, DollarSign, Globe, Users,
   ChevronRight, Check, Star, ArrowRight, Play, Cpu,
   TrendingUp, Lock, Rocket, Award, Clock, Gift,
-  CheckCircle2, Loader2, BarChart3, Layers
+  CheckCircle2, Loader2, BarChart3, Layers, Tag, X
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
