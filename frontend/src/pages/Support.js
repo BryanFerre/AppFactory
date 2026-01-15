@@ -127,7 +127,7 @@ export default function Support() {
       setTicketForm({ subject: '', message: '', category: 'general' });
       fetchTickets();
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Failed to create ticket');
+      toast.error(getErrorMessage(error, 'Failed to create ticket'));
     } finally {
       setSubmitting(false);
     }
