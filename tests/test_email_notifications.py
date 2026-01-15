@@ -10,7 +10,7 @@ import os
 import time
 import uuid
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://ecommerce-optio.preview.emergentagent.com').rstrip('/')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://appcloud-fixes.preview.emergentagent.com').rstrip('/')
 
 # Test credentials - using user without 2FA enabled
 TEST_USER_EMAIL = "emailtest@napp.io"
