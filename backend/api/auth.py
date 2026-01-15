@@ -178,6 +178,37 @@ async def get_me(user=Depends(get_current_user)):
     )
 
 
+from pydantic import BaseModel, Field
+
+class ChangePasswordRequest(BaseModel):
+    current_password: str = None  # Optional for initial password setup
+    new_password: str = Field(..., min_length=8)
+
+
+@router.put("/change-password")
+async def change_password(request: ChangePasswordRequest, user=Depends(get_current_user)):
+    """Change user password - can be used for initial setup or password change"""
+    
+    # If current_password is provided, verify it (for regular password change)
+    if request.current_password:
+        if not verify_password(request.current_password, user["password"]):
+            raise HTTPException(status_code=401, detail="Current password is incorrect")
+    
+    # Hash and update the new password
+    hashed_password = hash_password(request.new_password)
+    now = datetime.now(timezone.utc)
+    
+    await db.users.update_one(
+        {"id": user["id"]},
+        {"$set": {
+            "password": hashed_password,
+            "updated_at": now.isoformat()
+        }}
+    )
+    
+    return {"success": True, "message": "Password updated successfully"}
+
+
 # ==================== 2FA ENDPOINTS ====================
 
 @router.post("/2fa/setup", response_model=TwoFactorSetupResponse)
