@@ -360,10 +360,60 @@ export default function DashboardLayout() {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 p-4 lg:p-6 overflow-auto">
+        <main className="flex-1 p-3 sm:p-4 lg:p-6 overflow-auto pb-20 lg:pb-6">
           <Outlet />
         </main>
       </div>
+      
+      {/* Mobile Bottom Navigation */}
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-[rgba(15,17,26,0.98)] backdrop-blur-xl border-t border-white/5 z-40">
+        <div className="flex items-center justify-around py-2">
+          <NavLink
+            to="/dashboard"
+            end
+            className={({ isActive }) => `flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-colors ${
+              isActive ? 'text-cyan-400' : 'text-slate-500 hover:text-slate-300'
+            }`}
+          >
+            <LayoutDashboard className="w-5 h-5" />
+            <span className="text-[10px]">Dashboard</span>
+          </NavLink>
+          <NavLink
+            to="/dashboard/app-marketplace"
+            className={({ isActive }) => `flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-colors ${
+              isActive ? 'text-cyan-400' : 'text-slate-500 hover:text-slate-300'
+            }`}
+          >
+            <Store className="w-5 h-5" />
+            <span className="text-[10px]">Apps</span>
+          </NavLink>
+          <NavLink
+            to="/dashboard/earnings"
+            className={({ isActive }) => `flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-colors ${
+              isActive ? 'text-cyan-400' : 'text-slate-500 hover:text-slate-300'
+            }`}
+          >
+            <TrendingUp className="w-5 h-5" />
+            <span className="text-[10px]">Earnings</span>
+          </NavLink>
+          <NavLink
+            to="/dashboard/proof-of-impact"
+            className={({ isActive }) => `flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-colors ${
+              isActive ? 'text-cyan-400' : 'text-slate-500 hover:text-slate-300'
+            }`}
+          >
+            <Trophy className="w-5 h-5" />
+            <span className="text-[10px]">Impact</span>
+          </NavLink>
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="flex flex-col items-center gap-1 px-3 py-2 rounded-lg text-slate-500 hover:text-slate-300 transition-colors"
+          >
+            <Menu className="w-5 h-5" />
+            <span className="text-[10px]">More</span>
+          </button>
+        </div>
+      </nav>
       
       {/* Points Notification */}
       <PointsNotification />
