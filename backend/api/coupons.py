@@ -159,6 +159,7 @@ def generate_coupon_code(length=8):
 @admin_router.get("")
 async def admin_get_coupons(
     is_active: Optional[bool] = None,
+    product_id: Optional[str] = None,
     limit: int = Query(100, le=500),
     offset: int = Query(0, ge=0),
     admin=Depends(get_current_admin)
@@ -167,6 +168,8 @@ async def admin_get_coupons(
     query = {}
     if is_active is not None:
         query["is_active"] = is_active
+    if product_id:
+        query["applicable_products"] = product_id
     
     cursor = db.coupons.find(query, {"_id": 0}).sort("created_at", -1).skip(offset).limit(limit)
     coupons = await cursor.to_list(length=limit)
