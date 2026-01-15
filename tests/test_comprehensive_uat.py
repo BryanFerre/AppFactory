@@ -69,13 +69,14 @@ class TestUserAuthentication:
             "email": TEST_USER_EMAIL,
             "password": TEST_USER_PASSWORD
         })
-        # May return 401 if user doesn't exist
         if response.status_code == 200:
             data = response.json()
-            assert "token" in data
+            assert "access_token" in data
             print(f"✓ Test user login successful")
+            return data["access_token"]
         else:
             print(f"⚠ Test user {TEST_USER_EMAIL} not found (status: {response.status_code})")
+            return None
     
     def test_login_with_demo_user(self):
         """Test login with demo user credentials"""
@@ -85,10 +86,12 @@ class TestUserAuthentication:
         })
         if response.status_code == 200:
             data = response.json()
-            assert "token" in data
+            assert "access_token" in data
             print(f"✓ Demo user login successful")
+            return data["access_token"]
         else:
             print(f"⚠ Demo user {DEMO_USER_EMAIL} not found (status: {response.status_code})")
+            return None
     
     def test_register_new_user(self):
         """Test user registration flow"""
@@ -100,7 +103,7 @@ class TestUserAuthentication:
         })
         if response.status_code == 200:
             data = response.json()
-            assert "token" in data or "user" in data
+            assert "access_token" in data or "user" in data
             print(f"✓ User registration successful: {test_email}")
         else:
             print(f"⚠ Registration response: {response.status_code} - {response.text[:200]}")
@@ -111,19 +114,19 @@ class TestAdminAuthentication:
     
     def test_admin_login_success(self):
         """Test admin login with valid credentials"""
-        response = requests.post(f"{BASE_URL}/api/admin/login", json={
+        response = requests.post(f"{BASE_URL}/api/admin/auth/login", json={
             "email": ADMIN_EMAIL,
             "password": ADMIN_PASSWORD
         })
         assert response.status_code == 200
         data = response.json()
-        assert "token" in data
+        assert "access_token" in data
         print(f"✓ Admin login successful")
-        return data["token"]
+        return data["access_token"]
     
     def test_admin_login_invalid(self):
         """Test admin login fails with invalid credentials"""
-        response = requests.post(f"{BASE_URL}/api/admin/login", json={
+        response = requests.post(f"{BASE_URL}/api/admin/auth/login", json={
             "email": ADMIN_EMAIL,
             "password": "wrongpassword"
         })
@@ -164,24 +167,31 @@ class TestPurchaseFlow:
         else:
             print(f"⚠ Payment intent creation: {response.status_code} - {response.text[:200]}")
     
-    def test_create_payment_intent_with_coupon(self):
-        """Test creating a payment intent with coupon"""
+    def test_create_payment_intent_with_referral(self):
+        """Test creating a payment intent with referral code"""
         product_response = requests.get(f"{BASE_URL}/api/products/slug/optio-cloudnode")
         product = product_response.json()
         
         response = requests.post(f"{BASE_URL}/api/purchase/create-payment-intent", json={
             "product_id": product["id"],
-            "email": "test_coupon@example.com",
-            "name": "Test Coupon User",
-            "coupon_code": "TESTCOUPON"  # May or may not exist
+            "email": "test_referral@example.com",
+            "name": "Test Referral User",
+            "referral_code": "TESTREF123"
         })
         
-        # Should work even if coupon doesn't exist (just won't apply discount)
-        print(f"Payment intent with coupon: {response.status_code}")
+        print(f"Payment intent with referral: {response.status_code}")
 
 
 class TestCouponSystem:
     """Coupon validation and management tests"""
+    
+    def get_admin_token(self):
+        """Get admin token"""
+        response = requests.post(f"{BASE_URL}/api/admin/auth/login", json={
+            "email": ADMIN_EMAIL,
+            "password": ADMIN_PASSWORD
+        })
+        return response.json()["access_token"]
     
     def test_validate_invalid_coupon(self):
         """Test validation of non-existent coupon"""
@@ -197,13 +207,7 @@ class TestCouponSystem:
     
     def test_admin_create_coupon(self):
         """Test admin can create a coupon"""
-        # Login as admin
-        login_response = requests.post(f"{BASE_URL}/api/admin/login", json={
-            "email": ADMIN_EMAIL,
-            "password": ADMIN_PASSWORD
-        })
-        assert login_response.status_code == 200
-        token = login_response.json()["token"]
+        token = self.get_admin_token()
         
         # Get product ID
         product_response = requests.get(f"{BASE_URL}/api/products/slug/optio-cloudnode")
@@ -233,13 +237,8 @@ class TestCouponSystem:
             print(f"⚠ Coupon creation: {response.status_code} - {response.text[:200]}")
     
     def test_validate_valid_coupon(self):
-        """Test validation of a valid coupon (if exists)"""
-        # First create a coupon
-        login_response = requests.post(f"{BASE_URL}/api/admin/login", json={
-            "email": ADMIN_EMAIL,
-            "password": ADMIN_PASSWORD
-        })
-        token = login_response.json()["token"]
+        """Test validation of a valid coupon"""
+        token = self.get_admin_token()
         
         product_response = requests.get(f"{BASE_URL}/api/products/slug/optio-cloudnode")
         product = product_response.json()
@@ -277,11 +276,11 @@ class TestAdminDashboard:
     @pytest.fixture
     def admin_token(self):
         """Get admin token"""
-        response = requests.post(f"{BASE_URL}/api/admin/login", json={
+        response = requests.post(f"{BASE_URL}/api/admin/auth/login", json={
             "email": ADMIN_EMAIL,
             "password": ADMIN_PASSWORD
         })
-        return response.json()["token"]
+        return response.json()["access_token"]
     
     def test_admin_dashboard_stats(self, admin_token):
         """Test admin dashboard stats endpoint"""
@@ -337,6 +336,17 @@ class TestAdminDashboard:
         data = response.json()
         assert "coupons" in data
         print(f"✓ Admin coupons: {data['total']} coupons")
+    
+    def test_admin_orders_list(self, admin_token):
+        """Test admin orders list"""
+        response = requests.get(
+            f"{BASE_URL}/api/admin/orders",
+            headers={"Authorization": f"Bearer {admin_token}"}
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert "orders" in data
+        print(f"✓ Admin orders: {data['total']} orders")
 
 
 class TestAdminReports:
@@ -345,11 +355,11 @@ class TestAdminReports:
     @pytest.fixture
     def admin_token(self):
         """Get admin token"""
-        response = requests.post(f"{BASE_URL}/api/admin/login", json={
+        response = requests.post(f"{BASE_URL}/api/admin/auth/login", json={
             "email": ADMIN_EMAIL,
             "password": ADMIN_PASSWORD
         })
-        return response.json()["token"]
+        return response.json()["access_token"]
     
     def test_users_report(self, admin_token):
         """Test users report endpoint"""
@@ -400,25 +410,13 @@ class TestUserDashboard:
     """User dashboard tests"""
     
     def get_user_token(self):
-        """Get a user token (create user if needed)"""
-        # Try existing users first
-        for email, password in [(TEST_USER_EMAIL, TEST_USER_PASSWORD), (DEMO_USER_EMAIL, DEMO_USER_PASSWORD)]:
-            response = requests.post(f"{BASE_URL}/api/auth/login", json={
-                "email": email,
-                "password": password
-            })
-            if response.status_code == 200:
-                return response.json()["token"]
-        
-        # Create a new user
-        test_email = f"dashboard_test_{datetime.now().strftime('%Y%m%d%H%M%S')}@example.com"
-        response = requests.post(f"{BASE_URL}/api/auth/register", json={
-            "email": test_email,
-            "password": "testpassword123",
-            "name": "Dashboard Test User"
+        """Get a user token"""
+        response = requests.post(f"{BASE_URL}/api/auth/login", json={
+            "email": TEST_USER_EMAIL,
+            "password": TEST_USER_PASSWORD
         })
         if response.status_code == 200:
-            return response.json().get("token")
+            return response.json()["access_token"]
         return None
     
     def test_user_profile(self):
@@ -450,6 +448,22 @@ class TestUserDashboard:
         data = response.json()
         assert "licenses" in data
         print(f"✓ User licenses: {data['total']} licenses")
+    
+    def test_user_points(self):
+        """Test user points endpoint"""
+        token = self.get_user_token()
+        if not token:
+            pytest.skip("No user token available")
+        
+        response = requests.get(
+            f"{BASE_URL}/api/activity/points",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        if response.status_code == 200:
+            data = response.json()
+            print(f"✓ User points: {data.get('total', 0)}")
+        else:
+            print(f"⚠ User points: {response.status_code}")
 
 
 class TestAppMarketplace:
@@ -476,16 +490,6 @@ class TestAppMarketplace:
 
 class TestPointsSystem:
     """Points and rewards system tests"""
-    
-    def get_user_token(self):
-        """Get a user token"""
-        response = requests.post(f"{BASE_URL}/api/auth/login", json={
-            "email": TEST_USER_EMAIL,
-            "password": TEST_USER_PASSWORD
-        })
-        if response.status_code == 200:
-            return response.json()["token"]
-        return None
     
     def test_leaderboard_all_time(self):
         """Test all-time leaderboard"""
