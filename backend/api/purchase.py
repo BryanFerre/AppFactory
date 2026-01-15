@@ -18,8 +18,10 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from utils.database import db
 from utils.auth import get_current_user, create_token, hash_password
+from utils.config import FRONTEND_URL
 from api.licenses import issue_license
 from services.points_engine import PointsEngine
+from services.email import send_notification_email
 
 router = APIRouter(prefix="/purchase", tags=["purchase"])
 
