@@ -243,110 +243,113 @@ export default function AppMarketplace() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+      <div className="flex flex-col gap-3 sm:gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white font-['Outfit']">App Marketplace</h1>
-          <p className="text-slate-400 mt-1">Discover and install revenue-generating apps for your node</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-white font-['Outfit']">App Marketplace</h1>
+          <p className="text-sm sm:text-base text-slate-400 mt-1">Discover and install revenue-generating apps</p>
         </div>
         
         {/* Compare Mode Toggle */}
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
           {compareMode && selectedForCompare.length > 0 && (
             <motion.div 
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               className="flex items-center gap-2"
             >
-              <Badge className="bg-cyan-500/20 text-cyan-400 px-3 py-1">
+              <Badge className="bg-cyan-500/20 text-cyan-400 px-2 sm:px-3 py-1 text-xs sm:text-sm">
                 {selectedForCompare.length} selected
               </Badge>
               <Button
                 size="sm"
                 onClick={handleCompare}
-                className="bg-cyan-500 hover:bg-cyan-600 text-white"
+                className="bg-cyan-500 hover:bg-cyan-600 text-white text-xs sm:text-sm"
                 disabled={selectedForCompare.length < 2}
                 data-testid="compare-apps-btn"
               >
-                <GitCompare className="w-4 h-4 mr-2" />
+                <GitCompare className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                 Compare
               </Button>
               <Button
                 size="sm"
                 variant="ghost"
                 onClick={clearComparison}
-                className="text-slate-400 hover:text-white"
+                className="text-slate-400 hover:text-white p-1 sm:p-2"
               >
                 <X className="w-4 h-4" />
               </Button>
             </motion.div>
           )}
           <Button
+            size="sm"
             variant={compareMode ? "default" : "outline"}
             onClick={() => {
               setCompareMode(!compareMode);
               if (compareMode) clearComparison();
             }}
-            className={compareMode 
+            className={`text-xs sm:text-sm ${compareMode 
               ? "bg-cyan-500 hover:bg-cyan-600 text-white" 
               : "border-white/20 text-slate-300 hover:text-white hover:bg-white/10"
-            }
+            }`}
             data-testid="toggle-compare-mode"
           >
-            <GitCompare className="w-4 h-4 mr-2" />
-            {compareMode ? 'Exit Compare' : 'Compare Apps'}
+            <GitCompare className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+            {compareMode ? 'Exit' : 'Compare'}
           </Button>
         </div>
       </div>
 
       {/* Filters Bar */}
-      <div className="glass-card p-4 flex flex-col lg:flex-row gap-4">
+      <div className="glass-card p-3 sm:p-4 flex flex-col gap-3 sm:gap-4">
         {/* Search */}
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-slate-500" />
           <Input
             placeholder="Search apps..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 bg-black/40 border-white/10 text-white"
+            className="pl-9 sm:pl-10 bg-black/40 border-white/10 text-white text-sm"
             data-testid="app-search"
           />
         </div>
         
-        {/* Category Filter */}
-        <Select value={category} onValueChange={setCategory}>
-          <SelectTrigger className="w-full lg:w-44 bg-black/40 border-white/10" data-testid="category-filter">
-            <SelectValue placeholder="Category" />
-          </SelectTrigger>
-          <SelectContent className="glass-card border-white/10">
-            {categories.map(cat => (
-              <SelectItem key={cat} value={cat} className="capitalize">
-                {cat === 'all' ? 'All Categories' : cat}
+        {/* Filters Row */}
+        <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 sm:gap-3">
+          {/* Category Filter */}
+          <Select value={category} onValueChange={setCategory}>
+            <SelectTrigger className="bg-black/40 border-white/10 text-xs sm:text-sm" data-testid="category-filter">
+              <SelectValue placeholder="Category" />
+            </SelectTrigger>
+            <SelectContent className="glass-card border-white/10">
+              {categories.map(cat => (
+                <SelectItem key={cat} value={cat} className="capitalize text-xs sm:text-sm">
+                  {cat === 'all' ? 'All' : cat}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          
+          {/* Status Filter */}
+          <Select value={filter} onValueChange={setFilter}>
+            <SelectTrigger className="bg-black/40 border-white/10 text-xs sm:text-sm" data-testid="status-filter">
+              <SelectValue placeholder="Filter" />
+            </SelectTrigger>
+            <SelectContent className="glass-card border-white/10">
+              <SelectItem value="all" className="text-xs sm:text-sm">All Apps</SelectItem>
+              <SelectItem value="trending" className="text-xs sm:text-sm">
+                <span className="flex items-center gap-2">
+                  <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 text-cyan-400" /> Trending
+                </span>
               </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        
-        {/* Status Filter */}
-        <Select value={filter} onValueChange={setFilter}>
-          <SelectTrigger className="w-full lg:w-36 bg-black/40 border-white/10" data-testid="status-filter">
-            <SelectValue placeholder="Filter" />
-          </SelectTrigger>
-          <SelectContent className="glass-card border-white/10">
-            <SelectItem value="all">All Apps</SelectItem>
-            <SelectItem value="trending">
-              <span className="flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 text-cyan-400" /> Trending
-              </span>
-            </SelectItem>
-            <SelectItem value="new">
-              <span className="flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-purple-400" /> New
-              </span>
-            </SelectItem>
-          </SelectContent>
-        </Select>
+              <SelectItem value="new" className="text-xs sm:text-sm">
+                <span className="flex items-center gap-2">
+                  <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 text-purple-400" /> New
+                </span>
+              </SelectItem>
+            </SelectContent>
+          </Select>
         
         {/* Sort Dropdown */}
         <DropdownMenu>
