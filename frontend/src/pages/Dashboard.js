@@ -408,6 +408,13 @@ export default function Dashboard() {
           </div>
         </motion.div>
       </div>
+
+      {/* Onboarding Tutorial Modal */}
+      <OnboardingModal 
+        isOpen={showOnboarding}
+        onClose={() => setShowOnboarding(false)}
+        onComplete={handleOnboardingComplete}
+      />
     </motion.div>
   );
 }
