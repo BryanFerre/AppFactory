@@ -45,6 +45,9 @@ async def submit_app(
     terms_accepted: bool,
     github_url: Optional[str] = None,
     documentation_url: Optional[str] = None,
+    # New: Multi-category support
+    categories: Optional[List[dict]] = None,  # [{"category_id": "...", "subcategory_id": "..."}]
+    tags: Optional[List[str]] = None,  # ["ai", "web3", "no-code"]
     user=Depends(get_current_user)
 ):
     """Submit a new app to the App Factory"""
@@ -54,12 +57,23 @@ async def submit_app(
     submission_id = str(uuid.uuid4())
     now = datetime.now(timezone.utc).isoformat()
     
+    # Extract primary category info for backwards compatibility
+    category_id = None
+    subcategory_id = None
+    if categories and len(categories) > 0:
+        category_id = categories[0].get("category_id")
+        subcategory_id = categories[0].get("subcategory_id")
+    
     submission = {
         "id": submission_id,
         "user_id": user["id"],
         "app_name": app_name,
         "description": description,
-        "category": category,
+        "category": category,  # Legacy field
+        "category_id": category_id,  # New: primary category ID
+        "subcategory_id": subcategory_id,  # New: primary subcategory ID
+        "categories": categories or [],  # New: all category assignments
+        "tags": tags or [],  # New: tags array
         "resources_required": resources_required,
         "monthly_subscription_fee": monthly_subscription_fee,
         "revenue_sharing": revenue_sharing,
@@ -73,6 +87,12 @@ async def submit_app(
         "status": "pending",
         "featured": False,
         "featured_until": None,
+        "is_trending": False,
+        "is_new": True,
+        "staff_pick": False,
+        "active_nodes": 0,
+        "subscribers": 0,
+        "revenue_per_node": 0,
         "created_at": now,
         "updated_at": now
     }
@@ -163,10 +183,10 @@ async def create_featured_checkout(submission_id: str, plan: str, origin_url: st
     if submission.get("status") != "approved":
         raise HTTPException(status_code=400, detail="Only approved apps can be featured")
     
-    # Pricing
+    # Pricing: $29 for 30 days, $49 for 60 days
     prices = {
-        "30_days": {"amount": 9900, "days": 30, "label": "30 Days Featured"},
-        "60_days": {"amount": 14900, "days": 60, "label": "60 Days Featured"}
+        "30_days": {"amount": 2900, "days": 30, "label": "30 Days Featured"},
+        "60_days": {"amount": 4900, "days": 60, "label": "60 Days Featured"}
     }
     
     if plan not in prices:
