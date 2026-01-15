@@ -49,6 +49,14 @@ def get_email_template(template_type: str, data: dict) -> tuple:
             .stat-label { font-size: 14px; color: #64748b; }
             .footer { margin-top: 32px; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.1); text-align: center; }
             .footer p { color: #64748b; font-size: 12px; }
+            .info-box { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 20px; margin: 20px 0; }
+            .info-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+            .info-label { color: #64748b; }
+            .info-value { color: #ffffff; font-weight: 500; }
+            .credentials-box { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); border-radius: 12px; padding: 20px; margin: 20px 0; }
+            .credential-item { margin: 12px 0; }
+            .credential-label { color: #64748b; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+            .credential-value { color: #10b981; font-family: monospace; font-size: 16px; background: rgba(0,0,0,0.3); padding: 8px 12px; border-radius: 6px; margin-top: 4px; word-break: break-all; }
         </style>
     """
     
@@ -56,7 +64,8 @@ def get_email_template(template_type: str, data: dict) -> tuple:
         "referral_signup": _get_referral_signup_template(base_style, data),
         "2fa_enabled": _get_2fa_enabled_template(base_style, data),
         "2fa_disabled": _get_2fa_disabled_template(base_style, data),
-        "welcome": _get_welcome_template(base_style, data)
+        "welcome": _get_welcome_template(base_style, data),
+        "purchase_confirmation": _get_purchase_confirmation_template(base_style, data)
     }
     
     return templates.get(template_type, ("AppCloud Notification", "<p>You have a notification from AppCloud.</p>"))
