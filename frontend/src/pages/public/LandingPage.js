@@ -529,20 +529,20 @@ export default function LandingPage() {
                 transition={{ delay: 0.3 }}
                 className="flex flex-col items-center gap-3"
               >
-                <Badge className="bg-orange-500/20 text-orange-400 border-orange-500/30 px-3 py-1">
-                  Pre-Launch Sale
-                </Badge>
                 <div className="inline-flex items-center gap-4 px-8 py-4 bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl">
                   <div className="text-left">
-                    <p className="text-sm text-slate-400">One-time investment</p>
+                    <p className="text-sm text-slate-400">License (one-time)</p>
                     <p className="text-3xl font-bold text-white">{formatPrice(product.price)}</p>
                   </div>
                   <div className="h-12 w-px bg-white/10" />
                   <div className="text-left">
-                    <p className="text-sm text-slate-400">Lifetime ownership</p>
-                    <p className="text-lg text-cyan-400 font-medium">No monthly fees</p>
+                    <p className="text-sm text-slate-400">Monthly service</p>
+                    <p className="text-2xl font-bold text-cyan-400">{formatPrice(product.monthly_fee)}<span className="text-sm font-normal text-slate-400">/mo</span></p>
                   </div>
                 </div>
+                <p className="text-sm text-slate-500">
+                  First payment: {formatPrice(product.price + (product.monthly_fee || 0))} (includes first month)
+                </p>
               </motion.div>
             )}
           </motion.div>
