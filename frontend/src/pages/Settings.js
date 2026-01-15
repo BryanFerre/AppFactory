@@ -110,7 +110,7 @@ export default function Settings() {
       fetchTwoFaStatus();
       toast.success('Two-factor authentication disabled');
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Invalid code');
+      toast.error(getErrorMessage(error, 'Invalid code'));
     } finally {
       setLoading(false);
     }
