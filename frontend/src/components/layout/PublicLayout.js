@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, Outlet, useLocation } from 'react-router-dom';
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Menu, X } from 'lucide-react';
@@ -8,6 +8,7 @@ import { ReactComponent as CloudNodeLogo } from '@/assets/CloudNode.svg';
 export default function PublicLayout() {
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
 
   const navLinks = [
     { path: '/', label: 'Home' },
@@ -17,6 +18,18 @@ export default function PublicLayout() {
   ];
 
   const isActivePath = (path) => location.pathname === path;
+
+  const handleGetStarted = () => {
+    // Navigate to landing page with query param to trigger purchase modal
+    if (location.pathname === '/') {
+      // If already on landing page, dispatch custom event
+      window.dispatchEvent(new CustomEvent('openPurchaseModal'));
+    } else {
+      // Navigate to landing page with query param
+      navigate('/?purchase=true');
+    }
+    setMobileMenuOpen(false);
+  };
 
   return (
     <div className="min-h-screen bg-[#0B0F1A]">
@@ -61,11 +74,12 @@ export default function PublicLayout() {
                   Sign In
                 </Button>
               </Link>
-              <Link to="/register">
-                <Button className="bg-gradient-to-r from-cyan-500 to-blue-500 text-white hover:from-cyan-600 hover:to-blue-600">
-                  Get Started
-                </Button>
-              </Link>
+              <Button 
+                onClick={handleGetStarted}
+                className="bg-gradient-to-r from-cyan-500 to-blue-500 text-white hover:from-cyan-600 hover:to-blue-600"
+              >
+                Get Started
+              </Button>
             </div>
 
             {/* Mobile Menu Button */}
@@ -113,11 +127,12 @@ export default function PublicLayout() {
                     Sign In
                   </Button>
                 </Link>
-                <Link to="/register" onClick={() => setMobileMenuOpen(false)}>
-                  <Button className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 text-white">
-                    Get Started
-                  </Button>
-                </Link>
+                <Button 
+                  onClick={handleGetStarted}
+                  className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 text-white"
+                >
+                  Get Started
+                </Button>
               </div>
             </div>
           </motion.div>
