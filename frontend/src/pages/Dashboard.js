@@ -38,10 +38,49 @@ export default function Dashboard() {
   const [availableApps, setAvailableApps] = useState([]);
   const [capacity, setCapacity] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   useEffect(() => {
     fetchDashboardData();
+    checkOnboardingStatus();
   }, []);
+
+  const checkOnboardingStatus = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get(`${API}/auth/onboarding/status`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (response.data.show_tutorial) {
+        // Small delay to let dashboard load first
+        setTimeout(() => setShowOnboarding(true), 1000);
+      }
+    } catch (error) {
+      console.error('Failed to check onboarding status');
+    }
+  };
+
+  const handleOnboardingComplete = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.post(`${API}/auth/onboarding/complete`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (response.data.points_awarded > 0) {
+        toast.success(
+          <div>
+            <p className="font-semibold">Tutorial Complete! 🎉</p>
+            <p className="text-sm">You earned +{response.data.points_awarded} OPT bonus points!</p>
+          </div>
+        );
+      }
+      setShowOnboarding(false);
+    } catch (error) {
+      setShowOnboarding(false);
+    }
+  };
 
   const fetchDashboardData = async () => {
     try {
