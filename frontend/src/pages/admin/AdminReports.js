@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import axios from 'axios';
 import {
   FileText, Download, Calendar, Filter, Users, Server, Package,
-  DollarSign, TrendingUp, FileSpreadsheet, FileDown, Loader2
+  DollarSign, TrendingUp, FileSpreadsheet, FileDown, Loader2,
+  CheckCircle2, Clock, AlertCircle, RefreshCw, Eye
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -11,7 +13,26 @@ import { Label } from '@/components/ui/label';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { toast } from 'sonner';
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
+
+const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 const reportTypes = [
   {
@@ -25,7 +46,7 @@ const reportTypes = [
   {
     id: 'nodes',
     name: 'Node Health Report',
-    description: 'Node status, uptime, capacity utilization, and performance',
+    description: 'Licensed nodes, status, and owner information',
     icon: Server,
     color: 'emerald',
     formats: ['csv', 'pdf']
@@ -44,7 +65,7 @@ const reportTypes = [
     description: 'Revenue breakdown, transactions, and financial summary',
     icon: DollarSign,
     color: 'amber',
-    formats: ['csv', 'pdf', 'xlsx']
+    formats: ['csv', 'pdf']
   },
   {
     id: 'payouts',
@@ -52,7 +73,7 @@ const reportTypes = [
     description: 'Node operator payouts, pending amounts, and history',
     icon: TrendingUp,
     color: 'blue',
-    formats: ['csv', 'pdf', 'xlsx']
+    formats: ['csv', 'pdf']
   }
 ];
 
@@ -67,20 +88,181 @@ const periodOptions = [
 export default function AdminReports() {
   const [selectedPeriod, setSelectedPeriod] = useState('30d');
   const [generating, setGenerating] = useState(null);
+  const [recentExports, setRecentExports] = useState([]);
+  const [previewData, setPreviewData] = useState(null);
+  const [showPreview, setShowPreview] = useState(false);
+  const [previewLoading, setPreviewLoading] = useState(false);
+
+  useEffect(() => {
+    // Load recent exports from localStorage
+    const saved = localStorage.getItem('recentExports');
+    if (saved) {
+      const exports = JSON.parse(saved);
+      // Filter out exports older than 7 days
+      const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+      const recent = exports.filter(e => new Date(e.timestamp).getTime() > sevenDaysAgo);
+      setRecentExports(recent);
+      localStorage.setItem('recentExports', JSON.stringify(recent));
+    }
+  }, []);
+
+  const saveExport = (reportType, format, filename) => {
+    const newExport = {
+      id: Date.now(),
+      reportType,
+      format,
+      filename,
+      timestamp: new Date().toISOString(),
+      period: selectedPeriod
+    };
+    const updated = [newExport, ...recentExports].slice(0, 10);
+    setRecentExports(updated);
+    localStorage.setItem('recentExports', JSON.stringify(updated));
+  };
+
+  const fetchReportData = async (reportType) => {
+    const token = localStorage.getItem('admin_token');
+    const response = await axios.get(`${API}/admin/reports/${reportType}?period=${selectedPeriod}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    return response.data;
+  };
+
+  const handlePreview = async (reportType) => {
+    setPreviewLoading(true);
+    try {
+      const data = await fetchReportData(reportType);
+      setPreviewData({
+        ...data,
+        reportName: reportTypes.find(r => r.id === reportType)?.name || reportType
+      });
+      setShowPreview(true);
+    } catch (err) {
+      console.error('Failed to fetch report:', err);
+      toast.error('Failed to load report preview');
+    } finally {
+      setPreviewLoading(false);
+    }
+  };
 
   const handleGenerateReport = async (reportType, format) => {
     setGenerating(`${reportType}-${format}`);
     
-    // Simulate report generation
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    toast.success(`${reportType.replace('_', ' ')} report generated successfully`);
-    setGenerating(null);
-    
-    // In a real implementation, this would trigger a download
-    toast.info('Report download will start automatically', {
-      description: 'Check your downloads folder'
-    });
+    try {
+      const token = localStorage.getItem('admin_token');
+      
+      if (format === 'csv') {
+        // Download CSV directly from backend
+        const response = await axios.get(
+          `${API}/admin/reports/export/csv/${reportType}?period=${selectedPeriod}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+            responseType: 'blob'
+          }
+        );
+        
+        // Create download link
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        const filename = `${reportType}_report_${selectedPeriod}_${new Date().toISOString().slice(0,10)}.csv`;
+        link.href = url;
+        link.setAttribute('download', filename);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
+        
+        saveExport(reportType, 'csv', filename);
+        toast.success('CSV report downloaded successfully');
+        
+      } else if (format === 'pdf') {
+        // Fetch data and generate PDF client-side
+        const data = await fetchReportData(reportType);
+        const reportInfo = reportTypes.find(r => r.id === reportType);
+        
+        // Create PDF
+        const doc = new jsPDF();
+        const pageWidth = doc.internal.pageSize.getWidth();
+        
+        // Header
+        doc.setFontSize(20);
+        doc.setTextColor(34, 211, 238); // cyan
+        doc.text(reportInfo?.name || 'Report', 14, 20);
+        
+        doc.setFontSize(10);
+        doc.setTextColor(100);
+        doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 28);
+        doc.text(`Period: ${periodOptions.find(p => p.value === selectedPeriod)?.label}`, 14, 34);
+        
+        // Summary section
+        doc.setFontSize(12);
+        doc.setTextColor(40);
+        doc.text('Summary', 14, 46);
+        
+        let yPos = 52;
+        Object.entries(data.summary).forEach(([key, value]) => {
+          const label = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+          doc.setFontSize(10);
+          doc.setTextColor(100);
+          doc.text(`${label}: `, 14, yPos);
+          doc.setTextColor(40);
+          doc.text(String(typeof value === 'number' ? value.toLocaleString() : value), 60, yPos);
+          yPos += 6;
+        });
+        
+        // Data table
+        if (data.data.length > 0) {
+          const headers = data.columns.map(c => c.label);
+          const rows = data.data.map(row => 
+            data.columns.map(c => {
+              const val = row[c.key];
+              if (typeof val === 'number') return val.toLocaleString();
+              if (typeof val === 'string' && val.includes('T')) {
+                return new Date(val).toLocaleDateString();
+              }
+              return String(val || '');
+            })
+          );
+          
+          autoTable(doc, {
+            head: [headers],
+            body: rows,
+            startY: yPos + 10,
+            styles: { fontSize: 8, cellPadding: 2 },
+            headStyles: { fillColor: [34, 211, 238], textColor: [0, 0, 0] },
+            alternateRowStyles: { fillColor: [245, 245, 245] },
+            margin: { left: 14, right: 14 }
+          });
+        }
+        
+        // Footer
+        const pageCount = doc.internal.getNumberOfPages();
+        for (let i = 1; i <= pageCount; i++) {
+          doc.setPage(i);
+          doc.setFontSize(8);
+          doc.setTextColor(150);
+          doc.text(
+            `Page ${i} of ${pageCount} - Optio CloudNode Admin`,
+            pageWidth / 2,
+            doc.internal.pageSize.getHeight() - 10,
+            { align: 'center' }
+          );
+        }
+        
+        // Save PDF
+        const filename = `${reportType}_report_${selectedPeriod}_${new Date().toISOString().slice(0,10)}.pdf`;
+        doc.save(filename);
+        
+        saveExport(reportType, 'pdf', filename);
+        toast.success('PDF report downloaded successfully');
+      }
+      
+    } catch (err) {
+      console.error('Failed to generate report:', err);
+      toast.error(err.response?.data?.detail || 'Failed to generate report');
+    } finally {
+      setGenerating(null);
+    }
   };
 
   const colorClasses = {
@@ -89,6 +271,10 @@ export default function AdminReports() {
     purple: { bg: 'bg-purple-500/20', text: 'text-purple-400', border: 'border-purple-500/30', hover: 'hover:border-purple-500/50' },
     amber: { bg: 'bg-amber-500/20', text: 'text-amber-400', border: 'border-amber-500/30', hover: 'hover:border-amber-500/50' },
     blue: { bg: 'bg-blue-500/20', text: 'text-blue-400', border: 'border-blue-500/30', hover: 'hover:border-blue-500/50' }
+  };
+
+  const formatDate = (dateStr) => {
+    return new Date(dateStr).toLocaleString();
   };
 
   return (
@@ -137,8 +323,19 @@ export default function AdminReports() {
                       <h3 className="text-lg font-semibold text-white">{report.name}</h3>
                       <p className="text-sm text-slate-400 mt-1">{report.description}</p>
                       
-                      <div className="flex items-center gap-2 mt-4">
-                        <span className="text-xs text-slate-500">Export as:</span>
+                      <div className="flex items-center gap-2 mt-4 flex-wrap">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handlePreview(report.id)}
+                          disabled={previewLoading}
+                          className="text-slate-400 hover:text-white"
+                        >
+                          <Eye className="w-4 h-4 mr-1" />
+                          Preview
+                        </Button>
+                        
+                        <span className="text-xs text-slate-500">Export:</span>
                         {report.formats.map(format => (
                           <Button
                             key={format}
@@ -154,7 +351,6 @@ export default function AdminReports() {
                               <>
                                 {format === 'csv' && <FileSpreadsheet className="w-4 h-4 mr-1" />}
                                 {format === 'pdf' && <FileText className="w-4 h-4 mr-1" />}
-                                {format === 'xlsx' && <FileDown className="w-4 h-4 mr-1" />}
                                 {format.toUpperCase()}
                               </>
                             )}
@@ -179,11 +375,43 @@ export default function AdminReports() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-8">
-            <FileText className="w-12 h-12 text-slate-600 mx-auto mb-4" />
-            <p className="text-slate-400">No recent exports</p>
-            <p className="text-sm text-slate-500 mt-1">Generated reports will appear here for 7 days</p>
-          </div>
+          {recentExports.length > 0 ? (
+            <div className="space-y-2">
+              {recentExports.map((exp) => {
+                const report = reportTypes.find(r => r.id === exp.reportType);
+                const IconComponent = report?.icon || FileText;
+                const colors = colorClasses[report?.color || 'cyan'];
+                
+                return (
+                  <div
+                    key={exp.id}
+                    className="flex items-center justify-between p-3 bg-white/5 rounded-lg"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`w-8 h-8 rounded-lg ${colors.bg} flex items-center justify-center`}>
+                        <IconComponent className={`w-4 h-4 ${colors.text}`} />
+                      </div>
+                      <div>
+                        <p className="text-white text-sm font-medium">{exp.filename}</p>
+                        <p className="text-xs text-slate-500">
+                          {formatDate(exp.timestamp)} • {periodOptions.find(p => p.value === exp.period)?.label}
+                        </p>
+                      </div>
+                    </div>
+                    <Badge className={`${colors.bg} ${colors.text} border-0`}>
+                      {exp.format.toUpperCase()}
+                    </Badge>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <FileText className="w-12 h-12 text-slate-600 mx-auto mb-4" />
+              <p className="text-slate-400">No recent exports</p>
+              <p className="text-sm text-slate-500 mt-1">Generated reports will appear here for 7 days</p>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -203,6 +431,110 @@ export default function AdminReports() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Preview Modal */}
+      <Dialog open={showPreview} onOpenChange={setShowPreview}>
+        <DialogContent className="bg-[#0F1420] border-white/10 text-white max-w-4xl max-h-[85vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold flex items-center gap-2">
+              <Eye className="w-5 h-5 text-cyan-400" />
+              {previewData?.reportName} Preview
+            </DialogTitle>
+            <DialogDescription className="text-slate-400">
+              Period: {periodOptions.find(p => p.value === selectedPeriod)?.label} • 
+              Generated: {previewData?.generated_at ? formatDate(previewData.generated_at) : ''}
+            </DialogDescription>
+          </DialogHeader>
+          
+          {previewData && (
+            <div className="flex-1 overflow-hidden flex flex-col">
+              {/* Summary */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                {Object.entries(previewData.summary).map(([key, value]) => (
+                  <div key={key} className="p-3 bg-white/5 rounded-lg">
+                    <p className="text-xs text-slate-500 capitalize">{key.replace(/_/g, ' ')}</p>
+                    <p className="text-lg font-bold text-white">
+                      {typeof value === 'number' ? value.toLocaleString() : value}
+                    </p>
+                  </div>
+                ))}
+              </div>
+              
+              {/* Data Table */}
+              <div className="flex-1 overflow-auto border border-white/10 rounded-lg">
+                <Table>
+                  <TableHeader className="sticky top-0 bg-[#0F1420]">
+                    <TableRow className="border-white/10">
+                      {previewData.columns.map((col) => (
+                        <TableHead key={col.key} className="text-slate-400 font-medium">
+                          {col.label}
+                        </TableHead>
+                      ))}
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {previewData.data.slice(0, 50).map((row, i) => (
+                      <TableRow key={i} className="border-white/5 hover:bg-white/5">
+                        {previewData.columns.map((col) => (
+                          <TableCell key={col.key} className="text-slate-300 text-sm">
+                            {typeof row[col.key] === 'number' 
+                              ? row[col.key].toLocaleString()
+                              : typeof row[col.key] === 'string' && row[col.key].includes('T')
+                                ? new Date(row[col.key]).toLocaleDateString()
+                                : row[col.key] || '-'
+                            }
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+                {previewData.data.length > 50 && (
+                  <div className="p-3 text-center text-sm text-slate-500 bg-white/5">
+                    Showing 50 of {previewData.data.length} records. Export to see all data.
+                  </div>
+                )}
+                {previewData.data.length === 0 && (
+                  <div className="p-8 text-center text-slate-500">
+                    No data available for this period
+                  </div>
+                )}
+              </div>
+              
+              {/* Export Buttons */}
+              <div className="flex items-center justify-end gap-2 mt-4 pt-4 border-t border-white/10">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowPreview(false)}
+                  className="border-white/10"
+                >
+                  Close
+                </Button>
+                <Button
+                  onClick={() => {
+                    handleGenerateReport(previewData.report_type, 'csv');
+                    setShowPreview(false);
+                  }}
+                  className="bg-emerald-500 hover:bg-emerald-600 text-white"
+                >
+                  <FileSpreadsheet className="w-4 h-4 mr-2" />
+                  Export CSV
+                </Button>
+                <Button
+                  onClick={() => {
+                    handleGenerateReport(previewData.report_type, 'pdf');
+                    setShowPreview(false);
+                  }}
+                  className="bg-cyan-500 hover:bg-cyan-600 text-white"
+                >
+                  <FileText className="w-4 h-4 mr-2" />
+                  Export PDF
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
