@@ -161,6 +161,35 @@ export default function LandingPage() {
     }
   };
 
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim() || !product) return;
+    
+    setCouponLoading(true);
+    setCouponError('');
+    
+    try {
+      const response = await axios.post(`${API}/api/coupons/validate`, {
+        code: couponCode.trim().toUpperCase(),
+        product_id: product.id,
+        email: purchaseForm.email || null
+      });
+      
+      setAppliedCoupon(response.data);
+      setCouponCode('');
+    } catch (err) {
+      setCouponError(err.response?.data?.detail || 'Invalid coupon code');
+      setAppliedCoupon(null);
+    } finally {
+      setCouponLoading(false);
+    }
+  };
+
+  const removeCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponCode('');
+    setCouponError('');
+  };
+
   const handlePurchase = async (e) => {
     e.preventDefault();
     setError('');
@@ -172,6 +201,7 @@ export default function LandingPage() {
         email: purchaseForm.email,
         name: purchaseForm.name,
         referral_code: purchaseForm.referralCode || null,
+        coupon_code: appliedCoupon?.coupon?.code || null,
         success_url: `${window.location.origin}/purchase-success`,
         cancel_url: `${window.location.origin}?checkout=cancelled`
       });
