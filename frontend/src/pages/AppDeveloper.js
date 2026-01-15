@@ -518,18 +518,73 @@ export default function AppDeveloper() {
               <div className="space-y-2">
                 <Label htmlFor="category" className="text-slate-300">Category *</Label>
                 <Select
-                  value={formData.category}
-                  onValueChange={(value) => setFormData({ ...formData, category: value })}
+                  value={formData.category_id}
+                  onValueChange={(value) => {
+                    const cat = categories.find(c => c.id === value);
+                    setSelectedCategory(cat);
+                    setFormData({ 
+                      ...formData, 
+                      category_id: value,
+                      category: cat?.name || '',
+                      subcategory_id: ''
+                    });
+                  }}
                 >
                   <SelectTrigger className="bg-black/40 border-white/10" data-testid="category-select">
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
-                  <SelectContent className="glass-card border-white/10">
+                  <SelectContent className="glass-card border-white/10 max-h-60">
                     {categories.map(cat => (
-                      <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                      <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+            </div>
+
+            {/* Subcategory Selection - Shows when category is selected */}
+            {selectedCategory?.subcategories?.length > 0 && (
+              <div className="space-y-2">
+                <Label className="text-slate-300">Subcategory</Label>
+                <Select
+                  value={formData.subcategory_id}
+                  onValueChange={(value) => setFormData({ ...formData, subcategory_id: value })}
+                >
+                  <SelectTrigger className="bg-black/40 border-white/10" data-testid="subcategory-select">
+                    <SelectValue placeholder="Select subcategory (optional)" />
+                  </SelectTrigger>
+                  <SelectContent className="glass-card border-white/10 max-h-60">
+                    {selectedCategory.subcategories.map(sub => (
+                      <SelectItem key={sub.id} value={sub.id}>{sub.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            {/* Tags Selection */}
+            <div className="space-y-2">
+              <Label className="text-slate-300">Tags (select all that apply)</Label>
+              <div className="flex flex-wrap gap-2 p-3 bg-black/20 rounded-lg border border-white/10">
+                {availableTags.map(tag => (
+                  <Badge
+                    key={tag.id}
+                    onClick={() => {
+                      const newTags = formData.tags.includes(tag.id)
+                        ? formData.tags.filter(t => t !== tag.id)
+                        : [...formData.tags, tag.id];
+                      setFormData({ ...formData, tags: newTags });
+                    }}
+                    className={`cursor-pointer transition-all ${
+                      formData.tags.includes(tag.id)
+                        ? 'bg-purple-500/30 text-purple-300 border border-purple-500/50'
+                        : 'bg-white/5 text-slate-400 hover:bg-white/10 border border-white/10'
+                    }`}
+                    data-testid={`tag-${tag.id}`}
+                  >
+                    {tag.name}
+                  </Badge>
+                ))}
               </div>
             </div>
 
