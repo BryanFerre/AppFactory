@@ -17,7 +17,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
-import { ReactComponent as AppCloudLogo } from '@/assets/AppCloud.svg';
+import { ReactComponent as AppCloudLogo } from '@/assets/AppCloudLogo.svg';
 import PointsNotification from '@/components/PointsNotification';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;

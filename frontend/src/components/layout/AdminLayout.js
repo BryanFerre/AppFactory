@@ -17,7 +17,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { ReactComponent as AppCloudLogo } from '@/assets/AppCloud.svg';
+import { ReactComponent as AppCloudLogo } from '@/assets/AppCloudLogo.svg';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api/admin`;
 
