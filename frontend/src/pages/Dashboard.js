@@ -63,15 +63,6 @@ export default function Dashboard() {
     }
   };
 
-  const verifyNode = async () => {
-    try {
-      await axios.post(`${API}/node/verify`);
-      fetchDashboardData();
-    } catch (error) {
-      console.error('Failed to verify node');
-    }
-  };
-
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
