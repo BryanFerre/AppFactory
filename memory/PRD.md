@@ -121,10 +121,11 @@ Build a full-stack e-commerce and cloud platform named "AppCloud by Optio" with:
 ## Prioritized Backlog
 
 ### P0 (Critical)
-- None currently
+- OPT Point System explanation tutorial for new users (IN PROGRESS - modal component created)
 
 ### P1 (High Priority)
-- OPT Point System explanation for new users
+- Backend tracking for tutorial completion (show only once per user)
+- Settings option to replay OPT Points tutorial
 - Real-time notifications (WebSockets)
 
 ### P2 (Medium Priority)
@@ -158,5 +159,6 @@ Build a full-stack e-commerce and cloud platform named "AppCloud by Optio" with:
 ---
 
 ## Testing Status
+- **Iteration 15**: App Category Taxonomy System - 100% pass rate (15/15 tests)
 - **Iteration 14**: Mobile responsiveness - 100% pass rate
 - All viewports tested: Mobile (375px), Tablet (768px), Desktop (1920px)
