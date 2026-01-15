@@ -262,7 +262,7 @@ def _get_purchase_confirmation_template(base_style: str, data: dict) -> tuple:
         credentials_html = """
         <div class="info-box">
             <p style="margin: 0; color: #94a3b8;">
-                ✓ Your existing account has been updated with your new license.
+                Your existing account has been updated with your new license.
             </p>
         </div>
         """
@@ -288,18 +288,18 @@ def _get_purchase_confirmation_template(base_style: str, data: dict) -> tuple:
     <body>
         <div class="container">
             <div class="card">
-                <div class="logo">☁️ Optio CloudNode</div>
-                <h1>Thank You for Your Purchase! 🎉</h1>
+                <div class="logo">Optio CloudNode</div>
+                <h1>Thank You for Your Purchase!</h1>
                 <p>Hi <span class="highlight">{data.get('name', 'Valued Customer')}</span>,</p>
                 <p>Your Optio CloudNode purchase has been successfully completed. Welcome to the decentralized cloud revolution!</p>
                 
                 <div class="stat-box">
-                    <div class="stat-value">✓ Activated</div>
+                    <div class="stat-value">Activated</div>
                     <div class="stat-label">Your CloudNode License</div>
                 </div>
                 
                 <div class="info-box">
-                    <h3 style="color: #ffffff; margin: 0 0 16px 0;">📋 Order Details</h3>
+                    <h3 style="color: #ffffff; margin: 0 0 16px 0;">Order Details</h3>
                     <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
                         <span style="color: #64748b;">Order ID</span>
                         <span style="color: #ffffff; font-family: monospace;">{data.get('order_id', 'N/A')[:8]}...</span>
