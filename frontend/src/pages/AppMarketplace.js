@@ -5,13 +5,15 @@ import {
   Search, TrendingUp, Download, Users, Server, Layers, DollarSign,
   Package, Activity, Cpu, Globe, Gamepad2, Shield, Image, HardDrive,
   Sparkles, Clock, Star, SlidersHorizontal, ArrowUpDown, X, Check,
-  GitCompare, ChevronDown, Filter, BarChart3, CreditCard, Zap, AlertCircle
+  GitCompare, ChevronDown, Filter, BarChart3, CreditCard, Zap, AlertCircle,
+  ChevronRight, ArrowLeft, Briefcase, Brain, Code, MessageCircle, Palette,
+  GraduationCap, Heart, Play, Hexagon, Home, Wrench, MapPin, ShoppingCart,
+  Users as UsersIcon, FlaskConical, Grid3X3
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Checkbox } from '@/components/ui/checkbox';
 import {
   Select,
   SelectContent,
@@ -49,9 +51,33 @@ import { getErrorMessage } from '@/utils/errorUtils';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
+// Category icon mapping
+const categoryIcons = {
+  'productivity-work': Briefcase,
+  'business-finance': DollarSign,
+  'artificial-intelligence': Brain,
+  'developer-tools': Code,
+  'marketing-growth': TrendingUp,
+  'communication': MessageCircle,
+  'design-creativity': Palette,
+  'education-learning': GraduationCap,
+  'health-wellness': Heart,
+  'lifestyle-personal': Sparkles,
+  'entertainment-media': Play,
+  'web3-blockchain': Hexagon,
+  'security-privacy': Shield,
+  'smart-home-iot': Home,
+  'utilities': Wrench,
+  'travel-local': MapPin,
+  'sales-commerce': ShoppingCart,
+  'community-social': UsersIcon,
+  'experimental': FlaskConical
+};
+
+// Animation variants
 const container = {
   hidden: { opacity: 0 },
-  show: { opacity: 1, transition: { staggerChildren: 0.05 } }
+  show: { opacity: 1, transition: { staggerChildren: 0.03 } }
 };
 
 const item = {
@@ -61,15 +87,12 @@ const item = {
 
 // Calculate resource upgrade cost based on capacity
 const calculateResourceCost = (capacityRequired) => {
-  // Base pricing tiers - larger apps cost more
   const basePricePerGB = 4.99;
   const tierMultiplier = capacityRequired <= 2 ? 1 : 
                          capacityRequired <= 4 ? 1.25 : 
                          capacityRequired <= 6 ? 1.5 : 
                          capacityRequired <= 8 ? 1.75 : 2;
-  
   const monthlyCost = Math.round(capacityRequired * basePricePerGB * tierMultiplier * 100) / 100;
-  
   return {
     monthlyCost,
     tier: capacityRequired <= 2 ? 'Basic' : 
@@ -83,52 +106,76 @@ const calculateResourceCost = (capacityRequired) => {
   };
 };
 
+// Tag color mapping
+const tagColors = {
+  ai: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
+  web3: 'bg-indigo-500/20 text-indigo-400 border-indigo-500/30',
+  'no-code': 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+  'privacy-first': 'bg-slate-500/20 text-slate-400 border-slate-500/30',
+  'rewards-enabled': 'bg-amber-500/20 text-amber-400 border-amber-500/30',
+  'open-source': 'bg-green-500/20 text-green-400 border-green-500/30',
+  enterprise: 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30',
+  'free-tier': 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
+  'mobile-first': 'bg-pink-500/20 text-pink-400 border-pink-500/30',
+  'api-available': 'bg-orange-500/20 text-orange-400 border-orange-500/30'
+};
+
 export default function AppMarketplace() {
+  // View state: 'home' | 'category' | 'search'
+  const [view, setView] = useState('home');
+  const [categories, setCategories] = useState([]);
+  const [tags, setTags] = useState([]);
+  const [featuredCollections, setFeaturedCollections] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [selectedSubcategory, setSelectedSubcategory] = useState(null);
+  const [selectedTags, setSelectedTags] = useState([]);
+  
   const [apps, setApps] = useState([]);
   const [featuredApps, setFeaturedApps] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [category, setCategory] = useState('all');
-  const [filter, setFilter] = useState('all');
-  const [sortBy, setSortBy] = useState('revenue');
-  const [sortOrder, setSortOrder] = useState('desc');
+  const [sortBy, setSortBy] = useState('popularity');
   const [minRevenue, setMinRevenue] = useState(0);
   const [maxCapacity, setMaxCapacity] = useState(10);
   const [installDialog, setInstallDialog] = useState(null);
   const [installing, setInstalling] = useState(false);
-  
-  // Comparison feature
-  const [compareMode, setCompareMode] = useState(false);
-  const [selectedForCompare, setSelectedForCompare] = useState([]);
-  const [showCompareDialog, setShowCompareDialog] = useState(false);
-  const [compareData, setCompareData] = useState([]);
 
-  const fetchApps = useCallback(async () => {
+  // Fetch initial data
+  useEffect(() => {
+    fetchCategories();
+    fetchTags();
+    fetchFeaturedApps();
+    fetchFeaturedCollections();
+  }, []);
+
+  const fetchCategories = async () => {
     try {
-      let url = `${API}/apps/available`;
-      const params = new URLSearchParams();
-      
-      if (category !== 'all') params.append('category', category);
-      if (filter === 'trending') params.append('trending', 'true');
-      if (filter === 'new') params.append('new', 'true');
-      if (sortBy) params.append('sort_by', sortBy);
-      if (sortOrder) params.append('sort_order', sortOrder);
-      if (minRevenue > 0) params.append('min_revenue', minRevenue.toString());
-      if (maxCapacity < 10) params.append('max_capacity', maxCapacity.toString());
-      
-      const response = await axios.get(`${url}${params.toString() ? '?' + params.toString() : ''}`);
-      setApps(response.data);
+      const response = await axios.get(`${API}/categories`);
+      setCategories(response.data);
     } catch (error) {
-      toast.error('Failed to fetch apps');
+      console.error('Failed to fetch categories');
     } finally {
       setLoading(false);
     }
-  }, [category, filter, sortBy, sortOrder, minRevenue, maxCapacity]);
+  };
 
-  useEffect(() => {
-    fetchApps();
-    fetchFeaturedApps();
-  }, [fetchApps]);
+  const fetchTags = async () => {
+    try {
+      const response = await axios.get(`${API}/categories/tags`);
+      setTags(response.data);
+    } catch (error) {
+      console.error('Failed to fetch tags');
+    }
+  };
+
+  const fetchFeaturedCollections = async () => {
+    try {
+      const response = await axios.get(`${API}/categories/collections`);
+      setFeaturedCollections(response.data);
+    } catch (error) {
+      console.error('Failed to fetch collections');
+    }
+  };
 
   const fetchFeaturedApps = async () => {
     try {
@@ -139,39 +186,71 @@ export default function AppMarketplace() {
     }
   };
 
-  const handleFeaturedAppClick = (featuredApp) => {
-    const appForDialog = {
-      id: featuredApp.id,
-      name: featuredApp.name,
-      description: featuredApp.description,
-      category: featuredApp.category,
-      icon: 'cpu',
-      subscription_price: featuredApp.subscription_price,
-      revenue_share: featuredApp.revenue_share,
-      capacity_required: featuredApp.capacity_required,
-      revenue_per_node: (featuredApp.subscription_price * featuredApp.revenue_share / 100 * 30).toFixed(2),
-      active_nodes: Math.floor(Math.random() * 2000) + 500,
-      subscribers: Math.floor(Math.random() * 30000) + 10000,
-      total_slots: 3000,
-      available_slots: Math.floor(Math.random() * 1500) + 500,
-      is_featured: true
-    };
-    setInstallDialog(appForDialog);
+  const fetchCategoryApps = async (categoryId, subcategoryId = null) => {
+    setLoading(true);
+    try {
+      let url = `${API}/categories/${categoryId}/apps?sort_by=${sortBy}`;
+      if (subcategoryId) url += `&subcategory_id=${subcategoryId}`;
+      if (selectedTags.length > 0) url += `&tags=${selectedTags.join(',')}`;
+      
+      const response = await axios.get(url);
+      setApps(response.data.apps || []);
+    } catch (error) {
+      toast.error('Failed to fetch apps');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const searchApps = async (query) => {
+    if (!query.trim()) return;
+    setLoading(true);
+    setView('search');
+    try {
+      let url = `${API}/categories/search/apps?q=${encodeURIComponent(query)}&sort_by=${sortBy}`;
+      if (selectedTags.length > 0) url += `&tags=${selectedTags.join(',')}`;
+      
+      const response = await axios.get(url);
+      setApps(response.data.apps || []);
+    } catch (error) {
+      toast.error('Failed to search apps');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCategoryClick = (category) => {
+    setSelectedCategory(category);
+    setSelectedSubcategory(null);
+    setView('category');
+    fetchCategoryApps(category.id);
+  };
+
+  const handleSubcategoryClick = (subcategory) => {
+    setSelectedSubcategory(subcategory);
+    fetchCategoryApps(selectedCategory.id, subcategory.id);
+  };
+
+  const handleBackToHome = () => {
+    setView('home');
+    setSelectedCategory(null);
+    setSelectedSubcategory(null);
+    setApps([]);
+    setSearchQuery('');
   };
 
   const handleInstall = async (app) => {
     setInstalling(true);
     try {
       await axios.post(`${API}/apps/install/${app.id}`);
-      const resourceCost = calculateResourceCost(app.capacity_required);
+      const resourceCost = calculateResourceCost(app.capacity_required || app.resources_required || 3);
       toast.success(
         <div>
-          <p className="font-semibold">{app.name} installed successfully!</p>
+          <p className="font-semibold">{app.name || app.app_name} installed successfully!</p>
           <p className="text-sm text-slate-400">Resource fee of ${resourceCost.monthlyCost}/mo will be billed to your card.</p>
         </div>
       );
       setInstallDialog(null);
-      fetchApps();
     } catch (error) {
       toast.error(getErrorMessage(error, 'Installation failed'));
     } finally {
@@ -179,342 +258,75 @@ export default function AppMarketplace() {
     }
   };
 
-  // Comparison handlers
-  const toggleCompareSelection = (app) => {
-    if (selectedForCompare.find(a => a.id === app.id)) {
-      setSelectedForCompare(prev => prev.filter(a => a.id !== app.id));
-    } else {
-      if (selectedForCompare.length >= 3) {
-        toast.error('Maximum 3 apps can be compared');
-        return;
-      }
-      setSelectedForCompare(prev => [...prev, app]);
-    }
-  };
-
-  const handleCompare = async () => {
-    if (selectedForCompare.length < 2) {
-      toast.error('Select at least 2 apps to compare');
-      return;
-    }
-    
-    try {
-      const ids = selectedForCompare.map(a => a.id).join(',');
-      const response = await axios.get(`${API}/apps/compare?app_ids=${ids}`);
-      setCompareData(response.data);
-      setShowCompareDialog(true);
-    } catch (error) {
-      toast.error('Failed to load comparison data');
-    }
-  };
-
-  const clearComparison = () => {
-    setSelectedForCompare([]);
-    setCompareMode(false);
+  const toggleTag = (tagId) => {
+    setSelectedTags(prev => 
+      prev.includes(tagId) 
+        ? prev.filter(t => t !== tagId) 
+        : [...prev, tagId]
+    );
   };
 
   const getAppIcon = (iconName) => {
     const icons = {
-      database: <HardDrive className="w-6 h-6" />,
-      video: <Activity className="w-6 h-6" />,
-      link: <Globe className="w-6 h-6" />,
-      image: <Image className="w-6 h-6" />,
-      shield: <Shield className="w-6 h-6" />,
-      cpu: <Cpu className="w-6 h-6" />,
-      globe: <Globe className="w-6 h-6" />,
-      gamepad: <Gamepad2 className="w-6 h-6" />
+      database: HardDrive,
+      video: Activity,
+      link: Globe,
+      image: Image,
+      shield: Shield,
+      cpu: Cpu,
+      globe: Globe,
+      gamepad: Gamepad2
     };
-    return icons[iconName] || <Package className="w-6 h-6" />;
+    const IconComponent = icons[iconName] || Package;
+    return <IconComponent className="w-6 h-6" />;
   };
 
-  const filteredApps = apps.filter(app => 
-    app.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    app.description.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Home View - Category Tiles
+  const renderHomeView = () => (
+    <div className="space-y-6 sm:space-y-8">
+      {/* Search Bar */}
+      <div className="relative max-w-2xl mx-auto">
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+        <Input
+          placeholder="Search apps, categories, tags..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && searchApps(searchQuery)}
+          className="pl-12 pr-4 py-6 bg-black/40 border-white/10 text-white text-base rounded-xl"
+          data-testid="marketplace-search"
+        />
+        <Button
+          onClick={() => searchApps(searchQuery)}
+          className="absolute right-2 top-1/2 -translate-y-1/2 bg-[#4865af] hover:bg-[#5a7ac4] text-white rounded-lg"
+          size="sm"
+        >
+          Search
+        </Button>
+      </div>
 
-  const categories = ['all', 'Productivity', 'Communication', 'Wellness'];
-  
-  const sortOptions = [
-    { value: 'revenue', label: 'Revenue', icon: DollarSign },
-    { value: 'subscribers', label: 'Subscribers', icon: Users },
-    { value: 'price', label: 'Price', icon: BarChart3 },
-    { value: 'popularity', label: 'Popularity', icon: TrendingUp },
-    { value: 'capacity', label: 'Capacity', icon: Server }
-  ];
-
-  return (
-    <div className="space-y-4 sm:space-y-6">
-      {/* Header */}
-      <div className="flex flex-col gap-3 sm:gap-4">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-white font-['Outfit']">App Marketplace</h1>
-          <p className="text-sm sm:text-base text-slate-400 mt-1">Discover and install revenue-generating apps</p>
-        </div>
-        
-        {/* Compare Mode Toggle */}
-        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-          {compareMode && selectedForCompare.length > 0 && (
-            <motion.div 
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="flex items-center gap-2"
-            >
-              <Badge className="bg-cyan-500/20 text-cyan-400 px-2 sm:px-3 py-1 text-xs sm:text-sm">
-                {selectedForCompare.length} selected
-              </Badge>
-              <Button
-                size="sm"
-                onClick={handleCompare}
-                className="bg-cyan-500 hover:bg-cyan-600 text-white text-xs sm:text-sm"
-                disabled={selectedForCompare.length < 2}
-                data-testid="compare-apps-btn"
-              >
-                <GitCompare className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                Compare
-              </Button>
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={clearComparison}
-                className="text-slate-400 hover:text-white p-1 sm:p-2"
-              >
-                <X className="w-4 h-4" />
-              </Button>
-            </motion.div>
-          )}
-          <Button
-            size="sm"
-            variant={compareMode ? "default" : "outline"}
-            onClick={() => {
-              setCompareMode(!compareMode);
-              if (compareMode) clearComparison();
-            }}
-            className={`text-xs sm:text-sm ${compareMode 
-              ? "bg-cyan-500 hover:bg-cyan-600 text-white" 
-              : "border-white/20 text-slate-300 hover:text-white hover:bg-white/10"
+      {/* Tag Filters */}
+      <div className="flex flex-wrap gap-2 justify-center">
+        {tags.map(tag => (
+          <Badge
+            key={tag.id}
+            onClick={() => toggleTag(tag.id)}
+            className={`cursor-pointer transition-all border ${
+              selectedTags.includes(tag.id)
+                ? tagColors[tag.id] || 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30'
+                : 'bg-white/5 text-slate-400 border-white/10 hover:bg-white/10'
             }`}
-            data-testid="toggle-compare-mode"
+            data-testid={`tag-${tag.id}`}
           >
-            <GitCompare className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-            {compareMode ? 'Exit' : 'Compare'}
-          </Button>
-        </div>
+            {tag.name}
+          </Badge>
+        ))}
       </div>
 
-      {/* Filters Bar */}
-      <div className="glass-card p-3 sm:p-4 flex flex-col gap-3 sm:gap-4">
-        {/* Search */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-slate-500" />
-          <Input
-            placeholder="Search apps..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9 sm:pl-10 bg-black/40 border-white/10 text-white text-sm"
-            data-testid="app-search"
-          />
-        </div>
-        
-        {/* Filters Row */}
-        <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 sm:gap-3">
-          {/* Category Filter */}
-          <Select value={category} onValueChange={setCategory}>
-            <SelectTrigger className="bg-black/40 border-white/10 text-xs sm:text-sm" data-testid="category-filter">
-              <SelectValue placeholder="Category" />
-            </SelectTrigger>
-            <SelectContent className="glass-card border-white/10">
-              {categories.map(cat => (
-                <SelectItem key={cat} value={cat} className="capitalize text-xs sm:text-sm">
-                  {cat === 'all' ? 'All' : cat}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          
-          {/* Status Filter */}
-          <Select value={filter} onValueChange={setFilter}>
-            <SelectTrigger className="bg-black/40 border-white/10 text-xs sm:text-sm" data-testid="status-filter">
-              <SelectValue placeholder="Filter" />
-            </SelectTrigger>
-            <SelectContent className="glass-card border-white/10">
-              <SelectItem value="all" className="text-xs sm:text-sm">All Apps</SelectItem>
-              <SelectItem value="trending" className="text-xs sm:text-sm">
-                <span className="flex items-center gap-2">
-                  <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 text-cyan-400" /> Trending
-                </span>
-              </SelectItem>
-              <SelectItem value="new" className="text-xs sm:text-sm">
-                <span className="flex items-center gap-2">
-                  <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 text-purple-400" /> New
-                </span>
-              </SelectItem>
-            </SelectContent>
-          </Select>
-          
-          {/* Sort Dropdown */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="border-white/10 text-slate-300 hover:text-white hover:bg-white/10 text-xs sm:text-sm" data-testid="sort-dropdown">
-                <ArrowUpDown className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                <span className="hidden sm:inline">Sort: </span>{sortOptions.find(s => s.value === sortBy)?.label}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="glass-card border-white/10 w-48">
-              <DropdownMenuLabel className="text-slate-400 text-xs">Sort By</DropdownMenuLabel>
-              <DropdownMenuSeparator className="bg-white/10" />
-              {sortOptions.map(option => (
-                <DropdownMenuItem
-                  key={option.value}
-                  onClick={() => setSortBy(option.value)}
-                  className={`flex items-center gap-2 text-xs sm:text-sm ${sortBy === option.value ? 'text-cyan-400' : 'text-slate-300'}`}
-                >
-                  <option.icon className="w-4 h-4" />
-                  {option.label}
-                  {sortBy === option.value && <Check className="w-4 h-4 ml-auto" />}
-                </DropdownMenuItem>
-              ))}
-              <DropdownMenuSeparator className="bg-white/10" />
-              <DropdownMenuLabel className="text-slate-400 text-xs">Order</DropdownMenuLabel>
-              <DropdownMenuItem
-                onClick={() => setSortOrder('desc')}
-                className={`text-xs sm:text-sm ${sortOrder === 'desc' ? 'text-cyan-400' : 'text-slate-300'}`}
-              >
-                High to Low {sortOrder === 'desc' && <Check className="w-4 h-4 ml-auto" />}
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => setSortOrder('asc')}
-                className={`text-xs sm:text-sm ${sortOrder === 'asc' ? 'text-cyan-400' : 'text-slate-300'}`}
-              >
-                Low to High {sortOrder === 'asc' && <Check className="w-4 h-4 ml-auto" />}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-          
-          {/* Advanced Filters Sheet */}
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button variant="outline" size="sm" className="border-white/10 text-slate-300 hover:text-white hover:bg-white/10 text-xs sm:text-sm" data-testid="advanced-filters-btn">
-                <SlidersHorizontal className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                <span className="hidden xs:inline">Filters</span>
-                {(minRevenue > 0 || maxCapacity < 10) && (
-                  <Badge className="ml-1 sm:ml-2 bg-cyan-500/20 text-cyan-400 text-[10px] sm:text-xs">Active</Badge>
-                )}
-              </Button>
-            </SheetTrigger>
-            <SheetContent className="glass-card border-l-white/10 w-[85vw] sm:w-[400px]">
-              <SheetHeader>
-                <SheetTitle className="text-white font-['Outfit']">Advanced Filters</SheetTitle>
-                <SheetDescription className="text-slate-400 text-sm">
-                  Fine-tune your app search
-                </SheetDescription>
-              </SheetHeader>
-              <div className="space-y-6 mt-6">
-                {/* Min Revenue Filter */}
-                <div className="space-y-3">
-                  <label className="text-sm text-slate-300 flex items-center justify-between">
-                    <span className="flex items-center gap-2">
-                      <DollarSign className="w-4 h-4 text-emerald-400" />
-                      Minimum Revenue
-                    </span>
-                    <span className="text-emerald-400 font-semibold">${minRevenue}/mo</span>
-                  </label>
-                  <Slider
-                    value={[minRevenue]}
-                    onValueChange={(v) => setMinRevenue(v[0])}
-                    max={200}
-                    step={10}
-                    className="w-full"
-                  />
-                  <div className="flex justify-between text-xs text-slate-500">
-                    <span>$0</span>
-                    <span>$200+</span>
-                  </div>
-                </div>
-                
-                {/* Max Capacity Filter */}
-                <div className="space-y-3">
-                  <label className="text-sm text-slate-300 flex items-center justify-between">
-                    <span className="flex items-center gap-2">
-                      <Server className="w-4 h-4 text-blue-400" />
-                      Maximum Capacity
-                    </span>
-                    <span className="text-blue-400 font-semibold">{maxCapacity} GB</span>
-                  </label>
-                  <Slider
-                    value={[maxCapacity]}
-                    onValueChange={(v) => setMaxCapacity(v[0])}
-                    min={1}
-                    max={10}
-                    step={1}
-                    className="w-full"
-                />
-                <div className="flex justify-between text-xs text-slate-500">
-                  <span>1 GB</span>
-                  <span>10 GB</span>
-                </div>
-              </div>
-              
-              {/* Reset Filters */}
-              <Button
-                variant="outline"
-                className="w-full border-white/10 text-slate-300"
-                onClick={() => {
-                  setMinRevenue(0);
-                  setMaxCapacity(10);
-                }}
-              >
-                Reset Filters
-              </Button>
-            </div>
-          </SheetContent>
-        </Sheet>
-        </div>
-      </div>
-
-      {/* Active Filters Display */}
-      {(minRevenue > 0 || maxCapacity < 10 || filter !== 'all' || category !== 'all') && (
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-sm text-slate-400">Active filters:</span>
-          {category !== 'all' && (
-            <Badge 
-              className="bg-white/10 text-slate-300 cursor-pointer hover:bg-white/20"
-              onClick={() => setCategory('all')}
-            >
-              {category} <X className="w-3 h-3 ml-1" />
-            </Badge>
-          )}
-          {filter !== 'all' && (
-            <Badge 
-              className="bg-white/10 text-slate-300 cursor-pointer hover:bg-white/20"
-              onClick={() => setFilter('all')}
-            >
-              {filter} <X className="w-3 h-3 ml-1" />
-            </Badge>
-          )}
-          {minRevenue > 0 && (
-            <Badge 
-              className="bg-emerald-500/20 text-emerald-400 cursor-pointer hover:bg-emerald-500/30"
-              onClick={() => setMinRevenue(0)}
-            >
-              Min ${minRevenue}/mo <X className="w-3 h-3 ml-1" />
-            </Badge>
-          )}
-          {maxCapacity < 10 && (
-            <Badge 
-              className="bg-blue-500/20 text-blue-400 cursor-pointer hover:bg-blue-500/30"
-              onClick={() => setMaxCapacity(10)}
-            >
-              Max {maxCapacity} GB <X className="w-3 h-3 ml-1" />
-            </Badge>
-          )}
-        </div>
-      )}
-
-      {/* Featured Apps Section */}
+      {/* Featured Apps Carousel */}
       {featuredApps.length > 0 && (
         <div className="space-y-3">
           <div className="flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-amber-400" />
+            <Star className="w-5 h-5 text-amber-400 fill-amber-400" />
             <h2 className="text-lg font-semibold text-white">Featured Apps</h2>
           </div>
           <div className="relative">
@@ -524,8 +336,13 @@ export default function AppMarketplace() {
                   key={app.id}
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  onClick={() => handleFeaturedAppClick(app)}
-                  className="flex-shrink-0 w-64 glass-card p-4 border border-amber-500/40 relative overflow-hidden hover:border-amber-500/60 hover:bg-amber-500/5 transition-all cursor-pointer group"
+                  onClick={() => setInstallDialog({
+                    ...app,
+                    name: app.name || app.app_name,
+                    capacity_required: app.capacity_required || app.resources_required || 3,
+                    revenue_per_node: app.revenue_per_node || (app.subscription_price * app.revenue_share / 100 * 30).toFixed(2)
+                  })}
+                  className="flex-shrink-0 w-72 glass-card p-4 border border-amber-500/40 relative overflow-hidden hover:border-amber-500/60 hover:bg-amber-500/5 transition-all cursor-pointer group"
                   data-testid={`featured-app-${app.id}`}
                 >
                   <div className="absolute top-0 right-0 bg-gradient-to-l from-amber-500 to-orange-500 text-black text-[10px] font-bold px-2 py-0.5 rounded-bl-lg flex items-center gap-1">
@@ -534,11 +351,11 @@ export default function AppMarketplace() {
                   </div>
                   
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-amber-500/20 to-orange-500/20 flex items-center justify-center border border-amber-500/30 group-hover:scale-110 transition-transform">
-                      <Package className="w-5 h-5 text-amber-400" />
+                    <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-amber-500/20 to-orange-500/20 flex items-center justify-center border border-amber-500/30 group-hover:scale-110 transition-transform">
+                      <Package className="w-6 h-6 text-amber-400" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h3 className="text-white font-semibold text-sm truncate">{app.name}</h3>
+                      <h3 className="text-white font-semibold text-sm truncate">{app.name || app.app_name}</h3>
                       <p className="text-xs text-amber-400/80">{app.category}</p>
                     </div>
                   </div>
@@ -546,15 +363,8 @@ export default function AppMarketplace() {
                   <p className="text-xs text-slate-400 mt-2 line-clamp-2 h-8">{app.description}</p>
                   
                   <div className="flex items-center justify-between mt-3 pt-2 border-t border-amber-500/20">
-                    <span className="text-emerald-400 font-semibold text-sm">${app.subscription_price}/mo</span>
-                    <span className="text-slate-500 text-xs">{app.revenue_share}% share</span>
-                  </div>
-
-                  <div className="absolute inset-0 flex items-center justify-center bg-amber-500/10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                    <span className="bg-amber-500 text-black text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1">
-                      <Download className="w-3 h-3" />
-                      View Details
-                    </span>
+                    <span className="text-emerald-400 font-semibold text-sm">${app.subscription_price || app.monthly_subscription_fee}/mo</span>
+                    <span className="text-slate-500 text-xs">{app.revenue_share || app.revenue_sharing}% share</span>
                   </div>
                 </motion.div>
               ))}
@@ -564,11 +374,149 @@ export default function AppMarketplace() {
         </div>
       )}
 
-      {/* Results Count */}
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-slate-400">
-          Showing <span className="text-white font-semibold">{filteredApps.length}</span> apps
-        </p>
+      {/* Category Grid */}
+      <div className="space-y-4">
+        <h2 className="text-lg font-semibold text-white">Browse by Category</h2>
+        <motion.div
+          variants={container}
+          initial="hidden"
+          animate="show"
+          className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4"
+        >
+          {categories.map((category) => {
+            const IconComponent = categoryIcons[category.id] || Package;
+            const gradientColors = category.color || 'from-cyan-500 to-blue-500';
+            
+            return (
+              <motion.div
+                key={category.id}
+                variants={item}
+                onClick={() => handleCategoryClick(category)}
+                className="glass-card p-4 cursor-pointer hover:bg-white/5 transition-all group border border-white/5 hover:border-white/20"
+                data-testid={`category-${category.id}`}
+              >
+                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${gradientColors} flex items-center justify-center mb-3 group-hover:scale-110 transition-transform`}>
+                  <IconComponent className="w-6 h-6 text-white" />
+                </div>
+                <h3 className="text-white font-medium text-sm mb-1 line-clamp-2">{category.name}</h3>
+                <p className="text-xs text-slate-500">{category.app_count || 0} apps</p>
+              </motion.div>
+            );
+          })}
+        </motion.div>
+      </div>
+
+      {/* Featured Collections */}
+      {featuredCollections.length > 0 && (
+        <div className="space-y-4">
+          <h2 className="text-lg font-semibold text-white">Featured Collections</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {featuredCollections.slice(0, 8).map((collection) => (
+              <div
+                key={collection.id}
+                className="glass-card p-3 cursor-pointer hover:bg-white/5 transition-all border border-white/5 hover:border-white/20 flex items-center gap-3"
+              >
+                <div className={`w-10 h-10 rounded-lg bg-${collection.color}-500/20 flex items-center justify-center`}>
+                  {collection.icon === 'trending-up' && <TrendingUp className={`w-5 h-5 text-${collection.color}-400`} />}
+                  {collection.icon === 'sparkles' && <Sparkles className={`w-5 h-5 text-${collection.color}-400`} />}
+                  {collection.icon === 'star' && <Star className={`w-5 h-5 text-${collection.color}-400`} />}
+                  {collection.icon === 'palette' && <Palette className={`w-5 h-5 text-${collection.color}-400`} />}
+                  {collection.icon === 'briefcase' && <Briefcase className={`w-5 h-5 text-${collection.color}-400`} />}
+                  {collection.icon === 'brain' && <Brain className={`w-5 h-5 text-${collection.color}-400`} />}
+                  {collection.icon === 'shield' && <Shield className={`w-5 h-5 text-${collection.color}-400`} />}
+                  {collection.icon === 'hexagon' && <Hexagon className={`w-5 h-5 text-${collection.color}-400`} />}
+                </div>
+                <span className="text-white text-sm font-medium">{collection.name}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
+  // Category View - Subcategories + Apps
+  const renderCategoryView = () => (
+    <div className="space-y-6">
+      {/* Header with Back Button */}
+      <div className="flex items-center gap-4">
+        <Button
+          variant="ghost"
+          onClick={handleBackToHome}
+          className="text-slate-400 hover:text-white p-2"
+          data-testid="back-to-home"
+        >
+          <ArrowLeft className="w-5 h-5" />
+        </Button>
+        <div className="flex-1">
+          <h1 className="text-xl sm:text-2xl font-bold text-white font-['Outfit']">{selectedCategory?.name}</h1>
+          <p className="text-sm text-slate-400">{selectedCategory?.app_count || apps.length} apps available</p>
+        </div>
+      </div>
+
+      {/* Subcategory Pills */}
+      {selectedCategory?.subcategories?.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          <Badge
+            onClick={() => {
+              setSelectedSubcategory(null);
+              fetchCategoryApps(selectedCategory.id);
+            }}
+            className={`cursor-pointer transition-all ${
+              !selectedSubcategory 
+                ? 'bg-[#4865af] text-white' 
+                : 'bg-white/5 text-slate-400 hover:bg-white/10'
+            }`}
+          >
+            All
+          </Badge>
+          {selectedCategory.subcategories.map(sub => (
+            <Badge
+              key={sub.id}
+              onClick={() => handleSubcategoryClick(sub)}
+              className={`cursor-pointer transition-all ${
+                selectedSubcategory?.id === sub.id 
+                  ? 'bg-[#4865af] text-white' 
+                  : 'bg-white/5 text-slate-400 hover:bg-white/10'
+              }`}
+              data-testid={`subcategory-${sub.id}`}
+            >
+              {sub.name}
+            </Badge>
+          ))}
+        </div>
+      )}
+
+      {/* Sort & Filter Row */}
+      <div className="flex flex-wrap items-center gap-3">
+        <Select value={sortBy} onValueChange={setSortBy}>
+          <SelectTrigger className="w-40 bg-black/40 border-white/10 text-sm">
+            <SelectValue placeholder="Sort by" />
+          </SelectTrigger>
+          <SelectContent className="glass-card border-white/10">
+            <SelectItem value="popularity">Popularity</SelectItem>
+            <SelectItem value="revenue">Revenue</SelectItem>
+            <SelectItem value="price">Price</SelectItem>
+            <SelectItem value="newest">Newest</SelectItem>
+          </SelectContent>
+        </Select>
+
+        {/* Tag Filters */}
+        <div className="flex flex-wrap gap-2">
+          {tags.slice(0, 5).map(tag => (
+            <Badge
+              key={tag.id}
+              onClick={() => toggleTag(tag.id)}
+              className={`cursor-pointer transition-all border text-xs ${
+                selectedTags.includes(tag.id)
+                  ? tagColors[tag.id] || 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30'
+                  : 'bg-white/5 text-slate-400 border-white/10 hover:bg-white/10'
+              }`}
+            >
+              {tag.name}
+            </Badge>
+          ))}
+        </div>
       </div>
 
       {/* Apps Grid */}
@@ -576,498 +524,348 @@ export default function AppMarketplace() {
         <div className="flex items-center justify-center h-64">
           <div className="w-8 h-8 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin" />
         </div>
+      ) : apps.length === 0 ? (
+        <div className="text-center py-12">
+          <Package className="w-12 h-12 text-slate-600 mx-auto mb-4" />
+          <p className="text-slate-400">No apps found in this category</p>
+        </div>
       ) : (
         <motion.div
           variants={container}
           initial="hidden"
           animate="show"
-          className="grid grid-cols-1 lg:grid-cols-2 gap-6"
+          className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6"
         >
-          {filteredApps.map((app) => (
-            <motion.div
-              key={app.id}
-              variants={item}
-              className={`glass-card glass-card-hover p-6 relative ${
-                compareMode && selectedForCompare.find(a => a.id === app.id)
-                  ? 'ring-2 ring-cyan-500 ring-offset-2 ring-offset-[#0a0f1c]'
-                  : ''
-              }`}
-              data-testid={`app-card-${app.id}`}
-            >
-              {/* Compare Checkbox */}
-              {compareMode && (
-                <div 
-                  className="absolute top-3 right-3 z-10"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    toggleCompareSelection(app);
-                  }}
-                >
-                  <div className={`w-6 h-6 rounded-md border-2 flex items-center justify-center cursor-pointer transition-all ${
-                    selectedForCompare.find(a => a.id === app.id)
-                      ? 'bg-cyan-500 border-cyan-500'
-                      : 'border-white/30 hover:border-cyan-400'
-                  }`}>
-                    {selectedForCompare.find(a => a.id === app.id) && (
-                      <Check className="w-4 h-4 text-white" />
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Header */}
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#4865af] to-[#6b8dd6] flex items-center justify-center">
-                    {getAppIcon(app.icon)}
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="text-lg font-semibold text-white">{app.name}</h3>
-                      {app.is_trending && (
-                        <Badge className="bg-cyan-500/20 text-cyan-400 text-xs">
-                          <TrendingUp className="w-3 h-3 mr-1" /> Hot
-                        </Badge>
-                      )}
-                      {app.is_new && (
-                        <Badge className="bg-purple-500/20 text-purple-400 text-xs">
-                          <Sparkles className="w-3 h-3 mr-1" /> New
-                        </Badge>
-                      )}
-                    </div>
-                    <Badge variant="outline" className="text-xs border-slate-600 text-slate-400 mt-1">
-                      {app.category}
-                    </Badge>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="text-2xl font-bold text-emerald-400">${app.subscription_price}</p>
-                  <p className="text-xs text-slate-500">/user/month</p>
-                </div>
-              </div>
-
-              {/* Description */}
-              <p className="text-sm text-slate-400 mb-4 line-clamp-2">{app.description}</p>
-
-              {/* Stats Grid */}
-              <div className="grid grid-cols-3 gap-3 mb-4">
-                <div className="bg-white/5 rounded-lg p-3 text-center">
-                  <div className="flex items-center justify-center gap-1 mb-1">
-                    <Server className="w-4 h-4 text-slate-400" />
-                  </div>
-                  <p className="text-lg font-bold text-white">{app.active_nodes.toLocaleString()}</p>
-                  <p className="text-xs text-slate-500">Active Nodes</p>
-                </div>
-                <div className="bg-white/5 rounded-lg p-3 text-center">
-                  <div className="flex items-center justify-center gap-1 mb-1">
-                    <Users className="w-4 h-4 text-slate-400" />
-                  </div>
-                  <p className="text-lg font-bold text-white">{(app.subscribers / 1000).toFixed(1)}K</p>
-                  <p className="text-xs text-slate-500">Subscribers</p>
-                </div>
-                <div className="bg-white/5 rounded-lg p-3 text-center">
-                  <div className="flex items-center justify-center gap-1 mb-1">
-                    <DollarSign className="w-4 h-4 text-emerald-400" />
-                  </div>
-                  <p className="text-lg font-bold text-emerald-400">${app.revenue_per_node}</p>
-                  <p className="text-xs text-slate-500">Avg/Node</p>
-                </div>
-              </div>
-
-              {/* Hosting Slots */}
-              <div className="mb-4">
-                <div className="flex items-center justify-between text-sm mb-2">
-                  <span className="text-slate-400 flex items-center gap-1">
-                    <Layers className="w-4 h-4" /> Hosting Slots
-                  </span>
-                  <span className="text-white">
-                    <span className="text-emerald-400">{app.available_slots}</span> / {app.total_slots} available
-                  </span>
-                </div>
-                <Progress 
-                  value={((app.total_slots - app.available_slots) / app.total_slots) * 100} 
-                  className="h-2"
-                />
-              </div>
-
-              {/* Revenue Share & Capacity */}
-              <div className="flex items-center justify-between text-sm mb-4 py-3 px-4 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
-                <div>
-                  <span className="text-slate-400">Revenue Share:</span>
-                  <span className="text-emerald-400 font-bold ml-2">{app.revenue_share}%</span>
-                </div>
-                <div>
-                  <span className="text-slate-400">Capacity:</span>
-                  <span className="text-white font-semibold ml-2">{app.capacity_required} GB</span>
-                </div>
-              </div>
-
-              {/* Install Button */}
-              <Button
-                className="w-full bg-[#4865af] hover:bg-[#5a7ac4] text-white font-semibold rounded-full"
-                onClick={() => setInstallDialog(app)}
-                disabled={app.available_slots === 0}
-                data-testid={`install-btn-${app.id}`}
-              >
-                {app.available_slots === 0 ? (
-                  <>
-                    <Clock className="w-4 h-4 mr-2" />
-                    Waitlist
-                  </>
-                ) : (
-                  <>
-                    <Download className="w-4 h-4 mr-2" />
-                    Install App
-                  </>
-                )}
-              </Button>
-            </motion.div>
+          {apps.map((app) => (
+            <AppCard 
+              key={app.id} 
+              app={app} 
+              onInstall={() => setInstallDialog(app)}
+              getAppIcon={getAppIcon}
+            />
           ))}
         </motion.div>
       )}
+    </div>
+  );
 
-      {filteredApps.length === 0 && !loading && (
+  // Search Results View
+  const renderSearchView = () => (
+    <div className="space-y-6">
+      {/* Header with Back Button */}
+      <div className="flex items-center gap-4">
+        <Button
+          variant="ghost"
+          onClick={handleBackToHome}
+          className="text-slate-400 hover:text-white p-2"
+        >
+          <ArrowLeft className="w-5 h-5" />
+        </Button>
+        <div className="flex-1">
+          <h1 className="text-xl sm:text-2xl font-bold text-white font-['Outfit']">Search Results</h1>
+          <p className="text-sm text-slate-400">"{searchQuery}" - {apps.length} results</p>
+        </div>
+      </div>
+
+      {/* Search Again */}
+      <div className="relative max-w-xl">
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+        <Input
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && searchApps(searchQuery)}
+          className="pl-12 bg-black/40 border-white/10 text-white"
+        />
+      </div>
+
+      {/* Apps Grid */}
+      {loading ? (
+        <div className="flex items-center justify-center h-64">
+          <div className="w-8 h-8 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin" />
+        </div>
+      ) : apps.length === 0 ? (
         <div className="text-center py-12">
-          <Package className="w-12 h-12 text-slate-600 mx-auto mb-4" />
-          <p className="text-slate-400">No apps found matching your criteria</p>
-          <Button
-            variant="link"
-            className="text-cyan-400 mt-2"
-            onClick={() => {
-              setCategory('all');
-              setFilter('all');
-              setMinRevenue(0);
-              setMaxCapacity(10);
-              setSearchQuery('');
-            }}
-          >
-            Clear all filters
-          </Button>
+          <Search className="w-12 h-12 text-slate-600 mx-auto mb-4" />
+          <p className="text-slate-400">No apps found for "{searchQuery}"</p>
+        </div>
+      ) : (
+        <motion.div
+          variants={container}
+          initial="hidden"
+          animate="show"
+          className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6"
+        >
+          {apps.map((app) => (
+            <AppCard 
+              key={app.id} 
+              app={app} 
+              onInstall={() => setInstallDialog(app)}
+              getAppIcon={getAppIcon}
+            />
+          ))}
+        </motion.div>
+      )}
+    </div>
+  );
+
+  return (
+    <div className="space-y-4 sm:space-y-6">
+      {/* Page Header */}
+      <div className="flex flex-col gap-2">
+        <h1 className="text-xl sm:text-2xl font-bold text-white font-['Outfit']">App Marketplace</h1>
+        <p className="text-sm sm:text-base text-slate-400">Discover and install revenue-generating apps</p>
+      </div>
+
+      {/* Main Content */}
+      {view === 'home' && renderHomeView()}
+      {view === 'category' && renderCategoryView()}
+      {view === 'search' && renderSearchView()}
+
+      {/* Install Dialog */}
+      <InstallDialog 
+        app={installDialog}
+        open={!!installDialog}
+        onClose={() => setInstallDialog(null)}
+        onInstall={handleInstall}
+        installing={installing}
+        getAppIcon={getAppIcon}
+      />
+    </div>
+  );
+}
+
+// App Card Component
+function AppCard({ app, onInstall, getAppIcon }) {
+  const appName = app.name || app.app_name;
+  const subscriptionPrice = app.subscription_price || app.monthly_subscription_fee;
+  const revenueShare = app.revenue_share || app.revenue_sharing;
+  const capacityRequired = app.capacity_required || app.resources_required || 3;
+  const revenuePerNode = app.revenue_per_node || (subscriptionPrice * revenueShare / 100 * 30).toFixed(2);
+  
+  return (
+    <motion.div
+      variants={item}
+      className="glass-card glass-card-hover p-4 sm:p-6"
+      data-testid={`app-card-${app.id}`}
+    >
+      {/* Header */}
+      <div className="flex items-start justify-between mb-3 sm:mb-4">
+        <div className="flex items-center gap-3 sm:gap-4">
+          <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-gradient-to-br from-[#4865af] to-[#6b8dd6] flex items-center justify-center shrink-0">
+            {getAppIcon(app.icon)}
+          </div>
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h3 className="text-base sm:text-lg font-semibold text-white truncate">{appName}</h3>
+              {app.is_trending && (
+                <Badge className="bg-cyan-500/20 text-cyan-400 text-[10px] sm:text-xs">
+                  <TrendingUp className="w-3 h-3 mr-1" /> Hot
+                </Badge>
+              )}
+              {app.is_new && (
+                <Badge className="bg-purple-500/20 text-purple-400 text-[10px] sm:text-xs">
+                  <Sparkles className="w-3 h-3 mr-1" /> New
+                </Badge>
+              )}
+            </div>
+            <Badge variant="outline" className="text-[10px] sm:text-xs border-slate-600 text-slate-400 mt-1">
+              {app.category}
+            </Badge>
+          </div>
+        </div>
+        <div className="text-right shrink-0">
+          <p className="text-xl sm:text-2xl font-bold text-emerald-400">${subscriptionPrice}</p>
+          <p className="text-[10px] sm:text-xs text-slate-500">/user/month</p>
+        </div>
+      </div>
+
+      {/* Description */}
+      <p className="text-xs sm:text-sm text-slate-400 mb-3 sm:mb-4 line-clamp-2">{app.description}</p>
+
+      {/* Tags */}
+      {app.tags?.length > 0 && (
+        <div className="flex flex-wrap gap-1 mb-3">
+          {app.tags.slice(0, 3).map(tag => (
+            <Badge key={tag} className={`text-[10px] border ${tagColors[tag] || 'bg-slate-500/20 text-slate-400 border-slate-500/30'}`}>
+              {tag}
+            </Badge>
+          ))}
         </div>
       )}
 
-      {/* Install Dialog with Resource Billing */}
-      <Dialog open={!!installDialog} onOpenChange={() => setInstallDialog(null)}>
-        <DialogContent className="glass-card border-white/10 max-w-lg">
-          <DialogHeader>
-            <DialogTitle className="text-white font-['Outfit'] text-xl flex items-center gap-2">
-              Install {installDialog?.name}
-              {installDialog?.is_featured && (
-                <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-black text-xs">
-                  <Star className="w-3 h-3 mr-1 fill-current" /> FEATURED
+      {/* Stats Grid */}
+      <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-3 sm:mb-4">
+        <div className="bg-white/5 rounded-lg p-2 sm:p-3 text-center">
+          <p className="text-sm sm:text-lg font-bold text-white">{(app.active_nodes || 0).toLocaleString()}</p>
+          <p className="text-[10px] sm:text-xs text-slate-500">Active Nodes</p>
+        </div>
+        <div className="bg-white/5 rounded-lg p-2 sm:p-3 text-center">
+          <p className="text-sm sm:text-lg font-bold text-white">{((app.subscribers || 0) / 1000).toFixed(1)}K</p>
+          <p className="text-[10px] sm:text-xs text-slate-500">Subscribers</p>
+        </div>
+        <div className="bg-white/5 rounded-lg p-2 sm:p-3 text-center">
+          <p className="text-sm sm:text-lg font-bold text-emerald-400">${revenuePerNode}</p>
+          <p className="text-[10px] sm:text-xs text-slate-500">Avg/Node</p>
+        </div>
+      </div>
+
+      {/* Revenue Share & Capacity */}
+      <div className="flex items-center justify-between text-xs sm:text-sm mb-3 sm:mb-4 py-2 sm:py-3 px-3 sm:px-4 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
+        <div>
+          <span className="text-slate-400">Revenue Share:</span>
+          <span className="text-emerald-400 font-bold ml-2">{revenueShare}%</span>
+        </div>
+        <div>
+          <span className="text-slate-400">Capacity:</span>
+          <span className="text-white font-semibold ml-2">{capacityRequired} GB</span>
+        </div>
+      </div>
+
+      {/* Install Button */}
+      <Button
+        className="w-full bg-[#4865af] hover:bg-[#5a7ac4] text-white font-semibold rounded-full text-sm"
+        onClick={onInstall}
+        data-testid={`install-btn-${app.id}`}
+      >
+        <Download className="w-4 h-4 mr-2" />
+        Install App
+      </Button>
+    </motion.div>
+  );
+}
+
+// Install Dialog Component
+function InstallDialog({ app, open, onClose, onInstall, installing, getAppIcon }) {
+  if (!app) return null;
+  
+  const appName = app.name || app.app_name;
+  const subscriptionPrice = app.subscription_price || app.monthly_subscription_fee;
+  const revenueShare = app.revenue_share || app.revenue_sharing;
+  const capacityRequired = app.capacity_required || app.resources_required || 3;
+  const revenuePerNode = app.revenue_per_node || (subscriptionPrice * revenueShare / 100 * 30).toFixed(2);
+  const resourceCost = calculateResourceCost(capacityRequired);
+
+  return (
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="glass-card border-white/10 max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="text-white font-['Outfit'] text-xl flex items-center gap-2">
+            Install {appName}
+            {app.featured && (
+              <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-black text-xs">
+                <Star className="w-3 h-3 mr-1 fill-current" /> FEATURED
+              </Badge>
+            )}
+          </DialogTitle>
+          <DialogDescription className="text-slate-400">
+            Review the app details and resource costs before installing
+          </DialogDescription>
+        </DialogHeader>
+        
+        <div className="space-y-4 py-4">
+          <div className="flex items-center gap-4">
+            <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-[#4865af] to-[#6b8dd6] flex items-center justify-center">
+              {getAppIcon(app.icon)}
+            </div>
+            <div>
+              <h3 className="font-semibold text-white text-lg">{appName}</h3>
+              <p className="text-sm text-slate-400">{app.category}</p>
+            </div>
+          </div>
+
+          <p className="text-slate-300">{app.description}</p>
+
+          {/* App Details */}
+          <div className="rounded-xl p-4 bg-white/5 space-y-3">
+            <div className="flex justify-between">
+              <span className="text-slate-400">Subscription Price</span>
+              <span className="text-white font-semibold">${subscriptionPrice}/user/month</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-400">Your Revenue Share</span>
+              <span className="text-emerald-400 font-semibold">{revenueShare}%</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-400">Estimated Monthly Revenue</span>
+              <span className="text-emerald-400 font-bold">${revenuePerNode}</span>
+            </div>
+          </div>
+
+          {/* Resource Upgrade Billing Section */}
+          <div className="rounded-xl p-4 bg-gradient-to-br from-blue-500/10 to-purple-500/10 border border-blue-500/30 space-y-4">
+            <div className="flex items-center gap-2">
+              <Zap className="w-5 h-5 text-blue-400" />
+              <h4 className="font-semibold text-white">Resource Upgrade Required</h4>
+            </div>
+            
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <span className="text-slate-400">Capacity Required</span>
+                <span className="text-white font-semibold">{capacityRequired} GB</span>
+              </div>
+              
+              <div className="flex justify-between items-center">
+                <span className="text-slate-400">Resource Tier</span>
+                <Badge className={`${resourceCost.tierColor} bg-white/10`}>
+                  {resourceCost.tier}
                 </Badge>
-              )}
-            </DialogTitle>
-            <DialogDescription className="text-slate-400">
-              Review the app details and resource costs before installing
-            </DialogDescription>
-          </DialogHeader>
-          
-          {installDialog && (
-            <div className="space-y-4 py-4">
-              <div className="flex items-center gap-4">
-                <div className={`w-16 h-16 rounded-xl flex items-center justify-center ${
-                  installDialog.is_featured 
-                    ? 'bg-gradient-to-br from-amber-500/30 to-orange-500/30 border border-amber-500/50' 
-                    : 'bg-gradient-to-br from-[#4865af] to-[#6b8dd6]'
-                }`}>
-                  {getAppIcon(installDialog.icon)}
-                </div>
-                <div>
-                  <h3 className="font-semibold text-white text-lg">{installDialog.name}</h3>
-                  <p className="text-sm text-slate-400">{installDialog.category}</p>
-                </div>
               </div>
-
-              <p className="text-slate-300">{installDialog.description}</p>
-
-              {/* App Details */}
-              <div className={`rounded-xl p-4 space-y-3 ${
-                installDialog.is_featured 
-                  ? 'bg-amber-500/10 border border-amber-500/20' 
-                  : 'bg-white/5'
-              }`}>
-                <div className="flex justify-between">
-                  <span className="text-slate-400">Subscription Price</span>
-                  <span className="text-white font-semibold">${installDialog.subscription_price}/user/month</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-400">Your Revenue Share</span>
-                  <span className="text-emerald-400 font-semibold">{installDialog.revenue_share}%</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-400">Estimated Monthly Revenue</span>
-                  <span className="text-emerald-400 font-bold">${installDialog.revenue_per_node}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-400">Current Subscribers</span>
-                  <span className="text-white font-semibold">{installDialog.subscribers?.toLocaleString() || 'N/A'}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-400">Available Slots</span>
-                  <span className="text-emerald-400 font-semibold">{installDialog.available_slots || 'N/A'} / {installDialog.total_slots || 'N/A'}</span>
-                </div>
+              
+              <div className="h-px bg-white/10" />
+              
+              <div className="flex justify-between items-center">
+                <span className="text-slate-400 flex items-center gap-1">
+                  <CreditCard className="w-4 h-4" />
+                  Monthly Resource Fee
+                </span>
+                <span className="text-xl font-bold text-blue-400">${resourceCost.monthlyCost}/mo</span>
               </div>
-
-              {/* Resource Upgrade Billing Section */}
-              {(() => {
-                const resourceCost = calculateResourceCost(installDialog.capacity_required);
-                return (
-                  <div className="rounded-xl p-4 bg-gradient-to-br from-blue-500/10 to-purple-500/10 border border-blue-500/30 space-y-4">
-                    <div className="flex items-center gap-2">
-                      <Zap className="w-5 h-5 text-blue-400" />
-                      <h4 className="font-semibold text-white">Resource Upgrade Required</h4>
-                    </div>
-                    
-                    <div className="space-y-3">
-                      <div className="flex justify-between items-center">
-                        <span className="text-slate-400">Capacity Required</span>
-                        <span className="text-white font-semibold">{installDialog.capacity_required} GB</span>
-                      </div>
-                      
-                      <div className="flex justify-between items-center">
-                        <span className="text-slate-400">Resource Tier</span>
-                        <Badge className={`${resourceCost.tierColor} bg-white/10`}>
-                          {resourceCost.tier}
-                        </Badge>
-                      </div>
-                      
-                      <div className="h-px bg-white/10" />
-                      
-                      <div className="flex justify-between items-center">
-                        <span className="text-slate-400 flex items-center gap-1">
-                          <CreditCard className="w-4 h-4" />
-                          Monthly Resource Fee
-                        </span>
-                        <span className="text-xl font-bold text-blue-400">${resourceCost.monthlyCost}/mo</span>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-start gap-2 p-3 bg-white/5 rounded-lg">
-                      <AlertCircle className="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" />
-                      <p className="text-xs text-slate-400">
-                        This fee will be automatically billed to your card on file monthly. 
-                        You can cancel anytime by uninstalling the app.
-                      </p>
-                    </div>
-                    
-                    {/* Net Revenue Calculation */}
-                    <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
-                      <div className="flex justify-between items-center">
-                        <span className="text-slate-400 text-sm">Estimated Net Revenue</span>
-                        <span className="text-emerald-400 font-bold">
-                          ${(parseFloat(installDialog.revenue_per_node) - resourceCost.monthlyCost).toFixed(2)}/mo
-                        </span>
-                      </div>
-                      <p className="text-xs text-slate-500 mt-1">
-                        Revenue (${installDialog.revenue_per_node}) - Resource Fee (${resourceCost.monthlyCost})
-                      </p>
-                    </div>
-                  </div>
-                );
-              })()}
             </div>
-          )}
-
-          <DialogFooter className="flex-col sm:flex-row gap-2">
-            <Button variant="ghost" onClick={() => setInstallDialog(null)} className="sm:flex-1">
-              Cancel
-            </Button>
-            <Button
-              className="bg-gradient-to-r from-[#4865af] to-[#6b8dd6] hover:from-[#5a7ac4] hover:to-[#7c9ee0] text-white font-semibold rounded-full sm:flex-1"
-              onClick={() => handleInstall(installDialog)}
-              disabled={installing}
-              data-testid="confirm-install-btn"
-            >
-              {installing ? (
-                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              ) : (
-                <>
-                  <CreditCard className="w-4 h-4 mr-2" />
-                  Install & Subscribe
-                </>
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Compare Dialog */}
-      <Dialog open={showCompareDialog} onOpenChange={setShowCompareDialog}>
-        <DialogContent className="glass-card border-white/10 max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-white font-['Outfit'] text-xl flex items-center gap-2">
-              <GitCompare className="w-5 h-5 text-cyan-400" />
-              App Comparison
-            </DialogTitle>
-            <DialogDescription className="text-slate-400">
-              Compare selected apps side by side
-            </DialogDescription>
-          </DialogHeader>
-          
-          {compareData.length > 0 && (
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[600px]">
-                <thead>
-                  <tr>
-                    <th className="text-left text-slate-400 font-medium p-3 border-b border-white/10">Feature</th>
-                    {compareData.map(app => (
-                      <th key={app.id} className="text-center p-3 border-b border-white/10">
-                        <div className="flex flex-col items-center gap-2">
-                          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#4865af] to-[#6b8dd6] flex items-center justify-center">
-                            {getAppIcon(app.icon)}
-                          </div>
-                          <span className="text-white font-semibold">{app.name}</span>
-                          <Badge variant="outline" className="text-xs border-slate-600 text-slate-400">
-                            {app.category}
-                          </Badge>
-                        </div>
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td className="text-slate-400 p-3 border-b border-white/10">Price</td>
-                    {compareData.map(app => (
-                      <td key={app.id} className="text-center p-3 border-b border-white/10">
-                        <span className="text-emerald-400 font-bold text-lg">${app.subscription_price}</span>
-                        <span className="text-slate-500 text-xs block">/user/month</span>
-                      </td>
-                    ))}
-                  </tr>
-                  <tr>
-                    <td className="text-slate-400 p-3 border-b border-white/10">Revenue Share</td>
-                    {compareData.map(app => (
-                      <td key={app.id} className="text-center p-3 border-b border-white/10">
-                        <span className="text-emerald-400 font-bold">{app.revenue_share}%</span>
-                      </td>
-                    ))}
-                  </tr>
-                  <tr>
-                    <td className="text-slate-400 p-3 border-b border-white/10">Est. Revenue/Node</td>
-                    {compareData.map(app => (
-                      <td key={app.id} className="text-center p-3 border-b border-white/10">
-                        <span className="text-emerald-400 font-bold">${app.revenue_per_node || '-'}</span>
-                      </td>
-                    ))}
-                  </tr>
-                  <tr>
-                    <td className="text-slate-400 p-3 border-b border-white/10">Resource Fee</td>
-                    {compareData.map(app => {
-                      const cost = calculateResourceCost(app.capacity_required);
-                      return (
-                        <td key={app.id} className="text-center p-3 border-b border-white/10">
-                          <span className="text-blue-400 font-bold">${cost.monthlyCost}/mo</span>
-                          <span className={`text-xs block ${cost.tierColor}`}>{cost.tier}</span>
-                        </td>
-                      );
-                    })}
-                  </tr>
-                  <tr>
-                    <td className="text-slate-400 p-3 border-b border-white/10">Net Revenue</td>
-                    {compareData.map(app => {
-                      const cost = calculateResourceCost(app.capacity_required);
-                      const net = (parseFloat(app.revenue_per_node) - cost.monthlyCost).toFixed(2);
-                      return (
-                        <td key={app.id} className="text-center p-3 border-b border-white/10">
-                          <span className={`font-bold ${parseFloat(net) > 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                            ${net}/mo
-                          </span>
-                        </td>
-                      );
-                    })}
-                  </tr>
-                  <tr>
-                    <td className="text-slate-400 p-3 border-b border-white/10">Capacity Required</td>
-                    {compareData.map(app => (
-                      <td key={app.id} className="text-center p-3 border-b border-white/10">
-                        <span className="text-white font-semibold">{app.capacity_required} GB</span>
-                      </td>
-                    ))}
-                  </tr>
-                  <tr>
-                    <td className="text-slate-400 p-3 border-b border-white/10">Active Nodes</td>
-                    {compareData.map(app => (
-                      <td key={app.id} className="text-center p-3 border-b border-white/10">
-                        <span className="text-white font-semibold">{(app.active_nodes || 0).toLocaleString()}</span>
-                      </td>
-                    ))}
-                  </tr>
-                  <tr>
-                    <td className="text-slate-400 p-3 border-b border-white/10">Subscribers</td>
-                    {compareData.map(app => (
-                      <td key={app.id} className="text-center p-3 border-b border-white/10">
-                        <span className="text-white font-semibold">{((app.subscribers || 0) / 1000).toFixed(1)}K</span>
-                      </td>
-                    ))}
-                  </tr>
-                  <tr>
-                    <td className="text-slate-400 p-3 border-b border-white/10">Available Slots</td>
-                    {compareData.map(app => (
-                      <td key={app.id} className="text-center p-3 border-b border-white/10">
-                        <span className="text-emerald-400 font-semibold">{app.available_slots || '-'}</span>
-                        <span className="text-slate-500 text-xs"> / {app.total_slots || '-'}</span>
-                      </td>
-                    ))}
-                  </tr>
-                  <tr>
-                    <td className="text-slate-400 p-3 border-b border-white/10">Status</td>
-                    {compareData.map(app => (
-                      <td key={app.id} className="text-center p-3 border-b border-white/10">
-                        <div className="flex flex-wrap justify-center gap-1">
-                          {app.is_trending && (
-                            <Badge className="bg-cyan-500/20 text-cyan-400 text-xs">
-                              <TrendingUp className="w-3 h-3 mr-1" /> Hot
-                            </Badge>
-                          )}
-                          {app.is_new && (
-                            <Badge className="bg-purple-500/20 text-purple-400 text-xs">
-                              <Sparkles className="w-3 h-3 mr-1" /> New
-                            </Badge>
-                          )}
-                          {!app.is_trending && !app.is_new && (
-                            <span className="text-slate-500">-</span>
-                          )}
-                        </div>
-                      </td>
-                    ))}
-                  </tr>
-                  <tr>
-                    <td className="text-slate-400 p-3">Action</td>
-                    {compareData.map(app => (
-                      <td key={app.id} className="text-center p-3">
-                        <Button
-                          size="sm"
-                          className="bg-[#4865af] hover:bg-[#5a7ac4] text-white rounded-full"
-                          onClick={() => {
-                            setShowCompareDialog(false);
-                            setInstallDialog(app);
-                          }}
-                          disabled={app.is_installed}
-                          data-testid={`compare-install-${app.id}`}
-                        >
-                          {app.is_installed ? 'Installed' : (
-                            <>
-                              <Download className="w-3 h-3 mr-1" /> Install
-                            </>
-                          )}
-                        </Button>
-                      </td>
-                    ))}
-                  </tr>
-                </tbody>
-              </table>
+            
+            <div className="flex items-start gap-2 p-3 bg-white/5 rounded-lg">
+              <AlertCircle className="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" />
+              <p className="text-xs text-slate-400">
+                This fee will be automatically billed to your card on file monthly. 
+                You can cancel anytime by uninstalling the app.
+              </p>
             </div>
-          )}
+            
+            {/* Net Revenue Calculation */}
+            <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
+              <div className="flex justify-between items-center">
+                <span className="text-slate-400 text-sm">Estimated Net Revenue</span>
+                <span className="text-emerald-400 font-bold">
+                  ${(parseFloat(revenuePerNode) - resourceCost.monthlyCost).toFixed(2)}/mo
+                </span>
+              </div>
+              <p className="text-xs text-slate-500 mt-1">
+                Revenue (${revenuePerNode}) - Resource Fee (${resourceCost.monthlyCost})
+              </p>
+            </div>
+          </div>
+        </div>
 
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => setShowCompareDialog(false)}>
-              Close
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </div>
+        <DialogFooter className="flex-col sm:flex-row gap-2">
+          <Button variant="ghost" onClick={onClose} className="sm:flex-1">
+            Cancel
+          </Button>
+          <Button
+            className="bg-gradient-to-r from-[#4865af] to-[#6b8dd6] hover:from-[#5a7ac4] hover:to-[#7c9ee0] text-white font-semibold rounded-full sm:flex-1"
+            onClick={() => onInstall(app)}
+            disabled={installing}
+            data-testid="confirm-install-btn"
+          >
+            {installing ? (
+              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            ) : (
+              <>
+                <CreditCard className="w-4 h-4 mr-2" />
+                Install & Subscribe
+              </>
+            )}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
