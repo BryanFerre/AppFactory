@@ -377,33 +377,41 @@ export default function AppMarketplace() {
       {/* Category Grid */}
       <div className="space-y-4">
         <h2 className="text-lg font-semibold text-white">Browse by Category</h2>
-        <motion.div
-          variants={container}
-          initial="hidden"
-          animate="show"
-          className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4"
-        >
-          {categories.map((category) => {
-            const IconComponent = categoryIcons[category.id] || Package;
-            const gradientColors = category.color || 'from-cyan-500 to-blue-500';
-            
-            return (
-              <motion.div
-                key={category.id}
-                variants={item}
-                onClick={() => handleCategoryClick(category)}
-                className="glass-card p-4 cursor-pointer hover:bg-white/5 transition-all group border border-white/5 hover:border-white/20"
-                data-testid={`category-${category.id}`}
-              >
-                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${gradientColors} flex items-center justify-center mb-3 group-hover:scale-110 transition-transform`}>
-                  <IconComponent className="w-6 h-6 text-white" />
-                </div>
-                <h3 className="text-white font-medium text-sm mb-1 line-clamp-2">{category.name}</h3>
-                <p className="text-xs text-slate-500">{category.app_count || 0} apps</p>
-              </motion.div>
-            );
-          })}
-        </motion.div>
+        {loading ? (
+          <div className="flex items-center justify-center h-32">
+            <div className="w-8 h-8 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin" />
+          </div>
+        ) : categories.length === 0 ? (
+          <div className="text-center py-8 text-slate-400">No categories available</div>
+        ) : (
+          <motion.div
+            variants={container}
+            initial="hidden"
+            animate="show"
+            className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4"
+          >
+            {categories.map((category) => {
+              const IconComponent = categoryIcons[category.id] || Package;
+              const gradientColors = category.color || 'from-cyan-500 to-blue-500';
+              
+              return (
+                <motion.div
+                  key={category.id}
+                  variants={item}
+                  onClick={() => handleCategoryClick(category)}
+                  className="glass-card p-4 cursor-pointer hover:bg-white/5 transition-all group border border-white/5 hover:border-white/20"
+                  data-testid={`category-${category.id}`}
+                >
+                  <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${gradientColors} flex items-center justify-center mb-3 group-hover:scale-110 transition-transform`}>
+                    <IconComponent className="w-6 h-6 text-white" />
+                  </div>
+                  <h3 className="text-white font-medium text-sm mb-1 line-clamp-2">{category.name}</h3>
+                  <p className="text-xs text-slate-500">{category.app_count || 0} apps</p>
+                </motion.div>
+              );
+            })}
+          </motion.div>
+        )}
       </div>
 
       {/* Featured Collections */}
