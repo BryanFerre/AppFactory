@@ -85,7 +85,7 @@ export default function AdminSettings() {
       setNewAdmin({ email: '', name: '', password: '', role: 'support' });
       fetchAdmins();
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Failed to create admin');
+      toast.error(getErrorMessage(error, 'Failed to create admin'));
     } finally {
       setSubmitting(false);
     }
