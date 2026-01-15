@@ -152,7 +152,7 @@ async def create_checkout_session(request: CreateCheckoutRequest):
     await db.orders.insert_one(order_doc)
     
     try:
-        # Create Stripe checkout session
+        # Create Stripe checkout session with final price
         checkout_session = stripe.checkout.Session.create(
             payment_method_types=["card"],
             line_items=[{
@@ -162,7 +162,7 @@ async def create_checkout_session(request: CreateCheckoutRequest):
                         "name": product["name"],
                         "description": product.get("short_description", ""),
                     },
-                    "unit_amount": int(product["price"] * 100),  # Stripe uses cents
+                    "unit_amount": int(final_price * 100),  # Stripe uses cents
                 },
                 "quantity": 1,
             }],
@@ -174,7 +174,9 @@ async def create_checkout_session(request: CreateCheckoutRequest):
                 "order_id": order_id,
                 "product_id": request.product_id,
                 "customer_name": request.name,
-                "referral_code": request.referral_code or ""
+                "referral_code": request.referral_code or "",
+                "coupon_code": request.coupon_code or "",
+                "discount_amount": str(discount_amount)
             }
         )
         
