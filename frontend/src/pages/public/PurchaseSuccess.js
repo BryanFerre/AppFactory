@@ -188,7 +188,7 @@ export default function PurchaseSuccess() {
                   </Button>
                 </div>
                 <p className="text-xs text-amber-400 mt-2">
-                  ⚠️ Please save this password! You&apos;ll need it to log in. We recommend changing it in settings.
+                  Please save this password! You&apos;ll need it to log in. We recommend changing it in settings.
                 </p>
               </div>
             )}

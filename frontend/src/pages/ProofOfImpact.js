@@ -290,7 +290,7 @@ export default function ProofOfImpact() {
               </h3>
               {streak?.current_streak >= 7 && (
                 <Badge className="bg-orange-500/20 text-orange-400 border-0">
-                  🔥 On Fire!
+                  On Fire!
                 </Badge>
               )}
             </div>

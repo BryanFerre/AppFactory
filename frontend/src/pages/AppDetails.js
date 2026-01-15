@@ -108,7 +108,7 @@ export default function AppDetails() {
         setGeneratedPost(`Check out ${targetApp.name} on AppCloud! I'm hosting this amazing app on the decentralized cloud. Join the future of distributed computing! #AppCloud #Web3 #DecentralizedCloud`);
       }
     } catch (error) {
-      setGeneratedPost(`🚀 Check out ${targetApp.name} on AppCloud! I'm hosting this amazing app on the decentralized cloud. Join the future of distributed computing! #AppCloud #Web3 #DecentralizedCloud`);
+      setGeneratedPost(`Check out ${targetApp.name} on AppCloud! I'm hosting this amazing app on the decentralized cloud. Join the future of distributed computing! #AppCloud #Web3 #DecentralizedCloud`);
     } finally {
       setGeneratingPost(false);
     }

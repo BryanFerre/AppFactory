@@ -120,7 +120,7 @@ export default function PointsNotification() {
                     </span>
                     {notification.tierUp && (
                       <span className="text-xs bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded-full">
-                        Tier Up! 🎉
+                        Tier Up!
                       </span>
                     )}
                   </div>
