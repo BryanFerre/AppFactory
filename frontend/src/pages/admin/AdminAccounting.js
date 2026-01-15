@@ -180,7 +180,7 @@ export default function AdminAccounting() {
       fetchCommissions();
       fetchDashboard();
     } catch (error) {
-      toast.error(error.response?.data?.detail || `Failed to ${action} commission`);
+      toast.error(getErrorMessage(error, `Failed to ${action} commission`));
     } finally {
       setProcessing(false);
     }
@@ -199,7 +199,7 @@ export default function AdminAccounting() {
       fetchPayouts();
       fetchDashboard();
     } catch (error) {
-      toast.error(error.response?.data?.detail || `Failed to ${action} payout`);
+      toast.error(getErrorMessage(error, `Failed to ${action} payout`));
     } finally {
       setProcessing(false);
     }
@@ -215,7 +215,7 @@ export default function AdminAccounting() {
       fetchCommissions();
       fetchDashboard();
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Failed to mark as paid');
+      toast.error(getErrorMessage(error, 'Failed to mark as paid'));
     } finally {
       setProcessing(false);
     }
