@@ -468,6 +468,7 @@ export default function AppMarketplace() {
             </div>
           </SheetContent>
         </Sheet>
+        </div>
       </div>
 
       {/* Active Filters Display */}
