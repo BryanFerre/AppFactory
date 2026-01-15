@@ -355,4 +355,4 @@ External applications can access points data without authentication:
    Returns: Ranked leaderboard with wallet addresses for token distribution
 
 ## Preview URL
-https://appcloud-impact.preview.emergentagent.com
+https://ecommerce-optio.preview.emergentagent.com
