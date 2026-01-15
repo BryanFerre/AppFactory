@@ -228,7 +228,7 @@ export default function AppDeveloper() {
       window.location.href = response.data.checkout_url;
     } catch (error) {
       setProcessingPayment(false);
-      toast.error(error.response?.data?.detail || 'Failed to start checkout');
+      toast.error(getErrorMessage(error, 'Failed to start checkout'));
     }
   };
 
