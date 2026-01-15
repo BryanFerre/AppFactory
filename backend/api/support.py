@@ -1,11 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel, EmailStr
-from typing import Optional, List
+from pydantic import BaseModel
+from typing import List
 from datetime import datetime, timezone
 from bson import ObjectId
 
-from db import get_db
-from api.auth import get_current_user
+from utils.database import db
+from utils.auth import get_current_user
 
 router = APIRouter(prefix="/support", tags=["Support"])
 
@@ -29,8 +29,7 @@ class TicketResponse(BaseModel):
 @router.post("/tickets", response_model=TicketResponse)
 async def create_ticket(
     ticket: TicketCreate,
-    current_user: dict = Depends(get_current_user),
-    db=Depends(get_db)
+    current_user: dict = Depends(get_current_user)
 ):
     """Create a new support ticket."""
     ticket_data = {
@@ -61,8 +60,7 @@ async def create_ticket(
 
 @router.get("/tickets", response_model=List[TicketResponse])
 async def get_user_tickets(
-    current_user: dict = Depends(get_current_user),
-    db=Depends(get_db)
+    current_user: dict = Depends(get_current_user)
 ):
     """Get all tickets for the current user."""
     cursor = db.support_tickets.find(
@@ -88,8 +86,7 @@ async def get_user_tickets(
 @router.get("/tickets/{ticket_id}", response_model=TicketResponse)
 async def get_ticket(
     ticket_id: str,
-    current_user: dict = Depends(get_current_user),
-    db=Depends(get_db)
+    current_user: dict = Depends(get_current_user)
 ):
     """Get a specific ticket by ID."""
     try:
