@@ -118,11 +118,11 @@ def _get_2fa_enabled_template(base_style: str, data: dict) -> tuple:
         <div class="container">
             <div class="card">
                 <div class="logo">AppCloud</div>
-                <h1>2FA Successfully Enabled 🔐</h1>
+                <h1>2FA Successfully Enabled</h1>
                 <p>Two-factor authentication has been enabled on your AppCloud account.</p>
                 
                 <div class="stat-box" style="background: rgba(16,185,129,0.1); border-color: rgba(16,185,129,0.3);">
-                    <div class="stat-value" style="color: #10b981;">✓ Secured</div>
+                    <div class="stat-value" style="color: #10b981;">Secured</div>
                     <div class="stat-label">Your account is now protected</div>
                 </div>
                 
@@ -134,7 +134,7 @@ def _get_2fa_enabled_template(base_style: str, data: dict) -> tuple:
                 </ul>
                 
                 <p style="background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.3); border-radius: 8px; padding: 12px; color: #fbbf24;">
-                    <strong>⚠️ Important:</strong> Keep your backup codes safe. You'll need them if you lose access to your authenticator app.
+                    <strong>Important:</strong> Keep your backup codes safe. You'll need them if you lose access to your authenticator app.
                 </p>
                 
                 <p><strong>Enabled on:</strong> {data.get('enabled_at', datetime.now().strftime('%B %d, %Y at %H:%M UTC'))}</p>
@@ -153,7 +153,7 @@ def _get_2fa_enabled_template(base_style: str, data: dict) -> tuple:
     return subject, html
 
 def _get_2fa_disabled_template(base_style: str, data: dict) -> tuple:
-    subject = "⚠️ Two-Factor Authentication Disabled"
+    subject = "Two-Factor Authentication Disabled"
     html = f"""
     <!DOCTYPE html>
     <html>
@@ -162,11 +162,11 @@ def _get_2fa_disabled_template(base_style: str, data: dict) -> tuple:
         <div class="container">
             <div class="card">
                 <div class="logo">AppCloud</div>
-                <h1>2FA Has Been Disabled ⚠️</h1>
+                <h1>2FA Has Been Disabled</h1>
                 <p>Two-factor authentication has been disabled on your AppCloud account.</p>
                 
                 <div class="stat-box" style="background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.3);">
-                    <div class="stat-value" style="color: #ef4444;">⚠ Less Secure</div>
+                    <div class="stat-value" style="color: #ef4444;">Less Secure</div>
                     <div class="stat-label">2FA protection removed</div>
                 </div>
                 
