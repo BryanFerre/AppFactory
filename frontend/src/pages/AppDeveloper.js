@@ -100,8 +100,18 @@ export default function AppDeveloper() {
 
   useEffect(() => {
     fetchSubmissions();
+    fetchCategories();
     checkPaymentReturn();
   }, []);
+
+  const fetchCategories = async () => {
+    try {
+      const response = await axios.get(`${API}/categories`);
+      setCategories(response.data);
+    } catch (error) {
+      console.error('Failed to fetch categories');
+    }
+  };
 
   const checkPaymentReturn = async () => {
     const urlParams = new URLSearchParams(window.location.search);
