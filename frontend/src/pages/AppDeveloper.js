@@ -192,8 +192,15 @@ export default function AppDeveloper() {
     try {
       const token = localStorage.getItem('token');
       
+      // Build categories array for multi-category support
+      const categoriesArray = formData.category_id ? [{
+        category_id: formData.category_id,
+        subcategory_id: formData.subcategory_id || null
+      }] : [];
+      
       const response = await axios.post(`${API}/developer/submit`, {
         ...formData,
+        categories: categoriesArray,
         resources_required: parseFloat(formData.resources_required),
         monthly_subscription_fee: parseFloat(formData.monthly_subscription_fee),
         revenue_sharing: parseFloat(formData.revenue_sharing),
@@ -204,10 +211,14 @@ export default function AppDeveloper() {
 
       toast.success('App submitted successfully!');
       setShowForm(false);
+      setSelectedCategory(null);
       setFormData({
         app_name: '',
         description: '',
         category: '',
+        category_id: '',
+        subcategory_id: '',
+        tags: [],
         resources_required: '',
         monthly_subscription_fee: '',
         revenue_sharing: '',
