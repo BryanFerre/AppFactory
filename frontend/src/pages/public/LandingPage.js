@@ -923,6 +923,80 @@ export default function LandingPage() {
             </div>
           )}
 
+          {/* Step: Set Password (for new users) */}
+          {purchaseStep === 'setPassword' && purchaseResult && (
+            <form onSubmit={handleSetPassword} className="mt-4 space-y-4">
+              <div className="text-center py-2">
+                <div className="w-14 h-14 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto mb-3">
+                  <CheckCircle2 className="w-7 h-7 text-emerald-400" />
+                </div>
+                <p className="text-slate-400 text-sm">Payment successful! Now create your password.</p>
+              </div>
+
+              {passwordError && (
+                <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  {passwordError}
+                </div>
+              )}
+
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-1.5">
+                  Create Password *
+                </label>
+                <Input
+                  type="password"
+                  required
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  className="bg-white/5 border-white/10 text-white"
+                  placeholder="Enter password (min 8 characters)"
+                  minLength={8}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-1.5">
+                  Confirm Password *
+                </label>
+                <Input
+                  type="password"
+                  required
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="bg-white/5 border-white/10 text-white"
+                  placeholder="Confirm your password"
+                  minLength={8}
+                />
+              </div>
+
+              <div className="p-3 bg-white/5 rounded-lg border border-white/10">
+                <div className="flex justify-between text-sm">
+                  <span className="text-slate-400">Your email</span>
+                  <span className="text-white">{purchaseResult.user?.email}</span>
+                </div>
+              </div>
+
+              <Button
+                type="submit"
+                disabled={settingPassword}
+                className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 text-white py-6 hover:from-cyan-600 hover:to-blue-600"
+              >
+                {settingPassword ? (
+                  <>
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                    Creating Account...
+                  </>
+                ) : (
+                  <>
+                    Create Account & Continue
+                    <ArrowRight className="w-5 h-5 ml-2" />
+                  </>
+                )}
+              </Button>
+            </form>
+          )}
+
           {/* Step: Success */}
           {purchaseStep === 'success' && purchaseResult && (
             <div className="mt-4 space-y-4">
@@ -930,7 +1004,7 @@ export default function LandingPage() {
                 <div className="w-16 h-16 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto mb-4">
                   <CheckCircle2 className="w-8 h-8 text-emerald-400" />
                 </div>
-                <h3 className="text-lg font-semibold text-white mb-2">Payment Successful!</h3>
+                <h3 className="text-lg font-semibold text-white mb-2">You're All Set!</h3>
                 <p className="text-slate-400 text-sm">Your CloudNode license has been activated.</p>
               </div>
 
@@ -943,14 +1017,7 @@ export default function LandingPage() {
                   <span className="text-slate-400 text-sm">Email</span>
                   <span className="text-white text-sm">{purchaseResult.user?.email}</span>
                 </div>
-                {purchaseResult.is_new_user && purchaseResult.temp_password && (
-                  <div className="pt-3 border-t border-white/10">
-                    <p className="text-amber-400 text-xs mb-2">⚠️ Your temporary password (save this!):</p>
-                    <code className="block p-2 bg-black/30 rounded text-emerald-400 font-mono text-sm">
-                      {purchaseResult.temp_password}
-                    </code>
-                  </div>
-                )}
+              </div>
               </div>
 
               <p className="text-sm text-slate-400 text-center">
