@@ -64,7 +64,7 @@ export default function Login() {
         }
       }
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Invalid 2FA code');
+      toast.error(getErrorMessage(error, 'Invalid 2FA code'));
     } finally {
       setLoading(false);
     }
