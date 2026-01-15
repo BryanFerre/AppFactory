@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { Mail, Lock, User, ArrowRight, Check } from 'lucide-react';
 import { ReactComponent as CloudNodeLogo } from '@/assets/CloudNode.svg';
+import { getErrorMessage } from '@/utils/errorUtils';
 
 export default function Register() {
   const { register } = useAuth();
@@ -22,7 +23,7 @@ export default function Register() {
       await register(name, email, password);
       toast.success('Node created successfully!');
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Registration failed');
+      toast.error(getErrorMessage(error, 'Registration failed'));
     } finally {
       setLoading(false);
     }
