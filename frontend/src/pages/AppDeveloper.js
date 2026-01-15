@@ -206,7 +206,7 @@ export default function AppDeveloper() {
       setCodeFile(null);
       fetchSubmissions();
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Failed to submit app');
+      toast.error(getErrorMessage(error, 'Failed to submit app'));
     } finally {
       setSubmitting(false);
     }
