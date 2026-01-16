@@ -159,3 +159,102 @@ async def get_app_promotion_stats(app_id: str, user=Depends(get_current_user)):
         }
     }
 
+
+@router.get("/promotion/leaderboard")
+async def get_share_leaderboard(
+    period: str = "all_time",  # all_time, monthly, weekly
+    limit: int = 20,
+    user=Depends(get_current_user)
+):
+    """Get the share/promotion leaderboard showing top promoters"""
+    
+    # Build date filter based on period
+    date_filter = {}
+    now = datetime.now(timezone.utc)
+    if period == "weekly":
+        date_filter["created_at"] = {"$gte": (now - timedelta(days=7)).isoformat()}
+    elif period == "monthly":
+        date_filter["created_at"] = {"$gte": (now - timedelta(days=30)).isoformat()}
+    
+    # Aggregate shares by user
+    pipeline = [
+        {"$match": date_filter} if date_filter else {"$match": {}},
+        {"$group": {
+            "_id": "$user_id",
+            "total_shares": {"$sum": 1},
+            "platforms_used": {"$addToSet": "$platform"},
+            "apps_shared": {"$addToSet": "$app_name"},
+            "last_share": {"$max": "$created_at"}
+        }},
+        {"$sort": {"total_shares": -1}},
+        {"$limit": limit}
+    ]
+    
+    share_stats = await db.app_shares.aggregate(pipeline).to_list(limit)
+    
+    # Enrich with user data and signups
+    leaderboard = []
+    for idx, stat in enumerate(share_stats):
+        user_data = await db.users.find_one({"id": stat["_id"]}, {"_id": 0, "email": 1, "name": 1, "referral_code": 1})
+        if not user_data:
+            continue
+        
+        # Get signups driven by this user
+        ref_stats = await db.referral_stats.find_one({"user_id": stat["_id"]}, {"_id": 0}) or {}
+        signups_driven = ref_stats.get("app_signups", 0) + ref_stats.get("operator_signups", 0)
+        
+        # Get total OPT earned from sharing
+        opt_earned = ref_stats.get("app_opt_earned", 0) + ref_stats.get("operator_opt_earned", 0)
+        
+        # Get installed apps count
+        apps_count = await db.installed_apps.count_documents({"user_id": stat["_id"]})
+        
+        leaderboard.append({
+            "rank": idx + 1,
+            "user_id": stat["_id"],
+            "display_name": user_data.get("name") or user_data.get("email", "").split("@")[0],
+            "avatar_initial": (user_data.get("name") or user_data.get("email", "U"))[0].upper(),
+            "total_shares": stat["total_shares"],
+            "signups_driven": signups_driven,
+            "opt_earned": opt_earned,
+            "apps_shared_count": len(stat.get("apps_shared", [])),
+            "platforms_used": stat.get("platforms_used", []),
+            "installed_apps": apps_count,
+            "last_share": stat.get("last_share"),
+            "is_current_user": stat["_id"] == user["id"]
+        })
+    
+    # Get current user's rank if not in top list
+    current_user_rank = None
+    current_user_in_list = any(entry["is_current_user"] for entry in leaderboard)
+    
+    if not current_user_in_list:
+        # Calculate current user's position
+        user_shares = await db.app_shares.count_documents(
+            {"user_id": user["id"], **date_filter} if date_filter else {"user_id": user["id"]}
+        )
+        if user_shares > 0:
+            higher_count = await db.app_shares.aggregate([
+                {"$match": date_filter} if date_filter else {"$match": {}},
+                {"$group": {"_id": "$user_id", "total": {"$sum": 1}}},
+                {"$match": {"total": {"$gt": user_shares}}},
+                {"$count": "count"}
+            ]).to_list(1)
+            current_user_rank = (higher_count[0]["count"] if higher_count else 0) + 1
+            
+            # Get current user's stats
+            ref_stats = await db.referral_stats.find_one({"user_id": user["id"]}, {"_id": 0}) or {}
+            current_user_rank = {
+                "rank": current_user_rank,
+                "total_shares": user_shares,
+                "signups_driven": ref_stats.get("app_signups", 0) + ref_stats.get("operator_signups", 0),
+                "opt_earned": ref_stats.get("app_opt_earned", 0) + ref_stats.get("operator_opt_earned", 0)
+            }
+    
+    return {
+        "period": period,
+        "leaderboard": leaderboard,
+        "current_user_rank": current_user_rank,
+        "total_participants": await db.app_shares.distinct("user_id")
+    }
+
