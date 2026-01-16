@@ -58,6 +58,7 @@ DEFAULT_ACTIONS = [
     # Tier 2 – Growth & Distribution (250–1,000 pts)
     {"id": "install_app", "name": "Install an App", "category": "growth", "base_points": 250, "cooldown": COOLDOWN_NONE, "description": "Install an app on your node"},
     {"id": "promote_app", "name": "Promote an App", "category": "growth", "base_points": 300, "cooldown": COOLDOWN_DAILY, "description": "Share an app via social media"},
+    {"id": "share_app_link", "name": "Share App Link", "category": "growth", "base_points": 100, "cooldown": COOLDOWN_DAILY, "description": "Share your app referral link on social media"},
     {"id": "referral_signup", "name": "Referral Signup", "category": "growth", "base_points": 500, "cooldown": COOLDOWN_NONE, "description": "Someone signs up using your referral link"},
     {"id": "referral_conversion", "name": "Referral Conversion", "category": "growth", "base_points": 1000, "cooldown": COOLDOWN_NONE, "description": "Your referral makes a purchase"},
     {"id": "early_app_adopter", "name": "Early App Adopter", "category": "growth", "base_points": 400, "cooldown": COOLDOWN_NONE, "description": "Install a trending app within first week"},
