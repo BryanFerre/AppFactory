@@ -52,10 +52,20 @@ export default function DashboardLayout() {
   const { user, logout } = useAuth();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+    // Load from localStorage, default to false (expanded)
+    const saved = localStorage.getItem('sidebarCollapsed');
+    return saved === 'true';
+  });
   const [nodeStatus, setNodeStatus] = useState({ status: 'healthy', earnings_today_usd: 0, earnings_today_opt: 0 });
   const [notifications, setNotifications] = useState([]);
   const [optPrice, setOptPrice] = useState(0.85);
   const [licenses, setLicenses] = useState([]);
+
+  // Persist sidebar state
+  useEffect(() => {
+    localStorage.setItem('sidebarCollapsed', sidebarCollapsed);
+  }, [sidebarCollapsed]);
 
   useEffect(() => {
     fetchNodeStatus();
