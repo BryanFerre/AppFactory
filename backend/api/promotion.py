@@ -72,12 +72,12 @@ async def get_promotion_stats(user=Depends(get_current_user)):
 @router.post("/promotion/share/{app_id}")
 async def track_app_share(app_id: str, platform: str = "copy", user=Depends(get_current_user)):
     """Track when a user shares an app link and award OPT points"""
-    from services.points_engine import award_user_points
+    from fastapi import HTTPException
+    from services.points_engine import PointsEngine
     
     # Get the installed app
     app = await db.installed_apps.find_one({"id": app_id, "user_id": user["id"]}, {"_id": 0})
     if not app:
-        from fastapi import HTTPException
         raise HTTPException(status_code=404, detail="App not found in your installed apps")
     
     referral_code = user.get("referral_code", "")
@@ -96,18 +96,24 @@ async def track_app_share(app_id: str, platform: str = "copy", user=Depends(get_
     await db.app_shares.insert_one(share_record)
     
     # Award OPT points for sharing (with cooldown per app per day)
-    points_awarded = await award_user_points(
-        user["id"],
-        "share_app_link",
-        source_entity_id=app_id,
-        metadata={"app_name": app.get("name"), "platform": platform}
-    )
+    points_awarded = 0
+    try:
+        engine = PointsEngine(db)
+        result = await engine.award_points(
+            user["id"],
+            "share_app_link",
+            source_entity_id=app_id,
+            metadata={"app_name": app.get("name"), "platform": platform}
+        )
+        points_awarded = result.get("points_awarded", 0) if result else 0
+    except Exception as e:
+        print(f"Failed to award points for share: {e}")
     
     return {
         "success": True,
         "share_link": share_link,
         "platform": platform,
-        "points_awarded": points_awarded.get("points_awarded", 0) if points_awarded else 0,
+        "points_awarded": points_awarded,
         "message": f"Share link generated! You earned OPT for sharing {app.get('name', 'this app')}."
     }
 
