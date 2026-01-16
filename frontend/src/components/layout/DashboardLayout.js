@@ -6,7 +6,7 @@ import {
   LayoutDashboard, Store, Package, TrendingUp, Megaphone,
   Activity, HardDrive, Wallet, FileText, HelpCircle, Settings,
   Bell, ChevronDown, LogOut, Menu, X, Code, Trophy, Medal, Lightbulb,
-  Key, Cloud, CheckCircle2
+  Key, Cloud, CheckCircle2, PanelLeftClose, PanelLeft
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -17,6 +17,12 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { ReactComponent as CloudNodeLogo } from '@/assets/CloudNode.svg';
 import PointsNotification from '@/components/PointsNotification';
 
