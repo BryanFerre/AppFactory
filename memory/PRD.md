@@ -150,10 +150,22 @@ Build a full-stack e-commerce and cloud platform named "AppCloud by Optio" with:
     - App Details Modal shows:
       - Performance stats (Revenue, Subscribers, Uptime, OPT Earned)
       - Share Performance (Total Shares, Link Clicks, Signups Driven)
-      - Personal referral link for the app
+      - Personal referral link for each app
       - Social share buttons (Twitter, LinkedIn, Email, Copy)
     - Earn +100 OPT for each share (daily cooldown per app)
     - Backend endpoints: POST /api/promotion/share/{app_id}, GET /api/promotion/app/{app_id}/stats
+
+20. **Share Leaderboard** ✅
+    - Gamified promotion with rankings for top promoters
+    - Promotion page redesigned with 3 tabs: Leaderboard (default), Share Links, Activity
+    - Leaderboard shows:
+      - Top promoters ranked by total shares
+      - Crown badge for #1, Medal for #2, Award for #3
+      - "Top Promoter" flame badge for leader
+      - Current user highlighted with (You) label
+      - Stats: total shares, signups driven, OPT earned, platforms used
+    - Period filters: All Time, This Month, This Week
+    - Backend endpoint: GET /api/promotion/leaderboard?period={all_time|monthly|weekly}
 
 ---
 
