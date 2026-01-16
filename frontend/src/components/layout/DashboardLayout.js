@@ -125,6 +125,7 @@ export default function DashboardLayout() {
   const unreadCount = notifications.filter(n => !n.read).length;
 
   return (
+    <TooltipProvider delayDuration={100}>
     <div className="min-h-screen bg-[#05050A] flex">
       {/* Mobile sidebar backdrop */}
       {sidebarOpen && (
@@ -136,15 +137,22 @@ export default function DashboardLayout() {
 
       {/* Sidebar */}
       <aside className={`
-        fixed lg:sticky top-0 left-0 z-50 h-screen w-64
+        fixed lg:sticky top-0 left-0 z-50 h-screen
         bg-[rgba(15,17,26,0.95)] backdrop-blur-xl border-r border-white/5
-        transform transition-transform duration-300 ease-out
+        transform transition-all duration-300 ease-out
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+        ${sidebarCollapsed ? 'lg:w-[72px]' : 'w-64'}
       `}>
         <div className="flex flex-col h-full p-4">
           {/* Logo */}
-          <div className="flex items-center gap-3 px-2 py-4 mb-6">
-            <CloudNodeLogo className="h-10 w-auto" />
+          <div className={`flex items-center gap-3 px-2 py-4 mb-6 ${sidebarCollapsed ? 'justify-center' : ''}`}>
+            {sidebarCollapsed ? (
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
+                <Cloud className="w-5 h-5 text-white" />
+              </div>
+            ) : (
+              <CloudNodeLogo className="h-10 w-auto" />
+            )}
             <button 
               className="lg:hidden ml-auto text-slate-400 hover:text-white"
               onClick={() => setSidebarOpen(false)}
@@ -153,12 +161,29 @@ export default function DashboardLayout() {
             </button>
           </div>
 
+          {/* Collapse Toggle - Desktop only */}
+          <button
+            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+            className="hidden lg:flex items-center justify-center w-full mb-4 py-2 text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+            data-testid="sidebar-collapse-btn"
+          >
+            {sidebarCollapsed ? (
+              <PanelLeft className="w-5 h-5" />
+            ) : (
+              <>
+                <PanelLeftClose className="w-5 h-5 mr-2" />
+                <span className="text-sm">Collapse</span>
+              </>
+            )}
+          </button>
+
           {/* Navigation */}
           <nav className="flex-1 space-y-1 overflow-y-auto">
             {navItems.map((item) => {
               const isActive = location.pathname === item.path;
               const IconComponent = item.icon;
-              return (
+              
+              const navLink = (
                 <NavLink
                   key={item.path}
                   to={item.path}
@@ -167,26 +192,39 @@ export default function DashboardLayout() {
                   className={`
                     flex items-center gap-3 px-3 py-2.5 rounded-xl
                     transition-colors duration-200
+                    ${sidebarCollapsed ? 'justify-center' : ''}
                     ${isActive 
                       ? 'bg-[#4865af]/20 text-[#6b8dd6] border border-[#4865af]/30' 
                       : 'text-slate-400 hover:text-white hover:bg-white/5'}
                   `}
                 >
-                  {item.isCustom ? (
-                    <IconComponent className={`w-5 h-5 ${isActive ? '' : ''}`} />
-                  ) : (
-                    <IconComponent className={`w-5 h-5 ${isActive ? 'text-[#6b8dd6]' : ''}`} />
-                  )}
-                  <span className="text-sm font-medium">{item.label}</span>
+                  <IconComponent className={`w-5 h-5 shrink-0 ${isActive ? 'text-[#6b8dd6]' : ''}`} />
+                  {!sidebarCollapsed && <span className="text-sm font-medium">{item.label}</span>}
                 </NavLink>
               );
+
+              // Wrap in tooltip when collapsed
+              if (sidebarCollapsed) {
+                return (
+                  <Tooltip key={item.path}>
+                    <TooltipTrigger asChild>
+                      {navLink}
+                    </TooltipTrigger>
+                    <TooltipContent side="right" className="bg-[#1a1d2e] border-white/10">
+                      <p>{item.label}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                );
+              }
+              
+              return navLink;
             })}
           </nav>
 
           {/* Settings at bottom */}
           <div className="pt-4 mt-4 border-t border-white/5 space-y-1">
-            {/* Licenses Section */}
-            {licenses.length > 0 && (
+            {/* Licenses Section - Hide when collapsed */}
+            {!sidebarCollapsed && licenses.length > 0 && (
               <div className="mb-4">
                 <p className="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
                   My Licenses
@@ -229,7 +267,8 @@ export default function DashboardLayout() {
             {bottomNavItems.map((item) => {
               const isActive = location.pathname === item.path;
               const IconComponent = item.icon;
-              return (
+              
+              const navLink = (
                 <NavLink
                   key={item.path}
                   to={item.path}
@@ -238,30 +277,68 @@ export default function DashboardLayout() {
                   className={`
                     flex items-center gap-3 px-3 py-2.5 rounded-xl
                     transition-colors duration-200
+                    ${sidebarCollapsed ? 'justify-center' : ''}
                     ${isActive 
                       ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30' 
                       : 'text-slate-400 hover:text-white hover:bg-white/5'}
                   `}
                 >
-                  <IconComponent className={`w-5 h-5 ${isActive ? 'text-purple-400' : ''}`} />
-                  <span className="text-sm font-medium">{item.label}</span>
+                  <IconComponent className={`w-5 h-5 shrink-0 ${isActive ? 'text-purple-400' : ''}`} />
+                  {!sidebarCollapsed && <span className="text-sm font-medium">{item.label}</span>}
                 </NavLink>
               );
+
+              if (sidebarCollapsed) {
+                return (
+                  <Tooltip key={item.path}>
+                    <TooltipTrigger asChild>
+                      {navLink}
+                    </TooltipTrigger>
+                    <TooltipContent side="right" className="bg-[#1a1d2e] border-white/10">
+                      <p>{item.label}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                );
+              }
+              
+              return navLink;
             })}
-            <NavLink
-              to="/dashboard/settings"
-              data-testid="nav-settings"
-              className={`
-                flex items-center gap-3 px-3 py-2.5 rounded-xl
-                transition-colors duration-200
-                ${location.pathname === '/dashboard/settings'
-                  ? 'bg-[#4865af]/20 text-[#6b8dd6] border border-[#4865af]/30'
-                  : 'text-slate-400 hover:text-white hover:bg-white/5'}
-              `}
-            >
-              <Settings className="w-5 h-5" />
-              <span className="text-sm font-medium">Settings</span>
-            </NavLink>
+            
+            {/* Settings Link */}
+            {(() => {
+              const settingsLink = (
+                <NavLink
+                  to="/dashboard/settings"
+                  data-testid="nav-settings"
+                  className={`
+                    flex items-center gap-3 px-3 py-2.5 rounded-xl
+                    transition-colors duration-200
+                    ${sidebarCollapsed ? 'justify-center' : ''}
+                    ${location.pathname === '/dashboard/settings'
+                      ? 'bg-[#4865af]/20 text-[#6b8dd6] border border-[#4865af]/30'
+                      : 'text-slate-400 hover:text-white hover:bg-white/5'}
+                  `}
+                >
+                  <Settings className="w-5 h-5 shrink-0" />
+                  {!sidebarCollapsed && <span className="text-sm font-medium">Settings</span>}
+                </NavLink>
+              );
+
+              if (sidebarCollapsed) {
+                return (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      {settingsLink}
+                    </TooltipTrigger>
+                    <TooltipContent side="right" className="bg-[#1a1d2e] border-white/10">
+                      <p>Settings</p>
+                    </TooltipContent>
+                  </Tooltip>
+                );
+              }
+              
+              return settingsLink;
+            })()}
           </div>
         </div>
       </aside>
