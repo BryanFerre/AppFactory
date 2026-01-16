@@ -227,6 +227,7 @@ Build a full-stack e-commerce and cloud platform named "AppCloud by Optio" with:
 ---
 
 ## Testing Status
+- **Iteration 17**: App Share/Promotion System - 100% pass rate (15 backend + all UI tests)
 - **Iteration 16**: OPT Points Tutorial/Onboarding - 100% pass rate (10/10 tests)
 - **Iteration 15**: App Category Taxonomy System - 100% pass rate (15/15 tests)
 - **Iteration 14**: Mobile responsiveness - 100% pass rate
