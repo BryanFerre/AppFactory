@@ -260,15 +260,17 @@ class TestPointsEngine:
         )
         
         assert response.status_code == 200
-        actions = response.json()
+        data = response.json()
         
-        # Find share_app_link action
+        # Find share_app_link action in the growth category
+        growth_actions = data.get("actions_by_category", {}).get("growth", {}).get("actions", [])
+        
         share_action = next(
-            (a for a in actions if a["id"] == "share_app_link"),
+            (a for a in growth_actions if a["id"] == "share_app_link"),
             None
         )
         
-        assert share_action is not None
+        assert share_action is not None, "share_app_link action not found in growth category"
         assert share_action["base_points"] == 100
         assert share_action["cooldown"] == "daily"
         assert share_action["category"] == "growth"
