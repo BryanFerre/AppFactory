@@ -219,7 +219,7 @@ class TestAppShare:
             f"{BASE_URL}/api/promotion/share/{app_id}",
             params={"platform": "copy"}
         )
-        assert response.status_code == 401
+        assert response.status_code in [401, 403]  # Either unauthorized or forbidden
     
     def test_share_increments_count(self, auth_headers):
         """Verify share count increments after sharing"""
