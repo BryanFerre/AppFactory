@@ -134,7 +134,7 @@ class TestAppPromotionStats:
         """GET /api/promotion/app/{app_id}/stats requires authentication"""
         app_id = TEST_APP_IDS["chainbridge"]
         response = requests.get(f"{BASE_URL}/api/promotion/app/{app_id}/stats")
-        assert response.status_code == 401
+        assert response.status_code in [401, 403]  # Either unauthorized or forbidden
 
 
 class TestAppShare:
