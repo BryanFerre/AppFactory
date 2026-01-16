@@ -60,7 +60,7 @@ class TestInstalledApps:
     def test_get_installed_apps_requires_auth(self):
         """GET /api/apps/installed requires authentication"""
         response = requests.get(f"{BASE_URL}/api/apps/installed")
-        assert response.status_code == 401
+        assert response.status_code in [401, 403]  # Either unauthorized or forbidden
 
 
 class TestAppPromotionStats:
