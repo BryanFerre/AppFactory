@@ -511,5 +511,6 @@ export default function DashboardLayout() {
       {/* Points Notification */}
       <PointsNotification />
     </div>
+    </TooltipProvider>
   );
 }
