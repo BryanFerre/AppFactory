@@ -138,6 +138,23 @@ Build a full-stack e-commerce and cloud platform named "AppCloud by Optio" with:
     - "Replay Tutorial" button in Settings page
     - Backend endpoints: /api/auth/onboarding/status, /complete, /reset
 
+18. **Collapsible Dashboard Sidebar** ✅
+    - Toggle button to collapse/expand sidebar
+    - Collapsed: Shows only icons (72px width)
+    - Expanded: Shows icons + labels (256px width)
+    - Tooltips on hover in collapsed mode
+    - User preference saved to localStorage
+
+19. **App Share & Promotion System** ✅
+    - Installed Apps page: Clicking app opens modal instead of redirecting
+    - App Details Modal shows:
+      - Performance stats (Revenue, Subscribers, Uptime, OPT Earned)
+      - Share Performance (Total Shares, Link Clicks, Signups Driven)
+      - Personal referral link for the app
+      - Social share buttons (Twitter, LinkedIn, Email, Copy)
+    - Earn +100 OPT for each share (daily cooldown per app)
+    - Backend endpoints: POST /api/promotion/share/{app_id}, GET /api/promotion/app/{app_id}/stats
+
 ---
 
 ## Pricing Structure
